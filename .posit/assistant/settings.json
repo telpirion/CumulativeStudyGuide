@@ -10,10 +10,27 @@
     "edit": {
       "*.Rmd": "allow",
       "*.md": "allow",
-      "*/LICENSE": "allow"
+      "*/LICENSE": "allow",
+      "*.yml": "allow"
     },
     "bash": {
-      "git remote *": "allow"
+      "git remote *": "allow",
+      "sed *": "allow",
+      "head *": "allow",
+      "mv *": "allow",
+      "quarto *": "allow",
+      "R *": "allow",
+      "mkdir *": "allow",
+      "cat *": "allow",
+      "cd *": "allow",
+      "quarto render *": "allow",
+      "ls *": "allow"
+    },
+    "notebookCreate": {
+      "*.ipynb": "allow"
+    },
+    "notebookEdit": {
+      "*.ipynb": "allow"
     }
   }
 }
