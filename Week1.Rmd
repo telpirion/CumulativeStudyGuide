@@ -1,0 +1,283 @@
+---
+title: "Week 1 Study Guide"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+
+```
+
+# Chapter 1: Introduction to Statistics
+
+## 1.1 Statistics in Business
+
+* **Definition of Statistics:** The science dealing with the collection, analysis, interpretation, and presentation of numerical data to convert raw data into useful information for managerial decision making.
+
+* **Business Applications:** Used across corporate functional areas including marketing consumer surveys, operations quality tracking, teleworking productivity, and retail spend analysis.
+
+## 1.2 Basic Statistical Concepts
+
+* Two Major Branches:
+
+  + **Descriptive Statistics:** Techniques used to summarize, organize, and
+  reach conclusions solely about the specific group or dataset observed.
+  + **Inferential Statistics (Inductive Statistics):** Gathering data from a
+  sample to make estimates, inferences, or test hypotheses about the larger 
+  population.
+
+* Core Terminology:
+
+  + **Population:** The complete collection of persons, objects, or items under
+    study.
+  + **Census:** Gathering data from an entire population.
+  + **Sample:** A representative portion of the population selected for analysis.
+  + **Parameter:** A descriptive measure computed from an entire population, 
+    traditionally denoted by Greek letters ($\mu$, $\sigma^2$, $\sigma$).
+  + **Statistic:** A descriptive measure computed from sample data,
+    traditionally denoted by Roman letters ($\bar{x}$, $s^2$, $s$).
+
+## 1.3 Data Measurement Levels
+
+* Nonmetric / Qualitative Data:
+
+  + **Nominal Level:** Numbers or labels used strictly to classify, categorize,
+    or identify entities (e.g., employee ID, gender, geographic region, phone
+    area code). No inherent ranking or arithmetic value.
+  + **Ordinal Level:** Data that can be ranked or ordered, but distances or
+    spacing between adjacent ranks are unequal or non-quantifiable (e.g.,
+    customer satisfaction Likert scales, Fortune 500 company rankings, credit
+    risk ratings).
+
+* Metric / Quantitative Data:
+
+  + **Interval Level:** Numerical data where differences between consecutive
+    numbers represent equal distances, but the zero point is arbitrary and does
+    not signify the absence of the attribute (e.g., Fahrenheit temperature, 
+    percentage return on stock).
+  + **Ratio Level:** Highest level of measurement containing all properties of
+    interval data with a natural, absolute zero point signifying the absence of
+    the characteristic (e.g., dollar sales, cycle time, weight, employee
+    headcounts).
+  + **Parametric vs. Nonparametric Techniques:** Parametric statistics require
+    interval or ratio data and distributional assumptions; nominal and ordinal
+    data require nonparametric methods.
+
+```{r}
+department <- factor(c("Educator", "Manufacturing", "Lawyer", "Educator"))
+is.factor(department)
+is.ordered(department)
+
+satisfaction <- factor(
+  c("Somewhat Helpful", "Very Helpful", "Not Helpful", "Extremely Helpful"),
+  levels = c(
+    "Not Helpful",
+    "Somewhat Helpful",
+    "Moderately Helpful",
+    "Very Helpful",
+    "Extremely Helpful"
+  ),
+  ordered = TRUE
+)
+
+satisfaction[2] > satisfaction[1]
+
+sales_volume <- c(629, 504, 246, 172, 120)
+summary(sales_volume)
+```
+
+---
+
+# Chapter 2: Charts and Graphs
+
+## 2.1 Frequency Distributions
+
+* **Ungrouped vs. Grouped Data:** Ungrouped data are raw, unsummarized observations; grouped data are organized into classes and frequencies.
+* Steps in Constructing a Frequency Distribution:
+
+  1. Determine the range ($Range = \text{Maximum} - \text{Minimum}$).
+  2. Select the number of classes (typically 5 to 15 classes).
+  3. Approximate class width 
+     ($\text{Width} \approx \frac{\text{Range}}{\text{Number of Classes}}$,
+     usually rounded up).
+  4. Establish non-overlapping class boundaries.
+
+* Frequency Metrics:
+
+  + **Class Midpoint (Class Mark):** The average of the lower and upper
+    endpoints of a class interval: $M = \frac{\text{Lower} + \text{Upper}}{2}$.
+  + **Relative Frequency:** The proportion of total frequency falling in an   
+    individual class: $\frac{f}{N}$.
+  + **Cumulative Frequency:** A running total of frequencies across sequential 
+    classes.
+
+
+```{r}
+
+unemp <- c(
+  2.3, 7.0, 6.3, 11.3, 9.6,  2.8, 7.1, 5.6, 10.6, 9.1,
+  3.6, 5.4, 5.9, 9.7, 8.3,   2.4, 5.5, 7.1, 8.8, 7.6,
+  2.9, 7.1, 4.7, 7.8, 6.8,   3.0, 8.0, 3.9, 7.5, 7.2,
+  4.6, 3.6, 8.4, 8.1, 7.7,   4.4, 4.1, 7.5, 10.3, 7.6,
+  3.4, 4.8, 7.5, 11.2, 7.2,  4.6, 4.7, 7.6, 11.4, 6.8,
+  6.9, 11.0, 5.9, 10.4, 6.3, 6.0, 12.0, 6.4, 9.5, 6.0
+)
+
+bins <- seq(1, 13, by = 2)
+classes <- cut(unemp, breaks = bins, right = FALSE)
+
+freq_table <- data.frame(table(Class = classes))
+freq_table$Midpoint <- seq(2, 12, by = 2)
+freq_table$Rel_Freq <- round(freq_table$Freq / sum(freq_table$Freq), 4)
+freq_table$Cum_Freq <- cumsum(freq_table$Freq)
+
+print(freq_table)
+
+```
+
+---
+
+## 2.2 Quantitative Data Graphs
+
+* **Histogram:** A series of contiguous rectangles whose widths represent class
+  intervals along a numerical scale and heights represent class frequencies.
+* **Frequency Polygon:** A line graph constructed by placing a dot at each class  
+  frequency directly above the class midpoint, then connecting the dots
+  sequentially.
+* **Ogive:** A cumulative frequency polygon plotted at class endpoints starting
+  at zero on the lower boundary of the first interval. Used to inspect running
+  totals and identify steep rate increases.
+* **Dot Plot:** Displays individual observations as dots stacked vertically
+  along a single numerical horizontal axis; useful for spotting clusters, gaps,
+  and outliers in small-to-moderate datasets.
+* **Stem-and-Leaf Plot:** Separates data digits into a leading stem (higher-order digits) and trailing leaf (lower-order digits), retaining the original raw data values while visually portraying the distribution.
+
+
+
+```{r}
+# --- Chapter 2.2 R Implementation: Quantitative Graphics ---
+
+# 1. Histogram
+hist(unemp, breaks = seq(1, 13, by = 2), right = FALSE,
+     col = "steelblue", xlab = "Unemployment Rate (%)",
+     main = "Histogram of Canadian Unemployment Rates")
+
+# 2. Frequency Polygon
+h <- hist(unemp, breaks = seq(1, 13, by = 2), plot = FALSE, right = FALSE)
+plot(h$mids, h$counts, type = "o", pch = 16, col = "darkblue",
+     xlab = "Class Midpoints", ylab = "Frequency",
+     main = "Frequency Polygon")
+
+# 3. Ogive (Cumulative Frequency Polygon)
+cum_counts <- c(0, cumsum(h$counts))
+plot(bins, cum_counts, type = "o", pch = 16, col = "darkred",
+     xlab = "Class Endpoints", ylab = "Cumulative Frequency",
+     main = "Ogive")
+
+# 4. Dot Plot
+stripchart(unemp, method = "stack", pch = 19, col = "forestgreen",
+           xlab = "Unemployment Rate (%)", main = "Dot Plot")
+
+# 5. Stem-and-Leaf Display
+stem(unemp, scale = 1)
+
+```
+
+---
+
+### 2.3 Qualitative Data Graphs
+
+
+
+* **Pie Chart:** Circular depiction dividing $360^\circ$ proportionally to show the percentage breakdown of subcategories to the whole ($Degrees = Proportion \times 360^\circ$).
+
+
+* **Bar Graph (or Column Chart):** Displays categorical variables along one axis and rectangular bars along the other axis representing magnitude, frequency, or percentage. Superior to pie charts when discriminating between categories with similar magnitudes.
+
+
+* **Pareto Chart:** Vertical bar chart used in Total Quality Management (TQM) displaying causes of defects ranked in descending order from left to right, often overlaid with a cumulative percentage line. Separates the "vital few" defects from the "trivial many".
+
+
+
+```r
+# --- Chapter 2.3 R Implementation: Qualitative Graphics & Pareto Analysis ---
+
+# Soft drink sales by location channel (from text)
+channels <- c("Supermarket", "Fountain", "Convenience/Gas", "Vending", "Mass Merch", "Drugstore")
+market_share <- c(44, 24, 16, 11, 3, 2)
+
+# 1. Pie Chart
+pie(market_share, labels = paste(channels, market_share, "%"),
+    main = "Soft Drink Sales Channels")
+
+# 2. Bar Chart
+barplot(market_share, names.arg = channels, col = "cornflowerblue",
+        las = 2, ylab = "Percentage of Sales", cex.names = 0.8,
+        main = "Bar Chart of Sales Locations")
+
+# 3. Pareto Chart
+defect_counts <- c(Poor_Wiring = 40, Short_Coil = 30, Defect_Plug = 25, Bearings = 5)
+sorted_counts <- sort(defect_counts, decreasing = TRUE)
+cum_pct <- cumsum(sorted_counts) / sum(sorted_counts) * 100
+
+# Base R Pareto representation
+bp <- barplot(sorted_counts, ylim = c(0, sum(sorted_counts) * 1.15),
+              col = "darkorange", ylab = "Defect Count", main = "Pareto Chart")
+lines(bp, sorted_counts / sum(sorted_counts) * sum(sorted_counts), type = "b", pch = 19, col = "red")
+axis(side = 4, at = seq(0, 100, by = 25) * sum(sorted_counts) / 100, labels = paste0(seq(0, 100, by = 25), "%"))
+
+```
+
+---
+
+### 2.4 Scatter Plots for Two-Variable Numerical Data
+
+
+
+* **Definition:** A two-dimensional plot of paired numerical observations $(x, y)$ on Cartesian axes.
+
+
+* **Purpose:** Provides an exploratory visual display to detect directional patterns, linear or non-linear tendencies, dispersion, and outliers between two continuous variables.
+
+
+
+```r
+# --- Chapter 2.4 R Implementation: Two-Variable Scatter Plot ---
+
+# Advertising dollars vs. Sales revenue ($ millions) from Problem 2.16
+advertising <- c(4.2, 1.6, 6.3, 2.7, 10.4, 7.1, 5.5, 8.3)
+sales_revenue <- c(155.7, 87.3, 135.6, 99.0, 168.2, 136.9, 101.4, 158.2)
+
+plot(advertising, sales_revenue,
+     pch = 19, col = "navy",
+     xlab = "Advertising ($ Millions)",
+     ylab = "Sales Revenue ($ Millions)",
+     main = "Scatter Plot: Advertising vs. Sales")
+
+# Fit exploratory linear trend line
+abline(lm(sales_revenue ~ advertising), col = "red", lwd = 2, lty = 2)
+
+```
+
+---
+
+### Ethical Considerations in Data Presentation
+
+
+
+* Selecting honest, non-manipulative bin widths and class bounds for frequency distributions to avoid misrepresenting dispersion.
+
+
+* Avoiding the use of stretched, compressed, or truncated axes on histograms and line graphs to exaggerate or downplay trends.
+
+
+* Using appropriate analytical models calibrated directly to the level of data measurement (i.e., avoiding parametric computations on purely nominal or ordinal classifications).

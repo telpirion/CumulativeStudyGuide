@@ -1,0 +1,14 @@
+{
+  "permission": {
+    "external_directory": {
+      "/Users/ericmschmidt/Projects/401Statistics/*": "allow",
+      "/Users/ericmschmidt/Projects/*": "allow"
+    },
+    "executeCode": {
+      "*": "allow"
+    },
+    "edit": {
+      "*.Rmd": "allow"
+    }
+  }
+}

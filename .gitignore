@@ -1,0 +1,28 @@
+# --- R Markdown & Knitr outputs ---
+*.knit.md
+*.utf8.md
+*_cache/
+/cache/
+# Note: Add the next line only if you want to keep the repo strictly for source code 
+# and don't want to track your final generated reports (HTML, PDF, Word)
+# *.html
+# *.pdf
+# *.docx
+
+# --- Core R files ---
+.Rhistory
+.Rapp.history
+.RData
+.RDataTmp
+.Ruserdata
+
+# --- RStudio files ---
+.Rproj.user/
+
+# --- Package Build & External dependencies ---
+/*.tar.gz
+/*.Rcheck/
+libs/
+rsconnect/
+.httr-oauth
+.Renviron
