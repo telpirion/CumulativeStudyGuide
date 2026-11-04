@@ -8,7 +8,11 @@
       "*": "allow"
     },
     "edit": {
-      "*.Rmd": "allow"
+      "*.Rmd": "allow",
+      "*.md": "allow"
+    },
+    "bash": {
+      "git remote *": "allow"
     }
   }
 }

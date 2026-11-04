@@ -28,41 +28,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -298,70 +263,61 @@ frequency directly above the class midpoint, then connecting the dots sequential
 </div>
 </div>
 <hr>
-<section id="qualitative-data-graphs" class="level3">
-<h3 class="anchored" data-anchor-id="qualitative-data-graphs">2.3 Qualitative Data Graphs</h3>
+</section>
+<section id="qualitative-data-graphs" class="level2">
+<h2 class="anchored" data-anchor-id="qualitative-data-graphs">2.3 Qualitative Data Graphs</h2>
 <ul>
 <li><p><strong>Pie Chart:</strong> Circular depiction dividing <span class="math inline">\(360^\circ\)</span> proportionally to show the percentage breakdown of subcategories to the whole (<span class="math inline">\(Degrees = Proportion \times 360^\circ\)</span>).</p></li>
 <li><p><strong>Bar Graph (or Column Chart):</strong> Displays categorical variables along one axis and rectangular bars along the other axis representing magnitude, frequency, or percentage. Superior to pie charts when discriminating between categories with similar magnitudes.</p></li>
 <li><p><strong>Pareto Chart:</strong> Vertical bar chart used in Total Quality Management (TQM) displaying causes of defects ranked in descending order from left to right, often overlaid with a cumulative percentage line. Separates the “vital few” defects from the “trivial many”.</p></li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Chapter 2.3 R Implementation: Qualitative Graphics &amp; Pareto Analysis ---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Soft drink sales by location channel (from text)</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>channels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Supermarket"</span>, <span class="st">"Fountain"</span>, <span class="st">"Convenience/Gas"</span>, <span class="st">"Vending"</span>, <span class="st">"Mass Merch"</span>, <span class="st">"Drugstore"</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>market_share <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">44</span>, <span class="dv">24</span>, <span class="dv">16</span>, <span class="dv">11</span>, <span class="dv">3</span>, <span class="dv">2</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Pie Chart</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="fu">pie</span>(market_share, <span class="at">labels =</span> <span class="fu">paste</span>(channels, market_share, <span class="st">"%"</span>),</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Soft Drink Sales Channels"</span>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Bar Chart</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(market_share, <span class="at">names.arg =</span> channels, <span class="at">col =</span> <span class="st">"cornflowerblue"</span>,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">las =</span> <span class="dv">2</span>, <span class="at">ylab =</span> <span class="st">"Percentage of Sales"</span>, <span class="at">cex.names =</span> <span class="fl">0.8</span>,</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">main =</span> <span class="st">"Bar Chart of Sales Locations"</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Pareto Chart</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>defect_counts <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Poor_Wiring =</span> <span class="dv">40</span>, <span class="at">Short_Coil =</span> <span class="dv">30</span>, <span class="at">Defect_Plug =</span> <span class="dv">25</span>, <span class="at">Bearings =</span> <span class="dv">5</span>)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>sorted_counts <span class="ot">&lt;-</span> <span class="fu">sort</span>(defect_counts, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>cum_pct <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(sorted_counts) <span class="sc">/</span> <span class="fu">sum</span>(sorted_counts) <span class="sc">*</span> <span class="dv">100</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Base R Pareto representation</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>bp <span class="ot">&lt;-</span> <span class="fu">barplot</span>(sorted_counts, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">sum</span>(sorted_counts) <span class="sc">*</span> <span class="fl">1.15</span>),</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"darkorange"</span>, <span class="at">ylab =</span> <span class="st">"Defect Count"</span>, <span class="at">main =</span> <span class="st">"Pareto Chart"</span>)</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(bp, sorted_counts <span class="sc">/</span> <span class="fu">sum</span>(sorted_counts) <span class="sc">*</span> <span class="fu">sum</span>(sorted_counts), <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="st">"red"</span>)</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="fu">axis</span>(<span class="at">side =</span> <span class="dv">4</span>, <span class="at">at =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">25</span>) <span class="sc">*</span> <span class="fu">sum</span>(sorted_counts) <span class="sc">/</span> <span class="dv">100</span>, <span class="at">labels =</span> <span class="fu">paste0</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">25</span>), <span class="st">"%"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<hr>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Week1_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Week1_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Week1_files/figure-html/unnamed-chunk-4-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
-<section id="scatter-plots-for-two-variable-numerical-data" class="level3">
-<h3 class="anchored" data-anchor-id="scatter-plots-for-two-variable-numerical-data">2.4 Scatter Plots for Two-Variable Numerical Data</h3>
+<section id="scatter-plots-for-two-variable-numerical-data" class="level2">
+<h2 class="anchored" data-anchor-id="scatter-plots-for-two-variable-numerical-data">2.4 Scatter Plots for Two-Variable Numerical Data</h2>
 <ul>
-<li><p><strong>Definition:</strong> A two-dimensional plot of paired numerical observations <span class="math inline">\((x, y)\)</span> on Cartesian axes.</p></li>
-<li><p><strong>Purpose:</strong> Provides an exploratory visual display to detect directional patterns, linear or non-linear tendencies, dispersion, and outliers between two continuous variables.</p></li>
+<li><strong>Definition:</strong> A two-dimensional plot of paired numerical observations <span class="math inline">\((x, y)\)</span> on Cartesian axes.</li>
+<li><strong>Purpose:</strong> Provides an exploratory visual display to detect directional patterns, linear or non-linear tendencies, dispersion, and outliers between two continuous variables.</li>
 </ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Chapter 2.4 R Implementation: Two-Variable Scatter Plot ---</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Advertising dollars vs. Sales revenue ($ millions) from Problem 2.16</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>advertising <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">4.2</span>, <span class="fl">1.6</span>, <span class="fl">6.3</span>, <span class="fl">2.7</span>, <span class="fl">10.4</span>, <span class="fl">7.1</span>, <span class="fl">5.5</span>, <span class="fl">8.3</span>)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>sales_revenue <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">155.7</span>, <span class="fl">87.3</span>, <span class="fl">135.6</span>, <span class="fl">99.0</span>, <span class="fl">168.2</span>, <span class="fl">136.9</span>, <span class="fl">101.4</span>, <span class="fl">158.2</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(advertising, sales_revenue,</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">col =</span> <span class="st">"navy"</span>,</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Advertising ($ Millions)"</span>,</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"Sales Revenue ($ Millions)"</span>,</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Scatter Plot: Advertising vs. Sales"</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit exploratory linear trend line</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="fu">lm</span>(sales_revenue <span class="sc">~</span> advertising), <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<hr>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Week1_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
-<section id="ethical-considerations-in-data-presentation" class="level3">
-<h3 class="anchored" data-anchor-id="ethical-considerations-in-data-presentation">Ethical Considerations in Data Presentation</h3>
+<section id="ethical-considerations-in-data-presentation" class="level2">
+<h2 class="anchored" data-anchor-id="ethical-considerations-in-data-presentation">Ethical Considerations in Data Presentation</h2>
 <ul>
-<li><p>Selecting honest, non-manipulative bin widths and class bounds for frequency distributions to avoid misrepresenting dispersion.</p></li>
-<li><p>Avoiding the use of stretched, compressed, or truncated axes on histograms and line graphs to exaggerate or downplay trends.</p></li>
-<li><p>Using appropriate analytical models calibrated directly to the level of data measurement (i.e., avoiding parametric computations on purely nominal or ordinal classifications).</p></li>
+<li>Selecting honest, non-manipulative bin widths and class bounds for frequency distributions to avoid misrepresenting dispersion.</li>
+<li>Avoiding the use of stretched, compressed, or truncated axes on histograms and line graphs to exaggerate or downplay trends.</li>
+<li>Using appropriate analytical models calibrated directly to the level of data measurement (i.e., avoiding parametric computations on purely nominal or ordinal classifications).</li>
 </ul>
-</section>
 </section>
 </section>
 

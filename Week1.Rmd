@@ -194,9 +194,7 @@ stem(unemp, scale = 1)
 
 ---
 
-### 2.3 Qualitative Data Graphs
-
-
+## 2.3 Qualitative Data Graphs
 
 * **Pie Chart:** Circular depiction dividing $360^\circ$ proportionally to show the percentage breakdown of subcategories to the whole ($Degrees = Proportion \times 360^\circ$).
 
@@ -208,7 +206,7 @@ stem(unemp, scale = 1)
 
 
 
-```r
+```{r}
 # --- Chapter 2.3 R Implementation: Qualitative Graphics & Pareto Analysis ---
 
 # Soft drink sales by location channel (from text)
@@ -237,20 +235,13 @@ axis(side = 4, at = seq(0, 100, by = 25) * sum(sorted_counts) / 100, labels = pa
 
 ```
 
----
 
-### 2.4 Scatter Plots for Two-Variable Numerical Data
-
-
+## 2.4 Scatter Plots for Two-Variable Numerical Data
 
 * **Definition:** A two-dimensional plot of paired numerical observations $(x, y)$ on Cartesian axes.
-
-
 * **Purpose:** Provides an exploratory visual display to detect directional patterns, linear or non-linear tendencies, dispersion, and outliers between two continuous variables.
 
-
-
-```r
+```{r}
 # --- Chapter 2.4 R Implementation: Two-Variable Scatter Plot ---
 
 # Advertising dollars vs. Sales revenue ($ millions) from Problem 2.16
@@ -268,16 +259,9 @@ abline(lm(sales_revenue ~ advertising), col = "red", lwd = 2, lty = 2)
 
 ```
 
----
 
-### Ethical Considerations in Data Presentation
-
-
+## Ethical Considerations in Data Presentation
 
 * Selecting honest, non-manipulative bin widths and class bounds for frequency distributions to avoid misrepresenting dispersion.
-
-
 * Avoiding the use of stretched, compressed, or truncated axes on histograms and line graphs to exaggerate or downplay trends.
-
-
 * Using appropriate analytical models calibrated directly to the level of data measurement (i.e., avoiding parametric computations on purely nominal or ordinal classifications).
