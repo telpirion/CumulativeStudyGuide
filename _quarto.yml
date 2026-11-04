@@ -1,2 +1,10 @@
 project:
   output-dir: guides
+  render:
+    - "*.Rmd"
+
+format:
+  html:
+    include-in-header:
+      text: |
+        <link rel="stylesheet" href="/CumulativeStudyGuide/assets/css/style.css?v=bc02835c1438cab733e218d466001544d44a5f26">
