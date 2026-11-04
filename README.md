@@ -82,3 +82,9 @@ Rscript -e 'rmarkdown::render("Week1.Rmd")'
 ## Author
 
 - **Eric Schmidt** ([@telpirion](https://github.com/telpirion))
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

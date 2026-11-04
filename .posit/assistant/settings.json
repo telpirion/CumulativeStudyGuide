@@ -9,7 +9,8 @@
     },
     "edit": {
       "*.Rmd": "allow",
-      "*.md": "allow"
+      "*.md": "allow",
+      "*/LICENSE": "allow"
     },
     "bash": {
       "git remote *": "allow"
