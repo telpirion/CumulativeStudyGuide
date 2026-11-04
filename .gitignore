@@ -31,3 +31,4 @@ rsconnect/
 /.quarto/
 **/*.quarto_ipynb
 .posit
+README.html

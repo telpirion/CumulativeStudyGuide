@@ -23,7 +23,7 @@ statistical foundations and their application in R. Each module includes:
 
 - 📘 [**Week 1 Study Guide (HTML)**](guides/Week1.html) — Introduction to Statistics & Charts and Graphs
 - 📘 [**Week 7 Study Guide (HTML)**](guides/Week7.html) — Inferences About Two Populations
-- 📓 [**Week 7 Practice & Exercises (Jupyter Notebook)**][week7-nb] — 44 Chapter 10 review questions with full mathematical solutions and 5 applied R exercises
+- 📓 [**Week 7 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week7.ipynb) — 44 Chapter 10 review questions with full mathematical solutions and 5 applied R exercises
 
 ---
 
@@ -115,5 +115,3 @@ quarto render Week7.Rmd
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-week7-nb: https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week7.ipynb
