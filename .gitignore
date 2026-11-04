@@ -30,3 +30,4 @@ rsconnect/
 *.code-workspace
 /.quarto/
 **/*.quarto_ipynb
+.posit
