@@ -6,6 +6,12 @@ output:
   html_document:
     toc: true
     toc_float: true
+knit: (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "output_folder_name"
+    )
+  })
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}

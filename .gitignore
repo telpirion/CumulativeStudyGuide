@@ -26,3 +26,4 @@ libs/
 rsconnect/
 .httr-oauth
 .Renviron
+.DS_Store
