@@ -1,0 +1,498 @@
+---
+title: "Week 2 Study Guide"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+
+```
+
+# Chapter 3: Descriptive Statistics. 
+
+## 3.0 Overview & Core Descriptive Framework
+
+* **Learning Objectives:**
+
+  1. Calculate and interpret measures of central tendency — arithmetic mean, median, mode, percentiles, and quartiles — for ungrouped business data.
+  2. Compute and contrast measures of variability — range, interquartile range ($IQR$), mean absolute deviation (MAD), variance, standard deviation, and coefficient of variation ($CV$).
+  3. Differentiate between sample statistics ($s^2, s$) using Bessel's correction ($n-1$) and population parameters ($\sigma^2, \sigma$).
+  4. Apply Chebyshev's Theorem and the Empirical Rule to assess data spread relative to the mean and standard deviation.
+  5. Compute the mean, median, mode, variance, and standard deviation for grouped data using class intervals and midpoints.
+  6. Characterize distribution shape using skewness, kurtosis, kernel density estimators, and box-and-whisker plots with Tukey's outlier fences.
+  7. Apply modern robust descriptive statistics (trimmed means, Winsorized variance) and recognize the masking problem inherent in classical outlier detection rules (Wilcox Ch. 2).
+  8. Quantify bivariate linear association using covariance and Pearson's product-moment correlation coefficient ($r$).
+
+* **Four Core Dimensions of Descriptive Analytics:**
+
+  + **Central Tendency:** The center, typical value, or gravitational balance point of a numeric distribution (Mean, Median, Mode, Trimmed Mean).
+  + **Variability (Dispersion):** The spread, scatter, or distance of individual observations around the central value (Range, $IQR$, Variance, Standard Deviation, $CV$, Winsorized Variance).
+  + **Distribution Shape & Relative Position:** The symmetry, skewness, kurtosis, percentile ranks, and presence of extreme outliers (Five-Number Summary, Tukey's Fences, Boxplots, Kernel Density Estimation).
+  + **Bivariate Association:** The strength and direction of linear co-movement between two continuous variables (Covariance, Pearson's Correlation Coefficient $r$).
+
+---
+
+## 3.1 Measures of Central Tendency: Ungrouped Data
+
+Measures of central tendency identify the center or typical value of a numerical distribution.
+
+* **Arithmetic Mean:** The arithmetic balance point of a dataset, computed by summing all values and dividing by the total count. Highly sensitive to extreme outliers.
+
+  + **Population Mean ($\mu$):**
+
+$$\mu = \frac{\sum_{i=1}^N x_i}{N}$$
+
+  + **Sample Mean ($\bar{x}$):**
+
+$$\bar{x} = \frac{\sum_{i=1}^n x_i}{n}$$
+
+* **Median:** The middle value in an ordered (ranked) array of data ($x_{(1)} \le x_{(2)} \le \dots \le x_{(n)}$). Resistant and robust against extreme values.
+
+  + If $n$ is odd, the median is the value at position $\frac{n+1}{2}$.
+  + If $n$ is even, the median is the arithmetic average of the values at positions $\frac{n}{2}$ and $\frac{n}{2} + 1$:
+
+$$\text{Median} = \frac{x_{(n/2)} + x_{(n/2 + 1)}}{2}$$
+
+* **Mode:** The value that occurs with greatest frequency. Applicable to nominal, ordinal, interval, and ratio data. A dataset may be unimodal (one mode), bimodal (two modes), multimodal (multiple modes), or possess no mode if all observations are distinct.
+
+* **Percentiles and Quartiles:**
+
+  + **Percentiles ($P$):** Divides ordered data into 100 equal parts. The location   
+    index $i$ for the $P$-th percentile is shown in the following formula.
+    - If $i$ is not an integer, round up to the next integer.
+    - If $i$ is an integer, average the value at location $i$ and location $i+1$.
+
+$$i = \left(\frac{P}{100}\right) \cdot n$$
+
+  + **Quartiles:** Divides ordered data into four equal parts:
+    - **First Quartile ($Q_1$):** 25th percentile ($P_{25}$).
+    - **Second Quartile ($Q_2$):** 50th percentile (Median, $P_{50}$).
+    - **Third Quartile ($Q_3$):** 75th percentile ($P_{75}$).
+
+* **Modern Robust Location Measures (Wilcox Ch. 2):**
+  + **The 20% Trimmed Mean ($\bar{x}_t$):** While the sample mean represents zero trimming (excessively sensitive to outliers) and the median represents maximum trimming (discarding all but 1 or 2 values), the trimmed mean offers a robust compromise. For sample size $n$, compute $g = \lfloor 0.2n \rfloor$ (rounded down to the nearest integer), trim the $g$ smallest and $g$ largest values, and compute the arithmetic average of the remaining $n - 2g$ observations:
+
+$$\bar{x}_t = \frac{\sum_{i=g+1}^{n-g} x_{(i)}}{n - 2g}$$
+
+* **Slide Examples & Source Problem Demonstrations:**
+  + **Demonstration Problem 3.1: UK Shopping Centre Sizes (Slide 6 & R Supplement):** Size of the 13 largest shopping centres in the United Kingdom in thousand $\text{m}^2$ ($n = 13$): MetroCentre (190.0), Trafford Centre (180.9), Westfield Stratford (175.0), Bluewater (155.7), Liverpool One (154.0), Westfield London (149.5), Intu Merry Hill (140.8), Manchester Arndale (139.4), Meadowhall (139.4), Lakeside (133.8), St. David's (130.1), Bullring (127.1), Eldon Square (125.4).
+    $$\sum x_i = 1941.1 \implies \bar{x} = \frac{1941.1}{13} = 149.32 \text{ thousand } \text{m}^2$$
+    Ranked 7th value is $140.80$, so $\text{Median} = 140.80$.
+    The value $139.40$ occurs twice, yielding $\text{Mode} = 139.40$.
+    Quartiles: $Q_1 = 133.80$, $Q_3 = 175.00$ ($IQR = 41.20$).
+  + **Wilcox Trimmed Mean Demonstration (Figure Skating Scores, p. 26):** Nine rater scores ($5.1, 5.3, 5.3, 5.5, 5.0, 5.1, 5.4, 4.2, 5.2$). Sample mean $\bar{x} = 5.12$, pulled down by the single discordant rating $4.2$. With $n = 9$, $g = \lfloor 0.2(9) \rfloor = 1$. Trimming the minimum (4.2) and maximum (5.5) yields an 8-observation trimmed mean $\bar{x}_t = 5.20$, accurately capturing the judges' consensus.
+
+```{r}
+shop_sizes <- c(190.0, 180.9, 175.0, 155.7, 154.0, 149.5, 140.8,
+                139.4, 139.4, 133.8, 130.1, 127.1, 125.4)
+
+skating <- c(5.1, 5.3, 5.3, 5.5, 5.0, 5.1, 5.4, 4.2, 5.2)
+
+calc_mode <- function(x) {
+  tbl <- table(x)
+  modes <- names(tbl)[tbl == max(tbl)]
+  as.numeric(modes)[1]
+}
+
+central_summary <- data.frame(
+  Dataset = c("UK Shopping Centres", "Figure Skating Ratings"),
+  n = c(length(shop_sizes), length(skating)),
+  Mean = round(c(mean(shop_sizes), mean(skating)), 2),
+  Median = round(c(median(shop_sizes), median(skating)), 2),
+  Trimmed_20 = round(c(mean(shop_sizes, trim = 0.2), mean(skating, trim = 0.2)), 2),
+  Mode = c(calc_mode(shop_sizes), calc_mode(skating)),
+  Q1 = round(c(quantile(shop_sizes, 0.25, type = 6), quantile(skating, 0.25, type = 6)), 2),
+  Q3 = round(c(quantile(shop_sizes, 0.75, type = 6), quantile(skating, 0.75, type = 6)), 2)
+)
+
+print(central_summary)
+```
+
+---
+
+## 3.2 Measures of Variability: Ungrouped Data
+
+Measures of variability quantify the dispersion, scatter, or spread of data values around their central location.
+
+* **Range & Interquartile Range ($IQR$):**
+
+  + **Range:** Difference between the highest and lowest values:
+
+$$\text{Range} = x_{\text{max}} - x_{\text{min}}$$
+
+  + **Interquartile Range ($IQR$):** Spread of the middle 50% of ordered observations:
+
+$$IQR = Q_3 - Q_1$$
+
+* **Population vs. Sample Variance and Standard Deviation:**
+
+  + **Mean Absolute Deviation (MAD):** Average absolute deviation from the mean:
+
+$$\text{MAD} = \frac{\sum_{i=1}^n |x_i - \bar{x}|}{n}$$
+
+  + **Population Variance ($\sigma^2$):**
+
+$$\sigma^2 = \frac{\sum_{i=1}^N (x_i - \mu)^2}{N}$$
+
+  + **Sample Variance ($s^2$):** Uses degrees of freedom ($n - 1$, Bessel's correction) as an unbiased estimator of $\sigma^2$:
+
+$$s^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n - 1} = \frac{\sum x_i^2 - \frac{(\sum x_i)^2}{n}}{n - 1}$$
+
+  + **Standard Deviation:** Positive square root of variance, restoring original units of measurement:
+
+$$\sigma = \sqrt{\sigma^2}, \quad s = \sqrt{s^2}$$
+
+* **Coefficient of Variation ($CV$):** A unitless measure of relative variability expressed as a percentage of the mean:
+
+$$CV = \left(\frac{s}{\bar{x}}\right) \times 100\% \quad \text{or} \quad \left(\frac{\sigma}{\mu}\right) \times 100\%$$
+
+* **Interpreting Standard Deviation: Chebyshev's Theorem vs. The Empirical Rule:**
+
+  + **Chebyshev's Theorem (Any Distribution):** For any dataset regardless of shape, and any constant $k > 1$, the proportion of values that fall within $k$ standard deviations of the mean ($\mu \pm k\sigma$) is at least:
+
+$$1 - \frac{1}{k^2}$$
+
+    - For $k = 2$: At least $1 - \frac{1}{4} = 75\%$ of values lie within $\mu \pm 2\sigma$.
+    - For $k = 3$: At least $1 - \frac{1}{9} \approx 88.89\%$ of values lie within $\mu \pm 3\sigma$.
+
+  + **The Empirical Rule (Mound-Shaped / Bell-Shaped Normal Distributions):**
+    - Approximately **$68\%$** of data points fall within $\mu \pm 1\sigma$.
+    - Approximately **$95\%$** of data points fall within $\mu \pm 2\sigma$.
+    - Approximately **$99.7\%$** of data points fall within $\mu \pm 3\sigma$.
+
+* **Modern Robust Dispersion: The 20% Winsorized Variance ($s_w^2$):**
+  + Instead of trimming extreme observations completely, Winsorizing replaces the $g = \lfloor 0.2n \rfloor$ smallest values with $x_{(g+1)}$ and the $g$ largest values with $x_{(n-g)}$. The Winsorized sample variance ($s_w^2$) is computed across the transformed array $W_1, \dots, W_n$:
+
+$$s_w^2 = \frac{\sum_{i=1}^n (W_i - \bar{W})^2}{n - 1}$$
+
+  Unlike the classical sample variance $s^2$, $s_w^2$ does not artificially balloon when an outlier shifts farther into the extreme tails, providing a stable foundation for robust inferential procedures.
+
+* **Slide Examples & Source Problem Demonstrations:**
+  + **Ken Black Slide 15 & R Supplement (Top 15 U.S. Trading Partners in Exports, 2014):** Exports in billions of dollars ($n = 15$): Canada (312.4), Mexico (240.2), China (123.7), Japan (66.8), UK (53.8), Germany (49.4), South Korea (44.5), Netherlands (43.1), Brazil (42.4), Hong Kong (40.9), Belgium (34.8), France (31.3), Singapore (30.2), Taiwan (26.7), Switzerland (22.2).
+    $$\text{Range} = 312.4 - 22.2 = 290.2 \text{ billion dollars}$$
+    $$Q_1 = 33.05, \quad Q_3 = 95.25 \implies IQR = 62.20 \text{ billion dollars}$$
+    $$\bar{x} = 77.49, \quad \text{MAD} = 65.41, \quad s^2 = 7215.82 \implies s = \$84.95 \text{ billion}$$
+  + **Ken Black Slide 23–24: Accounting Firm Partners Sample Data:** Six largest accounting firms report $88, 75, 45, 37, 24, 21$ partners ($n = 6$).
+    $$\bar{x} = \frac{290}{6} = 48.33 \text{ partners}, \quad SS = 3607.33$$
+    $$s^2 = \frac{3607.33}{6 - 1} = 721.47 \implies s = \sqrt{721.47} = 26.86 \text{ partners}$$
+    $$CV = \left(\frac{26.86}{48.33}\right) \times 100\% = 55.58\%$$
+  + **Wilcox Winsorized Variance Demonstration (p. 28):** Observations $1, 2, 8, 9, 10, 16, 18, 22, 27, 29, 35, 42$ ($n = 12, g = 2$).
+    Winsorized values: $8, 8, 8, 9, 10, 16, 18, 22, 27, 29, 29, 29$ ($\bar{W} = 17.75$).
+    $$s_w^2 = \frac{\sum (W_i - 17.75)^2}{12 - 1} = 82.57 \implies s_w = 9.09$$
+    Classical sample variance is $s^2 = 170.57$. If the largest value is increased from 42 to 60, classical $s^2$ surges to $275.30$, whereas $s_w^2$ remains completely unchanged at $82.57$.
+
+```{r}
+top_15_exports <- c(312.4, 240.2, 123.7, 66.8, 53.8, 49.4, 44.5,
+                    43.1, 42.4, 40.9, 34.8, 31.3, 30.2, 26.7, 22.2)
+
+acc_partners <- c(88, 75, 45, 37, 24, 21)
+
+calc_winsorized_var <- function(x, tr = 0.2) {
+  n <- length(x)
+  g <- floor(tr * n)
+  x_sort <- sort(x)
+  w <- x_sort
+  if (g > 0) {
+    w[1:g] <- x_sort[g + 1]
+    w[(n - g + 1):n] <- x_sort[n - g]
+  }
+  var(w)
+}
+
+dispersion_summary <- data.frame(
+  Dataset = c("Top 15 US Exports ($B)", "Accounting Firm Partners"),
+  Mean = round(c(mean(top_15_exports), mean(acc_partners)), 2),
+  Range = round(c(diff(range(top_15_exports)), diff(range(acc_partners))), 2),
+  MAD = round(c(sum(abs(top_15_exports - mean(top_15_exports))) / length(top_15_exports),
+                sum(abs(acc_partners - mean(acc_partners))) / length(acc_partners)), 2),
+  Sample_Variance = round(c(var(top_15_exports), var(acc_partners)), 2),
+  Sample_StdDev = round(c(sd(top_15_exports), sd(acc_partners)), 2),
+  Winsorized_Var = round(c(calc_winsorized_var(top_15_exports), calc_winsorized_var(acc_partners)), 2),
+  CV_Pct = round(c((sd(top_15_exports) / mean(top_15_exports)) * 100,
+                   (sd(acc_partners) / mean(acc_partners)) * 100), 2)
+)
+
+print(dispersion_summary)
+```
+
+---
+
+## 3.3 Measures of Central Tendency and Variability: Grouped Data
+
+When raw micro-level observations are unavailable and data are presented solely in grouped frequency distributions, class midpoints ($M_i$) serve as representative values for all frequencies within each interval.
+
+* **Class Midpoint (Class Mark, $M_i$):**
+
+$$M_i = \frac{\text{Lower Boundary}_i + \text{Upper Boundary}_i}{2}$$
+
+* **Grouped Mean ($\bar{x}_{\text{grouped}}$):**
+
+$$\bar{x} = \frac{\sum_{i=1}^k f_i M_i}{n} \quad \text{where } n = \sum_{i=1}^k f_i$$
+
+* **Grouped Sample Variance ($s_{\text{grouped}}^2$) & Standard Deviation ($s_{\text{grouped}}$):**
+
+$$s^2 = \frac{\sum_{i=1}^k f_i (M_i - \bar{x})^2}{n - 1} = \frac{\sum f_i M_i^2 - \frac{(\sum f_i M_i)^2}{n}}{n - 1}, \quad s = \sqrt{s^2}$$
+
+* **Grouped Median:** Evaluates the cumulative frequency ($cf$) to locate the median class containing observation $n/2$:
+
+$$\text{Median} = L + \left[\frac{\frac{n}{2} - cf_{p}}{f_{\text{median}}}\right] \cdot w$$
+
+where $L$ is the lower class boundary of the median interval, $cf_p$ is the cumulative frequency of the preceding interval, $f_{\text{median}}$ is the frequency of the median class, and $w$ is the class width.
+
+* **Slide Examples & Source Problem Demonstrations:**
+  + **Ken Black Slides 27–32: Canadian Unemployment Rates Grouped Distribution ($n = 60$):**
+    - `[1, 3)`: $M = 2, f = 4 \implies fM = 8$
+    - `[3, 5)`: $M = 4, f = 12 \implies fM = 48$
+    - `[5, 7)`: $M = 6, f = 13 \implies fM = 78$
+    - `[7, 9)`: $M = 8, f = 19 \implies fM = 152$
+    - `[9, 11)`: $M = 10, f = 7 \implies fM = 70$
+    - `[11, 13)`: $M = 12, f = 5 \implies fM = 60$
+    $$\sum f_i = 60, \quad \sum f_i M_i = 416 \implies \bar{x} = \frac{416}{60} = 6.93\%$$
+    $$\sum f_i (M_i - 6.93)^2 = 427.73 \implies s^2 = \frac{427.73}{59} = 7.25 \implies s = 2.69\%$$
+  + **Chapter 3 Practice Problem Grouped Distribution (Questions 11 & 32–35):**
+    Class intervals from `[2, 4)` to `[12, 14)` ($n = 58$): Grouped $\bar{x} = 7.72$, $s^2 = 7.54$, $\sigma = 2.72$, $\text{Mode} = 9.00$, and Grouped $\text{Median} = 7.7143$.
+
+```{r}
+unemp_m <- c(2, 4, 6, 8, 10, 12)
+unemp_f <- c(4, 12, 13, 19, 7, 5)
+unemp_n <- sum(unemp_f)
+unemp_mean <- sum(unemp_f * unemp_m) / unemp_n
+unemp_var <- sum(unemp_f * (unemp_m - unemp_mean)^2) / (unemp_n - 1)
+unemp_sd <- sqrt(unemp_var)
+
+prob_m <- c(3, 5, 7, 9, 11, 13)
+prob_f <- c(5, 12, 14, 15, 8, 4)
+prob_n <- sum(prob_f)
+prob_mean <- sum(prob_f * prob_m) / prob_n
+prob_var <- sum(prob_f * (prob_m - prob_mean)^2) / (prob_n - 1)
+prob_sd <- sqrt(prob_var)
+
+grouped_table <- data.frame(
+  Dataset = c("Canadian Unemployment (Ch. 3 Slides)", "Practice Problem 32-35"),
+  Total_n = c(unemp_n, prob_n),
+  Grouped_Mean = round(c(unemp_mean, prob_mean), 4),
+  Grouped_Variance = round(c(unemp_var, prob_var), 4),
+  Grouped_StdDev = round(c(unemp_sd, prob_sd), 4)
+)
+
+print(grouped_table)
+```
+
+---
+
+## 3.4 Measures of Shape & Outlier Detection
+
+Distribution shape describes how observations are distributed across the measurement range relative to the central value.
+
+* **Distribution Skewness:**
+
+  + **Symmetric:** Observations are evenly balanced on both sides of center ($\text{Mean} \approx \text{Median} \approx \text{Mode}$). Skewness $\approx 0$.
+  + **Positively Skewed (Right-Skewed):** Extended tail to the right; extreme high observations pull the mean upward ($\text{Mean} > \text{Median} > \text{Mode}$).
+  + **Negatively Skewed (Left-Skewed):** Extended tail to the left; extreme low observations pull the mean downward ($\text{Mean} < \text{Median} < \text{Mode}$).
+  + **Pearsonian Coefficient of Skewness ($S_k$):**
+
+$$S_k = \frac{3(\bar{x} - \text{Median})}{s}$$
+
+* **Kurtosis:** Measures the peakedness, tail heaviness, and outlier propensity of a distribution relative to a normal curve:
+  + **Leptokurtic:** Sharp, narrow peak with heavy tails (higher probability of outliers).
+  + **Mesokurtic:** Standard mound-shaped normal distribution.
+  + **Platykurtic:** Broad, flat peak with light tails.
+
+* **Tukey's Five-Number Summary & Box-and-Whisker Plots:**
+
+  Five positional anchors: $\text{Minimum}, Q_1, \text{Median } (Q_2), Q_3, \text{Maximum}$.
+  + **Inner Fences (Mild Outlier Cutoffs):**
+$$\text{Lower Inner Fence} = Q_1 - 1.5(IQR), \quad \text{Upper Inner Fence} = Q_3 + 1.5(IQR)$$
+  + **Outer Fences (Extreme Outlier Cutoffs):**
+$$\text{Lower Outer Fence} = Q_1 - 3.0(IQR), \quad \text{Upper Outer Fence} = Q_3 + 3.0(IQR)$$
+  + **Adjacent Values (Whiskers):** Whiskers terminate at the most extreme data values *inside* the inner fences. Individual points plotted beyond the inner fences represent mild outliers; points beyond the outer fences represent extreme outliers.
+
+* **Wilcox on Outlier Detection: The Masking Problem (Chapter 2, pp. 23–24):**
+  + Classical outlier rules flag observations as outliers if $|x_i - \bar{x}| / s \ge 2$ (or 3).
+  + **Masking Failure:** Because both the sample mean $\bar{x}$ and sample standard deviation $s$ are sensitive to extreme values, the very presence of multiple outliers artificially inflates $s$ so severely that the test statistic shrinks below the threshold, masking the outliers!
+  + **Example from Wilcox (p. 23):** Dataset $2, 2, 3, 3, 3, 4, 4, 4, 100000, 100000$.
+    $$\bar{x} = 20002.5, \quad s = 42162.38 \implies \frac{|100000 - 20002.5|}{42162.38} = 1.897 < 2$$
+    The classic rule declares **zero** outliers, completely missing two obvious anomalies! Even if the values are increased to $10,000,000$, masking prevents detection.
+  + **The Boxplot Solution:** Because $Q_1 = 3$, $Q_3 = 4$, and $IQR = 1$ are resistant to extreme observations, the upper fence is $4 + 1.5(1) = 5.5$. The boxplot rule effortlessly flags both $100000$ values without suffering from masking.
+
+```{r}
+wilcox_masking_data <- c(2, 2, 3, 3, 3, 4, 4, 4, 100000, 100000)
+mean_mask <- mean(wilcox_masking_data)
+sd_mask <- sd(wilcox_masking_data)
+z_mask <- abs(wilcox_masking_data - mean_mask) / sd_mask
+
+q1_m <- quantile(wilcox_masking_data, 0.25, type = 6)
+q3_m <- quantile(wilcox_masking_data, 0.75, type = 6)
+iqr_m <- q3_m - q1_m
+upper_inner_fence_m <- q3_m + 1.5 * iqr_m
+
+wait_times <- c(45, 52, 55, 58, 62, 65, 67, 70, 72, 75, 78, 80, 85, 120, 160)
+boxplot(wait_times, horizontal = TRUE, col = "lightblue",
+        xlab = "Wait Time (Seconds)", main = "Box-and-Whisker Plot: Drive-Thru Wait Times")
+
+outlier_comparison <- data.frame(
+  Method = c("Classic z-Score Rule (|z| >= 2)", "Tukey Boxplot Rule (Fence = 5.5)"),
+  Test_Metric = c("Max |z| = 1.897", "Upper Fence = 5.5"),
+  Outliers_Identified = c("None (Masked)", "100000, 100000 (Detected)")
+)
+
+print(outlier_comparison)
+```
+
+---
+
+## 3.5 Measures of Association: Pearson's Correlation Coefficient
+
+Measures of association describe the direction and strength of linear covariation between two numeric variables.
+
+* **Sample Covariance ($s_{xy}$):** Measures average joint deviation from sample means:
+
+$$s_{xy} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{n - 1}$$
+
+* **Pearson Product-Moment Correlation Coefficient ($r$):** Standardizes covariance into a scale-independent index of linear association:
+
+$$r = \frac{s_{xy}}{s_x s_y} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^n (y_i - \bar{y})^2}}$$
+
+* **Properties and Limitations:**
+  + Bounded: $-1.00 \le r \le +1.00$.
+  + Direction: Positive indicates direct co-movement; negative indicates inverse co-movement.
+  + Evaluates linear relationships exclusively; non-linear associations can yield $r \approx 0$. Correlation does not establish causation.
+
+```{r}
+ad_spend <- c(2, 4, 5, 6, 8, 11)
+foot_traffic <- c(7, 9, 10, 13, 15, 20)
+
+cor_result <- cor.test(ad_spend, foot_traffic)
+
+plot(ad_spend, foot_traffic, pch = 19, col = "navy",
+     xlab = "Digital Ad Spend ($100s)", ylab = "Store Foot Traffic (100s)",
+     main = "Bivariate Association: Ad Spend vs. Foot Traffic")
+abline(lm(foot_traffic ~ ad_spend), col = "firebrick", lwd = 2, lty = 2)
+
+cor_summary <- data.frame(
+  Sample_r = round(cor_result$estimate, 4),
+  t_Statistic = round(cor_result$statistic, 4),
+  df = cor_result$parameter,
+  p_Value = round(cor_result$p.value, 4),
+  CI_Lower = round(cor_result$conf.int[1], 4),
+  CI_Upper = round(cor_result$conf.int[2], 4)
+)
+
+print(cor_summary)
+```
+
+---
+
+## 3.6 Applied Analysis of Course Datasets
+
+Following the curriculum specifications from the Course Solutions Guide (`Lesson_03_Descriptive_Statistics_Solutions.pdf`), four real-world datasets illustrate applied descriptive analysis in R:
+
+1. **EPA Vehicle Mileage Data (`data/mileage.csv`):** Analysis of 60 passenger cars across weight classes C1 through C6. Computes class-specific mean and standard deviation for fuel economy (`MPG`) and horsepower (`HP`).
+2. **Shopper Dollar Spending Data (`data/shoppers.csv`):** Analysis of 50 shoppers visiting a retail store in a single day, examining positive skewness across location, dispersion, and percentile metrics.
+3. **Presidential Inauguration Ages & Candidate Heights (`data/pontus.csv`):** Evaluates ages and candidate heights, resolving why the difference between group means differs from the average of pairwise election differences.
+4. **Old Faithful Geyser Eruption Intervals (`data/geyser.csv`):** Compares eruption intervals across two consecutive weeks (`WEEK1` and `WEEK2`), highlighting temporal consistency and marked **bimodality**.
+
+```{r}
+mileage_df <- read.csv("data/mileage.csv")
+shoppers_df <- read.csv("data/shoppers.csv")
+pontus_df <- read.csv("data/pontus.csv")
+geyser_df <- read.csv("data/geyser.csv")
+
+mpg_mean <- aggregate(MPG ~ CLASS, data = mileage_df, mean)
+mpg_sd <- aggregate(MPG ~ CLASS, data = mileage_df, sd)
+hp_mean <- aggregate(HP ~ CLASS, data = mileage_df, mean)
+hp_sd <- aggregate(HP ~ CLASS, data = mileage_df, sd)
+
+mileage_analysis <- data.frame(
+  CLASS = mpg_mean$CLASS,
+  Mean_MPG = round(mpg_mean$MPG, 2),
+  SD_MPG = round(mpg_sd$MPG, 2),
+  Mean_HP = round(hp_mean$HP, 2),
+  SD_HP = round(hp_sd$HP, 2)
+)
+print(mileage_analysis)
+
+calc_range <- function(x) { max(x, na.rm = TRUE) - min(x, na.rm = TRUE) }
+summary_stats <- function(x) {
+  data.frame(
+    Value = c(
+      mean(x, na.rm = TRUE),
+      median(x, na.rm = TRUE),
+      calc_range(x),
+      sd(x, na.rm = TRUE),
+      var(x, na.rm = TRUE),
+      quantile(x, probs = 0.25, na.rm = TRUE),
+      quantile(x, probs = 0.75, na.rm = TRUE),
+      quantile(x, probs = 0.10, na.rm = TRUE)
+    ),
+    row.names = c("Mean", "Median", "Range", "StdDev", "Var", "Q1", "Q3", "P10")
+  )
+}
+shoppers_summary <- round(summary_stats(shoppers_df$Spending), 2)
+print(shoppers_summary)
+
+pontus_pres_age <- round(summary_stats(pontus_df$Age), 2)
+print(pontus_pres_age)
+
+diff_ht <- pontus_df$Ht - pontus_df$HtOpp
+boxplot(diff_ht, horizontal = TRUE, col = "darkseagreen",
+        xlab = "Height Difference (President - Opponent, cm)",
+        main = "Boxplot of Presidential Height Differences")
+
+geyser_comp <- round(apply(geyser_df, 2, summary), 2)
+print(geyser_comp)
+
+boxplot(geyser_df$WEEK1, geyser_df$WEEK2, names = c("Week 1", "Week 2"),
+        horizontal = TRUE, col = c("lightcyan", "mistyrose"),
+        xlab = "Interval (Minutes)", main = "Boxplots of Geyser Eruption Intervals by Week")
+```
+
+---
+
+## Quick Reference Summary Table
+
+| Descriptive Dimension | Metric / Tool | Mathematical Definition / Formula | Distributional Properties | R Function |
+| :--- | :--- | :--- | :--- | :--- |
+| **Central Location** | Arithmetic Mean ($\bar{x}$) | $\bar{x} = \frac{\sum x_i}{n}$ | Highly sensitive to outliers & skewness | `mean(x)` |
+| **Central Location** | Median | Middle value in ordered array ($x_{(n/2)}$ average) | Robust / resistant to extreme values | `median(x)` |
+| **Central Location** | Mode | Value with greatest absolute frequency | Unaffected by outliers; applies to all data levels | `table(x)` |
+| **Robust Location** | 20% Trimmed Mean ($\bar{x}_t$) | $\bar{x}_t = \frac{\sum x_{(i)}}{n - 2g}, \; g = \lfloor 0.2n \rfloor$ | Balances outlier resistance and statistical efficiency | `mean(x, trim = 0.2)` |
+| **Relative Location** | Percentiles / Quartiles | Location $i = \left(\frac{P}{100}\right) \cdot n$; $IQR = Q_3 - Q_1$ | Positional; robust against extreme values | `quantile(x, probs, type = 6)` |
+| **Variability** | Sample Variance ($s^2$) | $s^2 = \frac{\sum (x_i - \bar{x})^2}{n - 1}$ | Unbiased estimator using Bessel's $n-1$ correction | `var(x)` |
+| **Variability** | Standard Deviation ($s$) | $s = \sqrt{s^2}$ | Original data units; sensitive to outliers | `sd(x)` |
+| **Robust Dispersion** | Winsorized Variance ($s_w^2$) | $s_w^2 = \frac{\sum (W_i - \bar{W})^2}{n - 1}$ | Resists outlier inflation in extreme tails | Custom `calc_winsorized_var()` |
+| **Relative Spread** | Coefficient of Variation ($CV$) | $CV = \left(\frac{s}{\bar{x}}\right) \times 100\%$ | Normalized dispersion; requires ratio scale data | `(sd(x) / mean(x)) * 100` |
+| **Grouped Analytics** | Grouped Mean & Variance | $\bar{x} = \frac{\sum f_i M_i}{n}, \; s^2 = \frac{\sum f_i(M_i - \bar{x})^2}{n-1}$ | Approximates ungrouped parameters from midpoints | Formulaic / `cut()`, `table()` |
+| **Dispersion Bound** | Chebyshev's Theorem | At least $1 - 1/k^2$ within $\mu \pm k\sigma$ | Distribution-free; holds for any dataset ($k > 1$) | N/A (formulaic) |
+| **Mound-Shaped Spread** | Empirical Rule | $68\%$ ($1\sigma$), $95\%$ ($2\sigma$), $99.7\%$ ($3\sigma$) | Requires symmetrical, bell-shaped distribution | `pnorm()`, `qnorm()` |
+| **Outlier Detection** | Tukey's Fences | Inner: $Q_{1,3} \pm 1.5(IQR)$; Outer: $Q_{1,3} \pm 3.0(IQR)$ | Robust; prevents masking of extreme values | `boxplot(x, horizontal = TRUE)` |
+| **Bivariate Association** | Pearson's Correlation ($r$) | $r = \frac{\sum (x - \bar{x})(y - \bar{y})}{\sqrt{\sum (x - \bar{x})^2 \sum (y - \bar{y})^2}}$ | Measures linear association; sensitive to outliers | `cor(x, y)`, `cor.test(x, y)` |
+
+---
+
+## Ethical Considerations in Descriptive Analysis
+
+* **Selective Central Tendency Reporting:** Responsibly selecting and reporting the median or trimmed mean alongside or in place of the mean when analyzing highly skewed distributions (e.g., executive salaries, home sale prices) to prevent conveying a distorted perception of typical experience.
+* **Always Reporting Dispersion Alongside Central Tendency:** Presenting measures of variability (standard deviation, $IQR$, or range) alongside central tendency to ensure decision makers understand the underlying uncertainty and risk, rather than presuming uniformity.
+* **Avoiding Masking in Outlier Screening:** Relying on robust outlier detection procedures (Tukey's fences) rather than classical mean/standard-deviation rules that are prone to masking when multiple severe anomalies are present.
+* **Appropriate Distributional Assumptions:** Avoiding the improper application of the Empirical Rule (68–95–99.7%) to skewed, bimodal (e.g., Old Faithful eruption intervals), or non-normal data; applying Chebyshev's Theorem when the distribution shape is unknown or non-normal.
+* **Integrity in Outlier Management:** Transparently identifying, documenting, and investigating outliers rather than reflexively deleting extreme observations to manipulate descriptive metrics or present an artificially clean distribution.
+* **Correlation vs. Causation:** Clearly distinguishing statistical linear association from causal relationships when communicating correlation findings ($r$) to prevent erroneous managerial interventions.

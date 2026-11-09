@@ -32,3 +32,5 @@ rsconnect/
 **/*.quarto_ipynb
 .posit
 README.html
+AGENTS.md
+sources/

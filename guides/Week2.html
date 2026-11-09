@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Eric Schmidt">
+<meta name="dcterms.date" content="2026-11-08">
+
+<title>Week 2 Study Guide</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="week2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week2_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="week2_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="week2_files/libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="week2_files/libs/quarto-html/popper.min.js"></script>
+<script src="week2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week2_files/libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week2_files/libs/bootstrap/bootstrap-7a1ba01e1618e08d8f307002997fc2d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link rel="stylesheet" href="/CumulativeStudyGuide/assets/css/style.css?v=bc02835c1438cab733e218d466001544d44a5f26">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Week 2 Study Guide</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Eric Schmidt </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 8, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="chapter-3-descriptive-statistics." class="level1">
+<h1>Chapter 3: Descriptive Statistics.</h1>
+<section id="overview-core-descriptive-framework" class="level2">
+<h2 class="anchored" data-anchor-id="overview-core-descriptive-framework">3.0 Overview &amp; Core Descriptive Framework</h2>
+<ul>
+<li><p><strong>Learning Objectives:</strong></p>
+<ol type="1">
+<li>Calculate and interpret measures of central tendency — arithmetic mean, median, mode, percentiles, and quartiles — for ungrouped business data.</li>
+<li>Compute and contrast measures of variability — range, interquartile range (<span class="math inline">\(IQR\)</span>), mean absolute deviation (MAD), variance, standard deviation, and coefficient of variation (<span class="math inline">\(CV\)</span>).</li>
+<li>Differentiate between sample statistics (<span class="math inline">\(s^2, s\)</span>) using Bessel’s correction (<span class="math inline">\(n-1\)</span>) and population parameters (<span class="math inline">\(\sigma^2, \sigma\)</span>).</li>
+<li>Apply Chebyshev’s Theorem and the Empirical Rule to assess data spread relative to the mean and standard deviation.</li>
+<li>Compute the mean, median, mode, variance, and standard deviation for grouped data using class intervals and midpoints.</li>
+<li>Characterize distribution shape using skewness, kurtosis, kernel density estimators, and box-and-whisker plots with Tukey’s outlier fences.</li>
+<li>Apply modern robust descriptive statistics (trimmed means, Winsorized variance) and recognize the masking problem inherent in classical outlier detection rules (Wilcox Ch. 2).</li>
+<li>Quantify bivariate linear association using covariance and Pearson’s product-moment correlation coefficient (<span class="math inline">\(r\)</span>).</li>
+</ol></li>
+<li><p><strong>Four Core Dimensions of Descriptive Analytics:</strong></p>
+<ul>
+<li><strong>Central Tendency:</strong> The center, typical value, or gravitational balance point of a numeric distribution (Mean, Median, Mode, Trimmed Mean).</li>
+<li><strong>Variability (Dispersion):</strong> The spread, scatter, or distance of individual observations around the central value (Range, <span class="math inline">\(IQR\)</span>, Variance, Standard Deviation, <span class="math inline">\(CV\)</span>, Winsorized Variance).</li>
+<li><strong>Distribution Shape &amp; Relative Position:</strong> The symmetry, skewness, kurtosis, percentile ranks, and presence of extreme outliers (Five-Number Summary, Tukey’s Fences, Boxplots, Kernel Density Estimation).</li>
+<li><strong>Bivariate Association:</strong> The strength and direction of linear co-movement between two continuous variables (Covariance, Pearson’s Correlation Coefficient <span class="math inline">\(r\)</span>).</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+<section id="measures-of-central-tendency-ungrouped-data" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-central-tendency-ungrouped-data">3.1 Measures of Central Tendency: Ungrouped Data</h2>
+<p>Measures of central tendency identify the center or typical value of a numerical distribution.</p>
+<ul>
+<li><p><strong>Arithmetic Mean:</strong> The arithmetic balance point of a dataset, computed by summing all values and dividing by the total count. Highly sensitive to extreme outliers.</p>
+<ul>
+<li><strong>Population Mean (<span class="math inline">\(\mu\)</span>):</strong></li>
+</ul></li>
+</ul>
+<p><span class="math display">\[\mu = \frac{\sum_{i=1}^N x_i}{N}\]</span></p>
+<ul>
+<li><strong>Sample Mean (<span class="math inline">\(\bar{x}\)</span>):</strong></li>
+</ul>
+<p><span class="math display">\[\bar{x} = \frac{\sum_{i=1}^n x_i}{n}\]</span></p>
+<ul>
+<li><p><strong>Median:</strong> The middle value in an ordered (ranked) array of data (<span class="math inline">\(x_{(1)} \le x_{(2)} \le \dots \le x_{(n)}\)</span>). Resistant and robust against extreme values.</p>
+<ul>
+<li>If <span class="math inline">\(n\)</span> is odd, the median is the value at position <span class="math inline">\(\frac{n+1}{2}\)</span>.</li>
+<li>If <span class="math inline">\(n\)</span> is even, the median is the arithmetic average of the values at positions <span class="math inline">\(\frac{n}{2}\)</span> and <span class="math inline">\(\frac{n}{2} + 1\)</span>:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[\text{Median} = \frac{x_{(n/2)} + x_{(n/2 + 1)}}{2}\]</span></p>
+<ul>
+<li><p><strong>Mode:</strong> The value that occurs with greatest frequency. Applicable to nominal, ordinal, interval, and ratio data. A dataset may be unimodal (one mode), bimodal (two modes), multimodal (multiple modes), or possess no mode if all observations are distinct.</p></li>
+<li><p><strong>Percentiles and Quartiles:</strong></p>
+<ul>
+<li><strong>Percentiles (<span class="math inline">\(P\)</span>):</strong> Divides ordered data into 100 equal parts. The location<br>
+index <span class="math inline">\(i\)</span> for the <span class="math inline">\(P\)</span>-th percentile is shown in the following formula.
+<ul>
+<li>If <span class="math inline">\(i\)</span> is not an integer, round up to the next integer.</li>
+<li>If <span class="math inline">\(i\)</span> is an integer, average the value at location <span class="math inline">\(i\)</span> and location <span class="math inline">\(i+1\)</span>.</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><span class="math display">\[i = \left(\frac{P}{100}\right) \cdot n\]</span></p>
+<ul>
+<li><strong>Quartiles:</strong> Divides ordered data into four equal parts:
+<ul>
+<li><strong>First Quartile (<span class="math inline">\(Q_1\)</span>):</strong> 25th percentile (<span class="math inline">\(P_{25}\)</span>).</li>
+<li><strong>Second Quartile (<span class="math inline">\(Q_2\)</span>):</strong> 50th percentile (Median, <span class="math inline">\(P_{50}\)</span>).</li>
+<li><strong>Third Quartile (<span class="math inline">\(Q_3\)</span>):</strong> 75th percentile (<span class="math inline">\(P_{75}\)</span>).</li>
+</ul></li>
+<li><strong>Modern Robust Location Measures (Wilcox Ch. 2):</strong>
+<ul>
+<li><strong>The 20% Trimmed Mean (<span class="math inline">\(\bar{x}_t\)</span>):</strong> While the sample mean represents zero trimming (excessively sensitive to outliers) and the median represents maximum trimming (discarding all but 1 or 2 values), the trimmed mean offers a robust compromise. For sample size <span class="math inline">\(n\)</span>, compute <span class="math inline">\(g = \lfloor 0.2n \rfloor\)</span> (rounded down to the nearest integer), trim the <span class="math inline">\(g\)</span> smallest and <span class="math inline">\(g\)</span> largest values, and compute the arithmetic average of the remaining <span class="math inline">\(n - 2g\)</span> observations:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[\bar{x}_t = \frac{\sum_{i=g+1}^{n-g} x_{(i)}}{n - 2g}\]</span></p>
+<ul>
+<li><strong>Slide Examples &amp; Source Problem Demonstrations:</strong>
+<ul>
+<li><strong>Demonstration Problem 3.1: UK Shopping Centre Sizes (Slide 6 &amp; R Supplement):</strong> Size of the 13 largest shopping centres in the United Kingdom in thousand <span class="math inline">\(\text{m}^2\)</span> (<span class="math inline">\(n = 13\)</span>): MetroCentre (190.0), Trafford Centre (180.9), Westfield Stratford (175.0), Bluewater (155.7), Liverpool One (154.0), Westfield London (149.5), Intu Merry Hill (140.8), Manchester Arndale (139.4), Meadowhall (139.4), Lakeside (133.8), St.&nbsp;David’s (130.1), Bullring (127.1), Eldon Square (125.4). <span class="math display">\[\sum x_i = 1941.1 \implies \bar{x} = \frac{1941.1}{13} = 149.32 \text{ thousand } \text{m}^2\]</span> Ranked 7th value is <span class="math inline">\(140.80\)</span>, so <span class="math inline">\(\text{Median} = 140.80\)</span>. The value <span class="math inline">\(139.40\)</span> occurs twice, yielding <span class="math inline">\(\text{Mode} = 139.40\)</span>. Quartiles: <span class="math inline">\(Q_1 = 133.80\)</span>, <span class="math inline">\(Q_3 = 175.00\)</span> (<span class="math inline">\(IQR = 41.20\)</span>).</li>
+<li><strong>Wilcox Trimmed Mean Demonstration (Figure Skating Scores, p.&nbsp;26):</strong> Nine rater scores (<span class="math inline">\(5.1, 5.3, 5.3, 5.5, 5.0, 5.1, 5.4, 4.2, 5.2\)</span>). Sample mean <span class="math inline">\(\bar{x} = 5.12\)</span>, pulled down by the single discordant rating <span class="math inline">\(4.2\)</span>. With <span class="math inline">\(n = 9\)</span>, <span class="math inline">\(g = \lfloor 0.2(9) \rfloor = 1\)</span>. Trimming the minimum (4.2) and maximum (5.5) yields an 8-observation trimmed mean <span class="math inline">\(\bar{x}_t = 5.20\)</span>, accurately capturing the judges’ consensus.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                 Dataset  n   Mean Median Trimmed_20  Mode     Q1     Q3
+1    UK Shopping Centres 13 149.32  140.8     146.41 139.4 131.95 165.35
+2 Figure Skating Ratings  9   5.12    5.2       5.20   5.1   5.05   5.35</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="measures-of-variability-ungrouped-data" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-variability-ungrouped-data">3.2 Measures of Variability: Ungrouped Data</h2>
+<p>Measures of variability quantify the dispersion, scatter, or spread of data values around their central location.</p>
+<ul>
+<li><p><strong>Range &amp; Interquartile Range (<span class="math inline">\(IQR\)</span>):</strong></p>
+<ul>
+<li><strong>Range:</strong> Difference between the highest and lowest values:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[\text{Range} = x_{\text{max}} - x_{\text{min}}\]</span></p>
+<ul>
+<li><strong>Interquartile Range (<span class="math inline">\(IQR\)</span>):</strong> Spread of the middle 50% of ordered observations:</li>
+</ul>
+<p><span class="math display">\[IQR = Q_3 - Q_1\]</span></p>
+<ul>
+<li><p><strong>Population vs.&nbsp;Sample Variance and Standard Deviation:</strong></p>
+<ul>
+<li><strong>Mean Absolute Deviation (MAD):</strong> Average absolute deviation from the mean:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[\text{MAD} = \frac{\sum_{i=1}^n |x_i - \bar{x}|}{n}\]</span></p>
+<ul>
+<li><strong>Population Variance (<span class="math inline">\(\sigma^2\)</span>):</strong></li>
+</ul>
+<p><span class="math display">\[\sigma^2 = \frac{\sum_{i=1}^N (x_i - \mu)^2}{N}\]</span></p>
+<ul>
+<li><strong>Sample Variance (<span class="math inline">\(s^2\)</span>):</strong> Uses degrees of freedom (<span class="math inline">\(n - 1\)</span>, Bessel’s correction) as an unbiased estimator of <span class="math inline">\(\sigma^2\)</span>:</li>
+</ul>
+<p><span class="math display">\[s^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n - 1} = \frac{\sum x_i^2 - \frac{(\sum x_i)^2}{n}}{n - 1}\]</span></p>
+<ul>
+<li><strong>Standard Deviation:</strong> Positive square root of variance, restoring original units of measurement:</li>
+</ul>
+<p><span class="math display">\[\sigma = \sqrt{\sigma^2}, \quad s = \sqrt{s^2}\]</span></p>
+<ul>
+<li><strong>Coefficient of Variation (<span class="math inline">\(CV\)</span>):</strong> A unitless measure of relative variability expressed as a percentage of the mean:</li>
+</ul>
+<p><span class="math display">\[CV = \left(\frac{s}{\bar{x}}\right) \times 100\% \quad \text{or} \quad \left(\frac{\sigma}{\mu}\right) \times 100\%\]</span></p>
+<ul>
+<li><p><strong>Interpreting Standard Deviation: Chebyshev’s Theorem vs.&nbsp;The Empirical Rule:</strong></p>
+<ul>
+<li><strong>Chebyshev’s Theorem (Any Distribution):</strong> For any dataset regardless of shape, and any constant <span class="math inline">\(k &gt; 1\)</span>, the proportion of values that fall within <span class="math inline">\(k\)</span> standard deviations of the mean (<span class="math inline">\(\mu \pm k\sigma\)</span>) is at least:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[1 - \frac{1}{k^2}\]</span></p>
+<pre><code>- For $k = 2$: At least $1 - \frac{1}{4} = 75\%$ of values lie within $\mu \pm 2\sigma$.
+- For $k = 3$: At least $1 - \frac{1}{9} \approx 88.89\%$ of values lie within $\mu \pm 3\sigma$.</code></pre>
+<ul>
+<li><strong>The Empirical Rule (Mound-Shaped / Bell-Shaped Normal Distributions):</strong>
+<ul>
+<li>Approximately <strong><span class="math inline">\(68\%\)</span></strong> of data points fall within <span class="math inline">\(\mu \pm 1\sigma\)</span>.</li>
+<li>Approximately <strong><span class="math inline">\(95\%\)</span></strong> of data points fall within <span class="math inline">\(\mu \pm 2\sigma\)</span>.</li>
+<li>Approximately <strong><span class="math inline">\(99.7\%\)</span></strong> of data points fall within <span class="math inline">\(\mu \pm 3\sigma\)</span>.</li>
+</ul></li>
+<li><strong>Modern Robust Dispersion: The 20% Winsorized Variance (<span class="math inline">\(s_w^2\)</span>):</strong>
+<ul>
+<li>Instead of trimming extreme observations completely, Winsorizing replaces the <span class="math inline">\(g = \lfloor 0.2n \rfloor\)</span> smallest values with <span class="math inline">\(x_{(g+1)}\)</span> and the <span class="math inline">\(g\)</span> largest values with <span class="math inline">\(x_{(n-g)}\)</span>. The Winsorized sample variance (<span class="math inline">\(s_w^2\)</span>) is computed across the transformed array <span class="math inline">\(W_1, \dots, W_n\)</span>:</li>
+</ul></li>
+</ul>
+<p><span class="math display">\[s_w^2 = \frac{\sum_{i=1}^n (W_i - \bar{W})^2}{n - 1}\]</span></p>
+<p>Unlike the classical sample variance <span class="math inline">\(s^2\)</span>, <span class="math inline">\(s_w^2\)</span> does not artificially balloon when an outlier shifts farther into the extreme tails, providing a stable foundation for robust inferential procedures.</p>
+<ul>
+<li><strong>Slide Examples &amp; Source Problem Demonstrations:</strong>
+<ul>
+<li><strong>Ken Black Slide 15 &amp; R Supplement (Top 15 U.S. Trading Partners in Exports, 2014):</strong> Exports in billions of dollars (<span class="math inline">\(n = 15\)</span>): Canada (312.4), Mexico (240.2), China (123.7), Japan (66.8), UK (53.8), Germany (49.4), South Korea (44.5), Netherlands (43.1), Brazil (42.4), Hong Kong (40.9), Belgium (34.8), France (31.3), Singapore (30.2), Taiwan (26.7), Switzerland (22.2). <span class="math display">\[\text{Range} = 312.4 - 22.2 = 290.2 \text{ billion dollars}\]</span> <span class="math display">\[Q_1 = 33.05, \quad Q_3 = 95.25 \implies IQR = 62.20 \text{ billion dollars}\]</span> <span class="math display">\[\bar{x} = 77.49, \quad \text{MAD} = 65.41, \quad s^2 = 7215.82 \implies s = \$84.95 \text{ billion}\]</span></li>
+<li><strong>Ken Black Slide 23–24: Accounting Firm Partners Sample Data:</strong> Six largest accounting firms report <span class="math inline">\(88, 75, 45, 37, 24, 21\)</span> partners (<span class="math inline">\(n = 6\)</span>). <span class="math display">\[\bar{x} = \frac{290}{6} = 48.33 \text{ partners}, \quad SS = 3607.33\]</span> <span class="math display">\[s^2 = \frac{3607.33}{6 - 1} = 721.47 \implies s = \sqrt{721.47} = 26.86 \text{ partners}\]</span> <span class="math display">\[CV = \left(\frac{26.86}{48.33}\right) \times 100\% = 55.58\%\]</span></li>
+<li><strong>Wilcox Winsorized Variance Demonstration (p.&nbsp;28):</strong> Observations <span class="math inline">\(1, 2, 8, 9, 10, 16, 18, 22, 27, 29, 35, 42\)</span> (<span class="math inline">\(n = 12, g = 2\)</span>). Winsorized values: <span class="math inline">\(8, 8, 8, 9, 10, 16, 18, 22, 27, 29, 29, 29\)</span> (<span class="math inline">\(\bar{W} = 17.75\)</span>). <span class="math display">\[s_w^2 = \frac{\sum (W_i - 17.75)^2}{12 - 1} = 82.57 \implies s_w = 9.09\]</span> Classical sample variance is <span class="math inline">\(s^2 = 170.57\)</span>. If the largest value is increased from 42 to 60, classical <span class="math inline">\(s^2\)</span> surges to <span class="math inline">\(275.30\)</span>, whereas <span class="math inline">\(s_w^2\)</span> remains completely unchanged at <span class="math inline">\(82.57\)</span>.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                   Dataset  Mean Range   MAD Sample_Variance Sample_StdDev
+1   Top 15 US Exports ($B) 77.49 290.2 59.18         7280.51         85.33
+2 Accounting Firm Partners 48.33  67.0 22.11          752.67         27.43
+  Winsorized_Var CV_Pct
+1         202.42 110.11
+2         545.87  56.76</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="measures-of-central-tendency-and-variability-grouped-data" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-central-tendency-and-variability-grouped-data">3.3 Measures of Central Tendency and Variability: Grouped Data</h2>
+<p>When raw micro-level observations are unavailable and data are presented solely in grouped frequency distributions, class midpoints (<span class="math inline">\(M_i\)</span>) serve as representative values for all frequencies within each interval.</p>
+<ul>
+<li><strong>Class Midpoint (Class Mark, <span class="math inline">\(M_i\)</span>):</strong></li>
+</ul>
+<p><span class="math display">\[M_i = \frac{\text{Lower Boundary}_i + \text{Upper Boundary}_i}{2}\]</span></p>
+<ul>
+<li><strong>Grouped Mean (<span class="math inline">\(\bar{x}_{\text{grouped}}\)</span>):</strong></li>
+</ul>
+<p><span class="math display">\[\bar{x} = \frac{\sum_{i=1}^k f_i M_i}{n} \quad \text{where } n = \sum_{i=1}^k f_i\]</span></p>
+<ul>
+<li><strong>Grouped Sample Variance (<span class="math inline">\(s_{\text{grouped}}^2\)</span>) &amp; Standard Deviation (<span class="math inline">\(s_{\text{grouped}}\)</span>):</strong></li>
+</ul>
+<p><span class="math display">\[s^2 = \frac{\sum_{i=1}^k f_i (M_i - \bar{x})^2}{n - 1} = \frac{\sum f_i M_i^2 - \frac{(\sum f_i M_i)^2}{n}}{n - 1}, \quad s = \sqrt{s^2}\]</span></p>
+<ul>
+<li><strong>Grouped Median:</strong> Evaluates the cumulative frequency (<span class="math inline">\(cf\)</span>) to locate the median class containing observation <span class="math inline">\(n/2\)</span>:</li>
+</ul>
+<p><span class="math display">\[\text{Median} = L + \left[\frac{\frac{n}{2} - cf_{p}}{f_{\text{median}}}\right] \cdot w\]</span></p>
+<p>where <span class="math inline">\(L\)</span> is the lower class boundary of the median interval, <span class="math inline">\(cf_p\)</span> is the cumulative frequency of the preceding interval, <span class="math inline">\(f_{\text{median}}\)</span> is the frequency of the median class, and <span class="math inline">\(w\)</span> is the class width.</p>
+<ul>
+<li><strong>Slide Examples &amp; Source Problem Demonstrations:</strong>
+<ul>
+<li><strong>Ken Black Slides 27–32: Canadian Unemployment Rates Grouped Distribution (<span class="math inline">\(n = 60\)</span>):</strong>
+<ul>
+<li><code>[1, 3)</code>: <span class="math inline">\(M = 2, f = 4 \implies fM = 8\)</span></li>
+<li><code>[3, 5)</code>: <span class="math inline">\(M = 4, f = 12 \implies fM = 48\)</span></li>
+<li><code>[5, 7)</code>: <span class="math inline">\(M = 6, f = 13 \implies fM = 78\)</span></li>
+<li><code>[7, 9)</code>: <span class="math inline">\(M = 8, f = 19 \implies fM = 152\)</span></li>
+<li><code>[9, 11)</code>: <span class="math inline">\(M = 10, f = 7 \implies fM = 70\)</span></li>
+<li><code>[11, 13)</code>: <span class="math inline">\(M = 12, f = 5 \implies fM = 60\)</span> <span class="math display">\[\sum f_i = 60, \quad \sum f_i M_i = 416 \implies \bar{x} = \frac{416}{60} = 6.93\%\]</span> <span class="math display">\[\sum f_i (M_i - 6.93)^2 = 427.73 \implies s^2 = \frac{427.73}{59} = 7.25 \implies s = 2.69\%\]</span></li>
+</ul></li>
+<li><strong>Chapter 3 Practice Problem Grouped Distribution (Questions 11 &amp; 32–35):</strong> Class intervals from <code>[2, 4)</code> to <code>[12, 14)</code> (<span class="math inline">\(n = 58\)</span>): Grouped <span class="math inline">\(\bar{x} = 7.72\)</span>, <span class="math inline">\(s^2 = 7.54\)</span>, <span class="math inline">\(\sigma = 2.72\)</span>, <span class="math inline">\(\text{Mode} = 9.00\)</span>, and Grouped <span class="math inline">\(\text{Median} = 7.7143\)</span>.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                               Dataset Total_n Grouped_Mean Grouped_Variance
+1 Canadian Unemployment (Ch. 3 Slides)      60       6.9333           7.2497
+2               Practice Problem 32-35      58       7.7241           7.5366
+  Grouped_StdDev
+1         2.6925
+2         2.7453</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="measures-of-shape-outlier-detection" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-shape-outlier-detection">3.4 Measures of Shape &amp; Outlier Detection</h2>
+<p>Distribution shape describes how observations are distributed across the measurement range relative to the central value.</p>
+<ul>
+<li><p><strong>Distribution Skewness:</strong></p>
+<ul>
+<li><strong>Symmetric:</strong> Observations are evenly balanced on both sides of center (<span class="math inline">\(\text{Mean} \approx \text{Median} \approx \text{Mode}\)</span>). Skewness <span class="math inline">\(\approx 0\)</span>.</li>
+<li><strong>Positively Skewed (Right-Skewed):</strong> Extended tail to the right; extreme high observations pull the mean upward (<span class="math inline">\(\text{Mean} &gt; \text{Median} &gt; \text{Mode}\)</span>).</li>
+<li><strong>Negatively Skewed (Left-Skewed):</strong> Extended tail to the left; extreme low observations pull the mean downward (<span class="math inline">\(\text{Mean} &lt; \text{Median} &lt; \text{Mode}\)</span>).</li>
+<li><strong>Pearsonian Coefficient of Skewness (<span class="math inline">\(S_k\)</span>):</strong></li>
+</ul></li>
+</ul>
+<p><span class="math display">\[S_k = \frac{3(\bar{x} - \text{Median})}{s}\]</span></p>
+<ul>
+<li><p><strong>Kurtosis:</strong> Measures the peakedness, tail heaviness, and outlier propensity of a distribution relative to a normal curve:</p>
+<ul>
+<li><strong>Leptokurtic:</strong> Sharp, narrow peak with heavy tails (higher probability of outliers).</li>
+<li><strong>Mesokurtic:</strong> Standard mound-shaped normal distribution.</li>
+<li><strong>Platykurtic:</strong> Broad, flat peak with light tails.</li>
+</ul></li>
+<li><p><strong>Tukey’s Five-Number Summary &amp; Box-and-Whisker Plots:</strong></p>
+<p>Five positional anchors: <span class="math inline">\(\text{Minimum}, Q_1, \text{Median } (Q_2), Q_3, \text{Maximum}\)</span>.</p>
+<ul>
+<li><strong>Inner Fences (Mild Outlier Cutoffs):</strong> <span class="math display">\[\text{Lower Inner Fence} = Q_1 - 1.5(IQR), \quad \text{Upper Inner Fence} = Q_3 + 1.5(IQR)\]</span></li>
+<li><strong>Outer Fences (Extreme Outlier Cutoffs):</strong> <span class="math display">\[\text{Lower Outer Fence} = Q_1 - 3.0(IQR), \quad \text{Upper Outer Fence} = Q_3 + 3.0(IQR)\]</span></li>
+<li><strong>Adjacent Values (Whiskers):</strong> Whiskers terminate at the most extreme data values <em>inside</em> the inner fences. Individual points plotted beyond the inner fences represent mild outliers; points beyond the outer fences represent extreme outliers.</li>
+</ul></li>
+<li><p><strong>Wilcox on Outlier Detection: The Masking Problem (Chapter 2, pp.&nbsp;23–24):</strong></p>
+<ul>
+<li>Classical outlier rules flag observations as outliers if <span class="math inline">\(|x_i - \bar{x}| / s \ge 2\)</span> (or 3).</li>
+<li><strong>Masking Failure:</strong> Because both the sample mean <span class="math inline">\(\bar{x}\)</span> and sample standard deviation <span class="math inline">\(s\)</span> are sensitive to extreme values, the very presence of multiple outliers artificially inflates <span class="math inline">\(s\)</span> so severely that the test statistic shrinks below the threshold, masking the outliers!</li>
+<li><strong>Example from Wilcox (p.&nbsp;23):</strong> Dataset <span class="math inline">\(2, 2, 3, 3, 3, 4, 4, 4, 100000, 100000\)</span>. <span class="math display">\[\bar{x} = 20002.5, \quad s = 42162.38 \implies \frac{|100000 - 20002.5|}{42162.38} = 1.897 &lt; 2\]</span> The classic rule declares <strong>zero</strong> outliers, completely missing two obvious anomalies! Even if the values are increased to <span class="math inline">\(10,000,000\)</span>, masking prevents detection.</li>
+<li><strong>The Boxplot Solution:</strong> Because <span class="math inline">\(Q_1 = 3\)</span>, <span class="math inline">\(Q_3 = 4\)</span>, and <span class="math inline">\(IQR = 1\)</span> are resistant to extreme observations, the upper fence is <span class="math inline">\(4 + 1.5(1) = 5.5\)</span>. The boxplot rule effortlessly flags both <span class="math inline">\(100000\)</span> values without suffering from masking.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week2_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                            Method       Test_Metric       Outliers_Identified
+1  Classic z-Score Rule (|z| &gt;= 2)   Max |z| = 1.897             None (Masked)
+2 Tukey Boxplot Rule (Fence = 5.5) Upper Fence = 5.5 100000, 100000 (Detected)</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="measures-of-association-pearsons-correlation-coefficient" class="level2">
+<h2 class="anchored" data-anchor-id="measures-of-association-pearsons-correlation-coefficient">3.5 Measures of Association: Pearson’s Correlation Coefficient</h2>
+<p>Measures of association describe the direction and strength of linear covariation between two numeric variables.</p>
+<ul>
+<li><strong>Sample Covariance (<span class="math inline">\(s_{xy}\)</span>):</strong> Measures average joint deviation from sample means:</li>
+</ul>
+<p><span class="math display">\[s_{xy} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{n - 1}\]</span></p>
+<ul>
+<li><strong>Pearson Product-Moment Correlation Coefficient (<span class="math inline">\(r\)</span>):</strong> Standardizes covariance into a scale-independent index of linear association:</li>
+</ul>
+<p><span class="math display">\[r = \frac{s_{xy}}{s_x s_y} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2} \sqrt{\sum_{i=1}^n (y_i - \bar{y})^2}}\]</span></p>
+<ul>
+<li><strong>Properties and Limitations:</strong>
+<ul>
+<li>Bounded: <span class="math inline">\(-1.00 \le r \le +1.00\)</span>.</li>
+<li>Direction: Positive indicates direct co-movement; negative indicates inverse co-movement.</li>
+<li>Evaluates linear relationships exclusively; non-linear associations can yield <span class="math inline">\(r \approx 0\)</span>. Correlation does not establish causation.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week2_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    Sample_r t_Statistic df p_Value CI_Lower CI_Upper
+cor   0.9918     15.5431  4   1e-04   0.9241   0.9991</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="applied-analysis-of-course-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="applied-analysis-of-course-datasets">3.6 Applied Analysis of Course Datasets</h2>
+<p>Following the curriculum specifications from the Course Solutions Guide (<code>Lesson_03_Descriptive_Statistics_Solutions.pdf</code>), four real-world datasets illustrate applied descriptive analysis in R:</p>
+<ol type="1">
+<li><strong>EPA Vehicle Mileage Data (<code>data/mileage.csv</code>):</strong> Analysis of 60 passenger cars across weight classes C1 through C6. Computes class-specific mean and standard deviation for fuel economy (<code>MPG</code>) and horsepower (<code>HP</code>).</li>
+<li><strong>Shopper Dollar Spending Data (<code>data/shoppers.csv</code>):</strong> Analysis of 50 shoppers visiting a retail store in a single day, examining positive skewness across location, dispersion, and percentile metrics.</li>
+<li><strong>Presidential Inauguration Ages &amp; Candidate Heights (<code>data/pontus.csv</code>):</strong> Evaluates ages and candidate heights, resolving why the difference between group means differs from the average of pairwise election differences.</li>
+<li><strong>Old Faithful Geyser Eruption Intervals (<code>data/geyser.csv</code>):</strong> Compares eruption intervals across two consecutive weeks (<code>WEEK1</code> and <code>WEEK2</code>), highlighting temporal consistency and marked <strong>bimodality</strong>.</li>
+</ol>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>  CLASS Mean_MPG SD_MPG Mean_HP SD_HP
+1    C1    39.68   1.36   89.22  7.05
+2    C2    35.55   0.53   92.00  9.09
+3    C3    32.02   0.63  103.50 12.77
+4    C4    29.66   2.11  123.83 25.67
+5    C5    23.85   0.77  171.58 45.35
+6    C6    19.19   2.70  224.71 74.02</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        Value
+Mean    25.44
+Median  20.74
+Range   61.53
+StdDev  15.21
+Var    231.33
+Q1      14.39
+Q3      33.66
+P10     10.18</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       Value
+Mean   54.76
+Median 54.50
+Range  27.00
+StdDev  6.56
+Var    43.05
+Q1     51.00
+Q3     57.75
+P10    46.70</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week2_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         WEEK1 WEEK2
+Min.     43.00 45.00
+1st Qu.  58.75 63.25
+Median   75.00 76.00
+Mean     71.62 72.76
+3rd Qu.  82.00 81.25
+Max.    108.00 94.00</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week2_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="quick-reference-summary-table" class="level2">
+<h2 class="anchored" data-anchor-id="quick-reference-summary-table">Quick Reference Summary Table</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Descriptive Dimension</th>
+<th style="text-align: left;">Metric / Tool</th>
+<th style="text-align: left;">Mathematical Definition / Formula</th>
+<th style="text-align: left;">Distributional Properties</th>
+<th style="text-align: left;">R Function</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Central Location</strong></td>
+<td style="text-align: left;">Arithmetic Mean (<span class="math inline">\(\bar{x}\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(\bar{x} = \frac{\sum x_i}{n}\)</span></td>
+<td style="text-align: left;">Highly sensitive to outliers &amp; skewness</td>
+<td style="text-align: left;"><code>mean(x)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Central Location</strong></td>
+<td style="text-align: left;">Median</td>
+<td style="text-align: left;">Middle value in ordered array (<span class="math inline">\(x_{(n/2)}\)</span> average)</td>
+<td style="text-align: left;">Robust / resistant to extreme values</td>
+<td style="text-align: left;"><code>median(x)</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Central Location</strong></td>
+<td style="text-align: left;">Mode</td>
+<td style="text-align: left;">Value with greatest absolute frequency</td>
+<td style="text-align: left;">Unaffected by outliers; applies to all data levels</td>
+<td style="text-align: left;"><code>table(x)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Robust Location</strong></td>
+<td style="text-align: left;">20% Trimmed Mean (<span class="math inline">\(\bar{x}_t\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(\bar{x}_t = \frac{\sum x_{(i)}}{n - 2g}, \; g = \lfloor 0.2n \rfloor\)</span></td>
+<td style="text-align: left;">Balances outlier resistance and statistical efficiency</td>
+<td style="text-align: left;"><code>mean(x, trim = 0.2)</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Relative Location</strong></td>
+<td style="text-align: left;">Percentiles / Quartiles</td>
+<td style="text-align: left;">Location <span class="math inline">\(i = \left(\frac{P}{100}\right) \cdot n\)</span>; <span class="math inline">\(IQR = Q_3 - Q_1\)</span></td>
+<td style="text-align: left;">Positional; robust against extreme values</td>
+<td style="text-align: left;"><code>quantile(x, probs, type = 6)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Variability</strong></td>
+<td style="text-align: left;">Sample Variance (<span class="math inline">\(s^2\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(s^2 = \frac{\sum (x_i - \bar{x})^2}{n - 1}\)</span></td>
+<td style="text-align: left;">Unbiased estimator using Bessel’s <span class="math inline">\(n-1\)</span> correction</td>
+<td style="text-align: left;"><code>var(x)</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Variability</strong></td>
+<td style="text-align: left;">Standard Deviation (<span class="math inline">\(s\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(s = \sqrt{s^2}\)</span></td>
+<td style="text-align: left;">Original data units; sensitive to outliers</td>
+<td style="text-align: left;"><code>sd(x)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Robust Dispersion</strong></td>
+<td style="text-align: left;">Winsorized Variance (<span class="math inline">\(s_w^2\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(s_w^2 = \frac{\sum (W_i - \bar{W})^2}{n - 1}\)</span></td>
+<td style="text-align: left;">Resists outlier inflation in extreme tails</td>
+<td style="text-align: left;">Custom <code>calc_winsorized_var()</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Relative Spread</strong></td>
+<td style="text-align: left;">Coefficient of Variation (<span class="math inline">\(CV\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(CV = \left(\frac{s}{\bar{x}}\right) \times 100\%\)</span></td>
+<td style="text-align: left;">Normalized dispersion; requires ratio scale data</td>
+<td style="text-align: left;"><code>(sd(x) / mean(x)) * 100</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Grouped Analytics</strong></td>
+<td style="text-align: left;">Grouped Mean &amp; Variance</td>
+<td style="text-align: left;"><span class="math inline">\(\bar{x} = \frac{\sum f_i M_i}{n}, \; s^2 = \frac{\sum f_i(M_i - \bar{x})^2}{n-1}\)</span></td>
+<td style="text-align: left;">Approximates ungrouped parameters from midpoints</td>
+<td style="text-align: left;">Formulaic / <code>cut()</code>, <code>table()</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Dispersion Bound</strong></td>
+<td style="text-align: left;">Chebyshev’s Theorem</td>
+<td style="text-align: left;">At least <span class="math inline">\(1 - 1/k^2\)</span> within <span class="math inline">\(\mu \pm k\sigma\)</span></td>
+<td style="text-align: left;">Distribution-free; holds for any dataset (<span class="math inline">\(k &gt; 1\)</span>)</td>
+<td style="text-align: left;">N/A (formulaic)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Mound-Shaped Spread</strong></td>
+<td style="text-align: left;">Empirical Rule</td>
+<td style="text-align: left;"><span class="math inline">\(68\%\)</span> (<span class="math inline">\(1\sigma\)</span>), <span class="math inline">\(95\%\)</span> (<span class="math inline">\(2\sigma\)</span>), <span class="math inline">\(99.7\%\)</span> (<span class="math inline">\(3\sigma\)</span>)</td>
+<td style="text-align: left;">Requires symmetrical, bell-shaped distribution</td>
+<td style="text-align: left;"><code>pnorm()</code>, <code>qnorm()</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Outlier Detection</strong></td>
+<td style="text-align: left;">Tukey’s Fences</td>
+<td style="text-align: left;">Inner: <span class="math inline">\(Q_{1,3} \pm 1.5(IQR)\)</span>; Outer: <span class="math inline">\(Q_{1,3} \pm 3.0(IQR)\)</span></td>
+<td style="text-align: left;">Robust; prevents masking of extreme values</td>
+<td style="text-align: left;"><code>boxplot(x, horizontal = TRUE)</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Bivariate Association</strong></td>
+<td style="text-align: left;">Pearson’s Correlation (<span class="math inline">\(r\)</span>)</td>
+<td style="text-align: left;"><span class="math inline">\(r = \frac{\sum (x - \bar{x})(y - \bar{y})}{\sqrt{\sum (x - \bar{x})^2 \sum (y - \bar{y})^2}}\)</span></td>
+<td style="text-align: left;">Measures linear association; sensitive to outliers</td>
+<td style="text-align: left;"><code>cor(x, y)</code>, <code>cor.test(x, y)</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+<section id="ethical-considerations-in-descriptive-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="ethical-considerations-in-descriptive-analysis">Ethical Considerations in Descriptive Analysis</h2>
+<ul>
+<li><strong>Selective Central Tendency Reporting:</strong> Responsibly selecting and reporting the median or trimmed mean alongside or in place of the mean when analyzing highly skewed distributions (e.g., executive salaries, home sale prices) to prevent conveying a distorted perception of typical experience.</li>
+<li><strong>Always Reporting Dispersion Alongside Central Tendency:</strong> Presenting measures of variability (standard deviation, <span class="math inline">\(IQR\)</span>, or range) alongside central tendency to ensure decision makers understand the underlying uncertainty and risk, rather than presuming uniformity.</li>
+<li><strong>Avoiding Masking in Outlier Screening:</strong> Relying on robust outlier detection procedures (Tukey’s fences) rather than classical mean/standard-deviation rules that are prone to masking when multiple severe anomalies are present.</li>
+<li><strong>Appropriate Distributional Assumptions:</strong> Avoiding the improper application of the Empirical Rule (68–95–99.7%) to skewed, bimodal (e.g., Old Faithful eruption intervals), or non-normal data; applying Chebyshev’s Theorem when the distribution shape is unknown or non-normal.</li>
+<li><strong>Integrity in Outlier Management:</strong> Transparently identifying, documenting, and investigating outliers rather than reflexively deleting extreme observations to manipulate descriptive metrics or present an artificially clean distribution.</li>
+<li><strong>Correlation vs.&nbsp;Causation:</strong> Clearly distinguishing statistical linear association from causal relationships when communicating correlation findings (<span class="math inline">\(r\)</span>) to prevent erroneous managerial interventions.</li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
