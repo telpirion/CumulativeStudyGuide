@@ -2,6 +2,15 @@
 title: "Week 1 Study Guide"
 author: "Eric Schmidt"
 date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
 output:
   html_document:
     toc: true
