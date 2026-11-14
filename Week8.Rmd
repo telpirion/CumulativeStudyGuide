@@ -1,0 +1,214 @@
+---
+title: "Week 8 Statistics Study Guide: ANOVA & Simple Linear Regression"
+subtitle: "Ken Black, Business Statistics (Chapter 11 & Chapter 12, Sections 1–3)"
+author: "Statistics Study Guide"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+```
+
+# Overview & Learning Objectives
+
+The Week 8 readings cover **Chapter 11 (Analysis of Variance)** and **Chapter 12, Sections 1–3 (Simple Linear Regression)** from Ken Black's *Business Statistics*. By the end of this module, you should be able to:
+
+1. Understand the logic of **Analysis of Variance (ANOVA)** and why multiple $t$-tests inflate Type I error ($\alpha$).
+2. Conduct and interpret a **One-Way ANOVA** (completely randomized design), including constructing the ANOVA summary table and calculating the $F$-statistic.
+3. Perform **multiple comparison tests** (Tukey's HSD) when the null hypothesis in ANOVA is rejected.
+4. Distinguish between **Randomized Block Designs** and **Two-Way ANOVA** (factorial designs with interaction effects).
+5. Formulate a **Simple Linear Regression** model, compute **Ordinary Least Squares (OLS)** slope and intercept estimates, and interpret their business meaning.
+6. Partition total variation into $SSR$, $SSE$, and $SST$ to compute the **Coefficient of Determination ($R^2$)** and the **Standard Error of the Estimate ($s_e$)**.
+
+---
+
+# Chapter 11: Analysis of Variance (ANOVA)
+
+ANOVA is a statistical technique used to test whether the means of **three or more populations** are equal by analyzing sample variances.
+
+## Why Not Multiple $t$-Tests?
+
+If you want to compare $k = 4$ group means, there are $\binom{4}{2} = 6$ pairwise comparisons. Conducting each test at $\alpha = 0.05$ compounds the experiment-wise Type I error rate:
+$$\alpha_{\text{overall}} = 1 - (1 - \alpha)^c$$
+For $c = 6$ comparisons, $\alpha_{\text{overall}} = 1 - (0.95)^6 \approx 0.265$ (a $26.5\%$ chance of at least one false positive). ANOVA tests all means simultaneously at a single $\alpha$ level.
+
+## One-Way ANOVA (Completely Randomized Design)
+
+### Hypotheses & Assumptions
+* **Null Hypothesis ($H_0$):** $\mu_1 = \mu_2 = \dots = \mu_k$ (All population means are equal).
+* **Alternative Hypothesis ($H_a$):** At least one population mean differs from the others.
+* **Assumptions:**
+  1. Observations are independent within and across groups.
+  2. Populations are normally distributed.
+  3. **Homoscedasticity:** Population variances are equal ($\sigma_1^2 = \sigma_2^2 = \dots = \sigma_k^2$).
+
+### Partitioning Sum of Squares
+Total variability in the data ($SST$) is partitioned into variability *between* treatment groups ($SSC$) and variability *within* treatment groups ($SSE$):
+
+$$SST = SSC + SSE$$
+
+* **Sum of Squares Between Columns / Treatments ($SSC$):**
+  $$SSC = \sum_{j=1}^{k} n_j (\bar{x}_j - \bar{\bar{x}})^2$$
+* **Sum of Squares Error / Within ($SSE$):**
+  $$SSE = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (x_{ij} - \bar{x}_j)^2$$
+* **Total Sum of Squares ($SST$):**
+  $$SST = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (x_{ij} - \bar{\bar{x}})^2$$
+
+*(where $k$ is the number of groups, $n_j$ is the sample size of group $j$, $N = \sum n_j$ is total observations, $\bar{x}_j$ is the group mean, and $\bar{\bar{x}}$ is the grand mean).*
+
+### One-Way ANOVA Summary Table
+
+| Source of Variation | Sum of Squares ($SS$) | Degrees of Freedom ($df$) | Mean Square ($MS$) | $F$-Ratio |
+|---|---|---|---|---|
+| **Between (Treatments)** | $SSC$ | $k - 1$ | $MSC = \frac{SSC}{k - 1}$ | $F = \frac{MSC}{MSE}$ |
+| **Within (Error)** | $SSE$ | $N - k$ | $MSE = \frac{SSE}{N - k}$ | |
+| **Total** | $SST$ | $N - 1$ | | |
+
+* **Decision Rule:** Reject $H_0$ if $F > F_{\alpha, \, df_1 = k-1, \, df_2 = N-k}$ (or if $p\text{-value} < \alpha$). Note that ANOVA $F$-tests are always **right-tailed**.
+
+## Multiple Comparisons (Post-Hoc Analysis)
+
+If $H_0$ is rejected, ANOVA tells us *that* a difference exists, not *where* it exists. **Tukey's Honestly Significant Difference (HSD)** tests all pairwise differences $|\bar{x}_i - \bar{x}_j|$ against a critical range (for equal sample sizes $n$):
+
+$$\text{HSD} = q_{\alpha, \, k, \, N-k} \sqrt{\frac{MSE}{n}}$$
+
+where $q$ is obtained from the Studentized Range Distribution table. If $|\bar{x}_i - \bar{x}_j| > \text{HSD}$, the two group means differ significantly.
+
+## Randomized Block Design & Two-Way ANOVA
+
+* **Randomized Block Design (Section 11.3):** Controls for an extraneous source of variation (a **blocking variable**, such as store location or shift) by partitioning $SST$ into three components:
+  $$SST = SSC + SSB + SSE$$
+  where $SSB$ is the Sum of Squares for Blocks ($df_{\text{blocks}} = b - 1$, $df_{\text{error}} = (k-1)(b-1)$).
+* **Two-Way ANOVA / Factorial Design (Section 11.4):** Examines the simultaneous effects of **two independent categorical factors** (Factor A and Factor B) plus their **interaction effect ($A \times B$)**:
+  $$SST = SSA + SSB + SS_{AB} + SSE$$
+  * *Interaction Effect:* Occurs when the effect of one factor on the response variable depends on the level of the second factor. Always test the interaction term first before interpreting main effects.
+
+```{r anova-example}
+# Sample business scenario: Sales ($1000s) across 3 store display designs
+display_data <- data.frame(
+  design = factor(rep(c("Endcap", "Aisle", "Checkout"), each = 5)),
+  sales  = c(42, 45, 40, 46, 44,   # Endcap
+             35, 38, 34, 37, 36,   # Aisle
+             50, 54, 49, 52, 55)   # Checkout
+)
+
+# Run One-Way ANOVA
+anova_model <- aov(sales ~ design, data = display_data)
+summary(anova_model)
+
+# Post-hoc Tukey HSD pairwise comparisons
+TukeyHSD(anova_model, conf.level = 0.95)
+```
+
+---
+
+# Chapter 12 (Sections 1–3): Simple Linear Regression
+
+Simple linear regression models the linear relationship between a single **independent (predictor) variable ($X$)** and a **dependent (response) variable ($Y$)**.
+
+## Correlation vs. Regression (Section 12.1)
+
+* **Correlation ($r$):** Measures the *strength and direction* of a linear association symmetrically ($X$ and $Y$ are interchangeable).
+* **Regression:** Establishes a directional functional equation to *predict* $Y$ from $X$ and quantify how much $Y$ changes per unit change in $X$.
+
+### Population vs. Sample Regression Model
+* **Population Regression Model:**
+  $$Y_i = \beta_0 + \beta_1 X_i + \epsilon_i$$
+  where $\beta_0$ is the population $Y$-intercept, $\beta_1$ is the population slope, and $\epsilon_i$ is the random error term.
+* **Estimated Sample Regression Line:**
+  $$\hat{y}_i = b_0 + b_1 x_i$$
+  where $\hat{y}_i$ is the predicted value of $Y$, $b_0$ is the sample intercept, and $b_1$ is the sample slope.
+
+## Determining the Equation of the Regression Line (Section 12.2)
+
+The **Ordinary Least Squares (OLS)** method finds $b_0$ and $b_1$ by minimizing the **Sum of Squared Errors (Residuals)**:
+$$\min \sum_{i=1}^{n} e_i^2 = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$
+
+### OLS Formulas
+* **Sample Slope ($b_1$):**
+  $$b_1 = \frac{SS_{xy}}{SS_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2} = \frac{\sum x_i y_i - \frac{(\sum x_i)(\sum y_i)}{n}}{\sum x_i^2 - \frac{(\sum x_i)^2}{n}}$$
+* **Sample $Y$-Intercept ($b_0$):**
+  $$b_0 = \bar{y} - b_1 \bar{x}$$
+
+### Business Interpretation
+* **$b_1$ (Slope):** For every $1$-unit increase in $X$, $Y$ is predicted to change by $b_1$ units on average.
+* **$b_0$ (Intercept):** The predicted value of $Y$ when $X = 0$ (only meaningful if $X = 0$ falls within the relevant scope of the data).
+
+## Residual Analysis & Standard Error of the Estimate (Section 12.3)
+
+### Line Assumptions (LINE)
+1. **L**inearity: The relationship between $X$ and $Y$ is linear.
+2. **I**ndependence: Residuals ($\epsilon_i$) are independent of one another.
+3. **N**ormality: For any given $X$, the residuals are normally distributed with mean $0$.
+4. **E**qual Variance (Homoscedasticity): The variance of residuals ($\sigma_\epsilon^2$) is constant across all values of $X$.
+
+### Partitioning Variance & Goodness of Fit
+Just like ANOVA, regression partitions total variation in $Y$ ($SST$) into explained variation ($SSR$) and unexplained variation ($SSE$):
+
+$$SST = SSR + SSE$$
+
+* **Total Sum of Squares ($SST$):** $\sum (y_i - \bar{y})^2$
+* **Regression Sum of Squares ($SSR$):** $\sum (\hat{y}_i - \bar{y})^2$
+* **Error Sum of Squares ($SSE$):** $\sum (y_i - \hat{y}_i)^2$
+
+### Key Fit Metrics
+1. **Standard Error of the Estimate ($s_e$):** Measures the typical dispersion of observed data points around the regression line (in the units of $Y$):
+   $$s_e = \sqrt{\frac{SSE}{n - 2}}$$
+   *(Note: $df = n - 2$ because two parameters, $b_0$ and $b_1$, are estimated).*
+
+2. **Coefficient of Determination ($R^2$):** Represents the proportion of total variation in $Y$ explained by $X$:
+   $$R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}$$
+   * Bounds: $0 \le R^2 \le 1$. In simple linear regression, $R^2 = r^2$.
+
+```{r regression-example, fig.height=4, fig.width=6}
+# Sample business scenario: Ad Spend ($100s) vs. Weekly Revenue ($1000s)
+ad_data <- data.frame(
+  ad_spend = c(2, 4, 5, 6, 8, 10, 11, 14),
+  revenue  = c(15, 22, 24, 29, 34, 41, 43, 52)
+)
+
+# Fit Simple Linear Regression model
+reg_model <- lm(revenue ~ ad_spend, data = ad_data)
+summary(reg_model)
+
+# Extract key metrics
+b0 <- coef(reg_model)[1]
+b1 <- coef(reg_model)[2]
+r_sq <- summary(reg_model)$r.squared
+s_e  <- summary(reg_model)$sigma
+
+cat(sprintf("Regression Equation: Revenue_hat = %.2f + %.2f * Ad_Spend\n", b0, b1))
+cat(sprintf("R-squared: %.4f | Standard Error (s_e): %.4f\n", r_sq, s_e))
+
+# Visualize regression line and residuals
+ggplot(ad_data, aes(x = ad_spend, y = revenue)) +
+  geom_point(color = "darkblue", size = 3) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Simple Linear Regression: Ad Spend vs. Revenue",
+       x = "Ad Spend ($100s)",
+       y = "Weekly Revenue ($1000s)") +
+  theme_minimal()
+```
+
+---
+
+# Week 8 Key Formula Summary Sheet
+
+| Concept / Metric | Formula | Notes |
+|---|---|---|
+| **Experiment-Wise Error** | $\alpha_{\text{overall}} = 1 - (1 - \alpha)^c$ | $c = \frac{k(k-1)}{2}$ pairwise comparisons |
+| **One-Way ANOVA $F$-Stat** | $F = \frac{MSC}{MSE} = \frac{SSC / (k - 1)}{SSE / (N - k)}$ | Always right-tailed |
+| **Tukey's HSD** | $\text{HSD} = q_{\alpha, \, k, \, N-k} \sqrt{\frac{MSE}{n}}$ | Equal group sizes $n$ |
+| **OLS Slope ($b_1$)** | $b_1 = \frac{SS_{xy}}{SS_{xx}} = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2}$ | Marginal change in $\hat{y}$ per unit $x$ |
+| **OLS Intercept ($b_0$)** | $b_0 = \bar{y} - b_1 \bar{x}$ | Line always passes through $(\bar{x}, \bar{y})$ |
+| **Standard Error ($s_e$)** | $s_e = \sqrt{\frac{SSE}{n - 2}}$ | Standard deviation of residuals |
+| **Coeff. of Determination ($R^2$)** | $R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}$ | Proportion of variance in $Y$ explained |
