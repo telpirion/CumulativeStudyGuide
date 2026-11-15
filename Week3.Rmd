@@ -1,0 +1,344 @@
+---
+title: "Week 3 Statistics Study Guide: Probability & Discrete Distributions"
+subtitle: "Ken Black, Business Statistics (Chapters 4 & 5) & Think Bayes (Chapters 1–2)"
+author: "Statistics Study Guide"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+```
+
+# Overview & Learning Objectives
+
+The Week 3 readings cover **Chapter 4 (Probability)** and **Chapter 5 (Discrete Distributions)** from Ken Black's *Business Statistics*, supplemented by **Allen Downey's *Think Bayes* (Chapters 1–2)**, **Teetor (Chapter 8)**, and **Davies (Chapter 10)**. By the end of this module, you should be able to:
+
+1. Distinguish between **classical**, **relative frequency**, and **subjective** approaches to assigning probability.
+2. Apply counting rules ($mn$ rule, **combinations** without replacement) and set theory operations (**union**, **intersection**, **complement**) in R.
+3. Apply the **rules of probability** (Addition, Complement, Conditional Probability, and Multiplication) to compute event probabilities using contingency tables and probability matrices.
+4. Determine whether two events are **mutually exclusive** and/or **statistically independent**.
+5. Apply **Bayes' Theorem** (including its **diachronic interpretation**, the **Bayesian table method**, and **sequential updating**) to revise prior probabilities using new evidence.
+6. Differentiate between **discrete** and **continuous** random variables, and compute the expected value ($\mu$), variance ($\sigma^2$), and standard deviation ($\sigma$) of a discrete probability distribution.
+7. Identify and calculate probabilities in R (`d*`, `p*`, `q*`, `r*` functions) for **Binomial**, **Poisson**, and **Hypergeometric** distributions.
+
+---
+
+# Chapter 4: Probability
+
+Probability is a numerical measure (between $0$ and $1$, inclusive) of the likelihood or degree of belief that a particular event will occur.
+
+## Methods of Assigning Probabilities (Section 4.1)
+
+1. **Classical Probability:** Determined *a priori* based on logical symmetry where all outcomes in the sample space are equally likely:
+   $$P(E) = \frac{n_E}{N}$$
+   *(where $n_E$ is the number of outcomes favorable to event $E$, and $N$ is the total number of possible outcomes).*
+2. **Relative Frequency of Occurrence:** Empirical probability based on historical data, tracking defects/occurrences over repeated trials:
+   $$P(E) = \frac{\text{Number of times } E \text{ occurred}}{\text{Total number of observations}}$$
+3. **Subjective Probability:** Based on personal insight, feelings, intuition, or expert judgment when historical data or classical symmetry do not exist.
+
+## Set Theory, Counting Rules & Structure of Probability (Section 4.2)
+
+* **Experiment:** A process that produces well-defined outcomes.
+* **Sample Space ($S$):** The set of all possible **elementary events** (outcomes that cannot be decomposed further) of an experiment.
+* **Event ($E$):** A subset of outcomes from the sample space.
+* **Union ($A \cup B$):** Outcomes belonging to $A$, $B$, or both ("$A$ or $B$"). Implemented in R via `union(A, B)`.
+* **Intersection ($A \cap B$):** Outcomes belonging to both $A$ and $B$ simultaneously ("$A$ and $B$"). Implemented in R via `intersect(A, B)`.
+* **Mutually Exclusive Events:** Events that cannot occur at the same time ($A \cap B = \emptyset$, so $P(A \cap B) = 0$).
+* **Collectively Exhaustive Events:** A set of events whose union encompasses the entire sample space ($A_1 \cup A_2 \cup \dots \cup A_k = S$).
+* **Complementary Events ($A'$ or $\bar{A}$):** All outcomes in $S$ not in $A$:
+  $$P(A) + P(A') = 1 \implies P(A') = 1 - P(A)$$
+
+### Counting Rules: The $mn$ Rule & Combinations
+
+* **The $mn$ Counting Rule:** If an operation can be performed in $m$ ways and a second operation in $n$ ways, the two operations can occur together in $m \times n$ ways (generalizing to $n_1 \times n_2 \times \dots \times n_k$ across $k$ factors).
+* **Sampling With Replacement:** Selecting $r$ items from $N$ choices with replacement yields $N^r$ possible ordered sequences.
+* **Combinations (Sampling Without Replacement):** The number of ways to select $n$ distinct items from a population of size $N$ without replacement (where order does not matter) is:
+  $$\binom{N}{n} = {}_N C_n = \frac{N!}{n!(N - n)!}$$
+  In R, use `choose(N, n)` (or `factorial(N) / (factorial(n) * factorial(N - n))`).
+* **Demonstration Example (Small Law Firm, Black Ch. 4.2):** A law firm has $N = 16$ employees and selects $n = 3$ randomly without replacement to attend a meeting. The number of distinct combinations is $\binom{16}{3} = 560$.
+
+```{r ch4-sampling-combinations}
+set.seed(1234)
+dice_rolls <- sample(x = 1:6, size = 10, replace = TRUE)
+print(dice_rolls)
+
+dice_grid <- expand.grid(die1 = 1:6, die2 = 1:6)
+prob_sum_12 <- mean(rowSums(dice_grid) == 12)
+prob_sum_lt6 <- mean(rowSums(dice_grid) < 6)
+print(sprintf("Two-dice P(sum = 12): %.4f | P(sum < 6): %.4f", prob_sum_12, prob_sum_lt6))
+
+vec_a <- c(1, 3, 5, 2, 4, 6)
+vec_b <- c(2, 4, 6, 8, 10)
+print(union(vec_a, vec_b))
+print(intersect(vec_a, vec_b))
+
+law_firm_combos <- choose(16, 3)
+print(sprintf("Small law firm combinations C(16, 3): %d", law_firm_combos))
+```
+
+## Core Rules of Probability (Sections 4.3 – 4.5)
+
+Four core types of probability appear in contingency (joint probability) tables:
+
+1. **Marginal Probability ($P(X)$):** The probability of a single event occurring, obtained from row or column totals divided by the grand total.
+2. **Union Probability ($P(X \cup Y)$):** The probability that $X$ or $Y$ (or both) occurs.
+3. **Joint / Intersection Probability ($P(X \cap Y)$):** The probability that both $X$ and $Y$ occur simultaneously.
+4. **Conditional Probability ($P(X \mid Y)$):** The probability of $X$ given that $Y$ has already occurred. *Note:* Conditional probability is the only one of the four types that restricts the denominator to the conditioning subset $P(Y)$ rather than the entire sample space.
+
+### The Addition Law
+* **General Law of Addition:**
+  $$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+* **Special Law of Addition (Mutually Exclusive Events):**
+  $$P(A \cup B) = P(A) + P(B)$$
+
+### Conditional Probability & Independence
+* **Conditional Probability ($P(A \mid B)$):**
+  $$P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad \text{provided } P(B) > 0$$
+* **Independent Events:** Events $A$ and $B$ are independent if the occurrence of one does not affect the probability of the other:
+  $$P(A \mid B) = P(A) \quad \text{and} \quad P(B \mid A) = P(B)$$
+  *(Note: Non-trivial mutually exclusive events with positive probabilities are never independent, because if one occurs, the probability of the other drops to zero).*
+
+### The Multiplication Law
+* **General Law of Multiplication (Joint / Conjoint Probability):**
+  $$P(A \cap B) = P(A) \cdot P(B \mid A) = P(B) \cdot P(A \mid B)$$
+* **Special Law of Multiplication (Independent Events):**
+  $$P(A \cap B) = P(A) \cdot P(B)$$
+
+## Bayes' Theorem & The Diachronic Interpretation (Section 4.6 & *Think Bayes* Ch. 1–2)
+
+Bayes' Theorem updates **prior probabilities** ($P(H_i)$) in light of new observed data $D$ using the **likelihood** ($P(D \mid H_i)$) to produce **posterior probabilities** ($P(H_i \mid D)$):
+
+$$P(H_i \mid D) = \frac{P(H_i) \cdot P(D \mid H_i)}{P(D)} = \frac{P(H_i) \cdot P(D \mid H_i)}{\sum_{j=1}^{k} P(H_j) \cdot P(D \mid H_j)}$$
+
+### The Diachronic Interpretation & Bayesian Suite (*Think Bayes* Ch. 1)
+In the **diachronic interpretation**, Bayes' Theorem describes how the probability of a hypothesis $H$ changes over time as new data $D$ arrive:
+
+* **Prior $P(H)$:** Probability of the hypothesis before observing the data.
+* **Likelihood $P(D \mid H)$:** Probability of observing the data assuming hypothesis $H$ is true.
+* **Normalizing Constant $P(D)$:** Total probability of observing the data across all hypotheses. When the set of hypotheses forms a **suite** (both **mutually exclusive** and **collectively exhaustive**), $P(D)$ is computed via the **Law of Total Probability**:
+  $$P(D) = \sum_{j=1}^{k} P(H_j) P(D \mid H_j)$$
+* **Posterior $P(H \mid D)$:** Updated probability of the hypothesis after incorporating the data. For sequential observations $D_1, D_2, \dots$, the posterior after $D_1$ becomes the prior for $D_2$.
+
+### Classic Bayesian Table Method Examples (*Think Bayes* Ch. 1–2)
+
+1. **The Cookie Problem:** Bowl 1 contains 30 vanilla and 10 chocolate cookies ($P(\text{Vanilla} \mid B_1) = 3/4$); Bowl 2 contains 20 vanilla and 20 chocolate cookies ($P(\text{Vanilla} \mid B_2) = 1/2$). Choosing a bowl at random ($P(B_1) = P(B_2) = 1/2$) and drawing a vanilla cookie yields:
+   $$P(B_1 \mid \text{Vanilla}) = \frac{\frac{1}{2} \cdot \frac{3}{4}}{\frac{1}{2} \cdot \frac{3}{4} + \frac{1}{2} \cdot \frac{1}{2}} = \frac{3/8}{5/8} = \frac{3}{5} = 0.60$$
+2. **The M&M Problem:** Before 1995, plain M&M's were 20% Yellow and 10% Green; after 1995 (1996 mix), they were 14% Yellow and 20% Green. Given one bag from 1994 and one from 1996, drawing one Yellow from Bag 1 and one Green from Bag 2 gives:
+   * Hypothesis $A$ (Bag 1 is 1994, Bag 2 is 1996): Prior $= 1/2$, Likelihood $= 0.20 \times 0.20 = 0.040 \implies$ Product $= 0.020$.
+   * Hypothesis $B$ (Bag 1 is 1996, Bag 2 is 1994): Prior $= 1/2$, Likelihood $= 0.14 \times 0.10 = 0.014 \implies$ Product $= 0.007$.
+   * Normalizing constant $P(D) = 0.027 \implies P(A \mid D) = 20/27 \approx 0.7407$, $P(B \mid D) = 7/27 \approx 0.2593$.
+3. **The Monty Hall Problem:** A car is randomly placed behind Door A, B, or C (priors $1/3$ each). You pick Door A, and Monty opens Door B revealing no car ($D$).
+   * Under $H_A$ (car behind A): Monty chooses B or C at random, so $P(D \mid A) = 1/2$.
+   * Under $H_B$ (car behind B): Monty cannot open B, so $P(D \mid B) = 0$.
+   * Under $H_C$ (car behind C): Monty must open B, so $P(D \mid C) = 1$.
+   * Normalizing constant $= \frac{1}{3}(\frac{1}{2}) + \frac{1}{3}(0) + \frac{1}{3}(1) = \frac{1}{2} \implies P(A \mid D) = 1/3$ and $P(C \mid D) = 2/3$. Switching doors doubles the probability of winning.
+
+```{r bayes-demo}
+bayes_table <- function(hypos, prior, likelihood) {
+  unnorm <- prior * likelihood
+  norm_const <- sum(unnorm)
+  posterior <- unnorm / norm_const
+  data.frame(
+    Hypothesis = hypos,
+    Prior = prior,
+    Likelihood = likelihood,
+    Product = unnorm,
+    Posterior = round(posterior, 4)
+  )
+}
+
+supplier_tbl <- bayes_table(
+  hypos = c("Supplier A1", "Supplier A2"),
+  prior = c(0.60, 0.40),
+  likelihood = c(0.02, 0.05)
+)
+print(supplier_tbl)
+
+cookie_tbl <- bayes_table(
+  hypos = c("Bowl 1", "Bowl 2"),
+  prior = c(0.5, 0.5),
+  likelihood = c(0.75, 0.50)
+)
+print(cookie_tbl)
+
+mm_tbl <- bayes_table(
+  hypos = c("A: Bag1=1994, Bag2=1996", "B: Bag1=1996, Bag2=1994"),
+  prior = c(0.5, 0.5),
+  likelihood = c(0.20 * 0.20, 0.14 * 0.10)
+)
+print(mm_tbl)
+
+monty_tbl <- bayes_table(
+  hypos = c("Door A", "Door B", "Door C"),
+  prior = c(1/3, 1/3, 1/3),
+  likelihood = c(0.5, 0, 1)
+)
+print(monty_tbl)
+```
+
+---
+
+# Chapter 5: Discrete Distributions
+
+A **random variable ($X$)** is a numerical description of the outcome of a statistical experiment.
+
+* **Discrete Random Variable:** Assumes at most a finite or countably infinite set of distinct values (e.g., $0, 1, 2, \dots$), typically resulting from **counting** (such as the number of customers arriving at a checkout counter or the outcomes of rolling a die).
+* **Continuous Random Variable:** Assumes values at every point over a given interval, typically resulting from **measuring** (such as the time between customer arrivals or the time required to assemble a product). Examples include the Normal distribution.
+
+## Expected Value and Variance of a Discrete Distribution (Section 5.1–5.2)
+
+For a discrete random variable $X$ with probability mass function $P(X = x)$ (where $0 \le P(x) \le 1$ and $\sum P(x) = 1$):
+
+* **Expected Value (Long-Run Average / Mean, $\mu$):**
+  $$\mu = E(X) = \sum_{i} x_i \cdot P(x_i)$$
+* **Variance ($\sigma^2$):**
+  $$\sigma^2 = \text{Var}(X) = \sum_{i} (x_i - \mu)^2 \cdot P(x_i) = \left[ \sum_{i} x_i^2 \cdot P(x_i) \right] - \mu^2$$
+* **Standard Deviation ($\sigma$):**
+  $$\sigma = \sqrt{\sigma^2}$$
+
+* **Demonstration (Crises Data, Black Table 5.2):** Let $X \in \{0, 1, 2, 3, 4, 5\}$ denote the number of organizational crises with probabilities $\{0.37, 0.31, 0.18, 0.09, 0.04, 0.01\}$. The expected value is $\mu = 1.15$, variance is $\sigma^2 = 1.4075$, and standard deviation is $\sigma = 1.1864$.
+
+```{r discrete-summary-demo}
+discrete_summary <- function(outcomes, probs) {
+  expect_val <- sum(outcomes * probs)
+  var_val <- sum((outcomes - expect_val)^2 * probs)
+  data.frame(
+    Expected_Value = expect_val,
+    Variance = var_val,
+    Standard_Deviation = sqrt(var_val)
+  )
+}
+
+no_of_crises <- 0:5
+prob_of_crises <- c(0.37, 0.31, 0.18, 0.09, 0.04, 0.01)
+print(discrete_summary(outcomes = no_of_crises, probs = prob_of_crises))
+```
+
+## R's Distribution Function Conventions
+
+For probability distributions in R (such as `binom`, `pois`, and `hyper`), R provides four standardized function prefixes:
+
+* **`d*` (Density / PMF):** Returns exact point probability $P(X = x)$ (e.g., `dbinom()`, `dpois()`, `dhyper()`).
+* **`p*` (Cumulative Probability):** Returns cumulative probability $P(X \le q)$ when `lower.tail = TRUE` (default), or upper-tail probability $P(X > q)$ when `lower.tail = FALSE` (e.g., `pbinom()`, `ppois()`, `phyper()`).
+* **`q*` (Quantile):** Returns the quantile $x$ corresponding to a given cumulative probability $p$ (e.g., `qbinom()`, `qpois()`, `qhyper()`).
+* **`r*` (Random Generation):** Generates random samples from the distribution (e.g., `rbinom()`, `rpois()`, `rhyper()`).
+
+## The Binomial Distribution (Section 5.2–5.3)
+
+Models the number of successes $x$ in $n$ independent trials under four conditions:
+1. Fixed number of trials ($n$).
+2. Each trial has only two mutually exclusive outcomes: **Success** or **Failure**.
+3. The probability of success ($p$) remains constant from trial to trial ($q = 1 - p$).
+4. Trials are statistically independent (sampling with replacement, or $n < 0.05N$).
+
+### Binomial Formulas
+* **Probability Mass Function (PMF):**
+  $$P(X = x) = \binom{n}{x} p^x (1 - p)^{n - x} = \frac{n!}{x!(n - x)!} p^x q^{n - x}, \quad x = 0, 1, 2, \dots, n$$
+* **Mean & Standard Deviation:**
+  $$\mu = n p, \qquad \sigma^2 = n p q, \qquad \sigma = \sqrt{n p q}$$
+
+### R Supplement Demonstrations (Black Ch. 5)
+* **Demonstration Problem 5.4 (CNNMoney Workers):** $60\%$ of workers have $<\$25{,}000$ in savings ($p = 0.60$). For $n = 20$ randomly sampled workers, $P(X < 10) = P(X \le 9) = 0.1275$.
+* **Table 5.8 ($n = 20, p = 0.14$):** $\mu = 2.8$, $\sigma = 1.5518$.
+* **Demonstration Problem 5.5 (Plastic Mug Lot Acceptance):** A buyer samples $n = 10$ mugs and accepts the lot if $X \le 2$ are defective. Acceptance probabilities across defect rates $p \in \{0.10, 0.20, 0.30, 0.40\}$ drop sharply from $0.930$ to $0.167$.
+
+```{r binomial-demos, fig.height=3.8, fig.width=6.5}
+p_cnn <- pbinom(q = 9, size = 20, prob = 0.60, lower.tail = TRUE)
+print(sprintf("Demo 5.4 P(X < 10) for n=20, p=0.60: %.4f", p_cnn))
+
+mug_probs <- c(0.10, 0.20, 0.30, 0.40)
+lot_acceptance <- data.frame(
+  Defect_Rate_p = mug_probs,
+  Accept_Prob_P_X_le_2 = round(pbinom(q = 2, size = 10, prob = mug_probs), 3),
+  Expected_Defects = 10 * mug_probs
+)
+print(lot_acceptance)
+
+ggplot(data = data.frame(x = 0:8, prob = dbinom(0:8, size = 8, prob = 0.20)),
+       aes(x = x, y = prob)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Binomial Distribution (n = 8, p = 0.20)",
+       x = "x Values", y = "Probability") +
+  scale_x_continuous(breaks = 0:8) +
+  theme_minimal()
+```
+
+## The Poisson Distribution (Section 5.3–5.4)
+
+Named after French mathematician Siméon Denis Poisson, this distribution models the number of discrete, typically rare occurrences ($x$) over a continuous interval of **time, area, volume, or distance**, assuming occurrences are independent and happen at a constant average rate ($\lambda$).
+
+### Poisson Formulas
+* **Probability Mass Function (PMF):**
+  $$P(X = x) = \frac{\lambda^x e^{-\lambda}}{x!}, \quad x = 0, 1, 2, \dots$$
+  *(where $\lambda$ is the mean number of occurrences per interval and $e \approx 2.71828$).*
+* **Mean, Variance & Standard Deviation:**
+  $$\mu = \lambda, \qquad \sigma^2 = \lambda, \qquad \sigma = \sqrt{\lambda}$$
+* **Scaling $\lambda$ Across Intervals:** Because $\lambda$ is proportional to interval length, an average rate $\lambda_1$ over interval $t_1$ scales linearly to $\lambda_2 = \lambda_1 \cdot \frac{t_2}{t_1}$ for interval $t_2$.
+* **Poisson Approximation to the Binomial:** Valid when $n$ is large ($n \ge 20$) and $p$ is small ($p \le 0.05$), setting $\lambda = n p$.
+
+### R Supplement Demonstrations (Black Ch. 5)
+* **Demonstration Problem 5.6 (UPS Store Arrivals):** Averaging $\lambda = 2.3$ customers per minute, the probability of more than $4$ arrivals in a given minute is $P(X > 4) = 1 - P(X \le 4) = 0.0838$.
+* **Table 5.10 ($\lambda = 1.6$):** Full discrete PMF across $x = 0, \dots, 9$.
+
+```{r poisson-demos, fig.height=3.8, fig.width=6.5}
+p_ups <- ppois(q = 4, lambda = 2.3, lower.tail = FALSE)
+print(sprintf("Demo 5.6 UPS P(X > 4) for lambda = 2.3: %.4f", p_ups))
+
+ggplot(data = data.frame(x = 0:9, prob = dpois(0:9, lambda = 1.6)),
+       aes(x = x, y = prob)) +
+  geom_bar(stat = "identity", fill = "darkorange") +
+  labs(title = expression("Poisson Distribution (" * lambda * " = 1.6)"),
+       x = "x Values", y = "Probability") +
+  scale_x_continuous(breaks = 0:9) +
+  theme_minimal()
+```
+
+## The Hypergeometric Distribution (Section 5.4–5.5)
+
+Models the number of successes ($x$) in a sample of size $n$ drawn **without replacement** from a finite population of size $N$ containing $A$ total successes (required when sampling without replacement and $n \ge 0.05N$).
+
+### Hypergeometric Formulas
+* **Probability Mass Function (PMF):**
+  $$P(X = x) = \frac{\binom{A}{x} \binom{N - A}{n - x}}{\binom{N}{n}}$$
+* **Mean & Standard Deviation:**
+  $$\mu = n \left(\frac{A}{N}\right), \qquad \sigma = \sqrt{n \left(\frac{A}{N}\right) \left(1 - \frac{A}{N}\right) \left(\frac{N - n}{N - 1}\right)}$$
+  *(where $\frac{N - n}{N - 1}$ is the finite population correction factor).*
+* **R Parameter Mapping:** In `dhyper(x, m, n, k)` and `phyper(q, m, n, k)`: `m` $= A$ (total population successes), `n` $= N - A$ (total population failures), and `k` $= n$ (sample size).
+
+### R Supplement Demonstrations (Black Ch. 5)
+* **Demonstration Problem 5.8 (Silicon Valley Companies):** Out of $N = 18$ major U.S. computer companies, $A = 12$ are in Silicon Valley. Randomly sampling $k = 3$ companies without replacement gives $P(X \ge 1) = 1 - P(X = 0) = 0.9755$.
+* **Table 5.13/5.14:** From $N = 24$ people with $A = 8$ women, sampling $k = 5$ gives $P(X = 3) = 0.1581$.
+
+```{r hypergeometric-demos}
+p_sv <- phyper(q = 0, m = 12, n = 18 - 12, k = 3, lower.tail = FALSE)
+p_sv_comp <- 1 - (choose(12, 0) * choose(6, 3) / choose(18, 3))
+p_women <- dhyper(x = 3, m = 8, n = 24 - 8, k = 5)
+
+print(sprintf("Demo 5.8 Silicon Valley P(X >= 1): %.4f (via combinations: %.4f)", p_sv, p_sv_comp))
+print(sprintf("Table 5.13/5.14 P(X = 3 women): %.4f", p_women))
+```
+
+---
+
+# Week 3 Key Formula Summary Sheet
+
+| Concept / Distribution | Probability / Metric Formula | Mean ($\mu$), Std. Dev. ($\sigma$) & R Function |
+|---|---|---|
+| **Combinations** | $\binom{N}{n} = \frac{N!}{n!(N-n)!}$ | `choose(N, n)` |
+| **Addition Law** | $P(A \cup B) = P(A) + P(B) - P(A \cap B)$ | — |
+| **Conditional Probability** | $P(A \mid B) = \frac{P(A \cap B)}{P(B)}$ | — |
+| **Bayes' Theorem** | $P(H_i \mid D) = \frac{P(H_i)P(D \mid H_i)}{\sum P(H_j)P(D \mid H_j)}$ | — |
+| **General Discrete RV** | $\sum P(x_i) = 1$ | $\mu = \sum x_i P(x_i)$, $\sigma = \sqrt{\sum (x_i - \mu)^2 P(x_i)}$ |
+| **Binomial** | $P(x) = \binom{n}{x} p^x (1-p)^{n-x}$ | $\mu = np$, $\sigma = \sqrt{np(1-p)}$; `dbinom()`, `pbinom()` |
+| **Poisson** | $P(x) = \frac{\lambda^x e^{-\lambda}}{x!}$ | $\mu = \lambda$, $\sigma = \sqrt{\lambda}$; `dpois()`, `ppois()` |
+| **Hypergeometric** | $P(x) = \frac{\binom{A}{x}\binom{N-A}{n-x}}{\binom{N}{n}}$ | $\mu = n\frac{A}{N}$, $\sigma = \sqrt{n\frac{A}{N}\left(1-\frac{A}{N}\right)\left(\frac{N-n}{N-1}\right)}$; `dhyper()`, `phyper()` |
