@@ -26,6 +26,8 @@ statistical foundations and their application in R. Each module includes:
 - 📓 [**Week 2 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week2.ipynb) — 41 Chapter 3 review questions with full mathematical solutions and 6 applied R exercises
 - 📘 [**Week 7 Study Guide (HTML)**](guides/Week7.html) — Inferences About Two Populations
 - 📓 [**Week 7 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week7.ipynb) — 44 Chapter 10 review questions with full mathematical solutions and 5 applied R exercises
+- 📘 [**Week 8 Study Guide (HTML)**](guides/Week8.html) — Analysis of Variance & Simple Linear Regression
+- 📓 [**Week 8 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week8.ipynb) — ANOVA and Regression application exercises and R code examples
 
 ---
 
@@ -56,7 +58,9 @@ CumulativeStudyGuide/
 ├── Week2.ipynb               # Jupyter Notebook with 41 study questions & 6 applied exercises
 ├── Week2.Rmd                 # Source R Markdown document for Week 2 (Chapter 3)
 ├── Week7.ipynb               # Jupyter Notebook with 44 study questions & applied exercises
-└── Week7.Rmd                 # Source R Markdown document for Week 7 (Chapter 10)
+├── Week7.Rmd                 # Source R Markdown document for Week 7 (Chapter 10)
+├── Week8.ipynb               # Jupyter Notebook with ANOVA/Regression exercises
+└── Week8.Rmd                 # Source R Markdown document for Week 8 (Chapters 11 & 12)
 ```
 
 ---
@@ -68,6 +72,7 @@ CumulativeStudyGuide/
 | **Week 1** | **Ch. 1:** Intro to Statistics<br>**Ch. 2:** Charts & Graphs | • Populations vs. Samples<br>• Levels of Measurement (Nominal, Ordinal, Interval, Ratio)<br>• Frequency distributions, class marks, relative & cumulative frequency<br>• Graphical displays & Pareto analysis<br>• Ethical data presentation | • [Source (`Week1.Rmd`)](Week1.Rmd)<br>• [Rendered Guide (`guides/Week1.html`)](guides/Week1.html) | • `factor()` / ordered factors<br>• Frequency tables (`cut()`, `table()`)<br>• `hist()`, frequency polygon, ogive<br>• `stripchart()` dot plots & `stem()`<br>• `barplot()`, `pie()`, & Pareto charts<br>• Two-variable `plot()` with `lm()` regression line |
 | **Week 2** | **Ch. 3:** Descriptive Statistics | • Central Tendency (Mean, Median, Mode, Trimmed Mean)<br>• Dispersion (Range, $IQR$, MAD, Variance, Standard Deviation, $CV$)<br>• Grouped Data Central Tendency & Variance<br>• Chebyshev's Theorem vs. The Empirical Rule<br>• Shape (Skewness, Kurtosis) & Tukey Outlier Fences<br>• Wilcox Masking & Winsorized Variance<br>• Pearson's Correlation ($r$) | • [Source (`Week2.Rmd`)](Week2.Rmd)<br>• [Rendered Guide (`guides/Week2.html`)](guides/Week2.html)<br>• [Practice Notebook (`Week2.ipynb`)](Week2.ipynb) | • `mean(..., trim = 0.2)`, `median()`, `table()`<br>• `quantile(..., type = 6)`, `IQR()`, `diff(range())`<br>• `var()`, `sd()`, custom `calc_winsorized_var()`<br>• Grouped $\bar{x}$ & $s^2$ calculations<br>• `boxplot(..., horizontal = TRUE)`<br>• `cor()`, `cor.test()`, `plot()` with `lm()`<br>• Applied analyses (`mileage`, `shoppers`, `pontus`, `geyser`) |
 | **Week 7** | **Ch. 10:** Inferences About Two Populations | • Test selection framework<br>• Difference in two means ($\sigma$ known vs. unknown)<br>• Pooled vs. Welch's unequal-variance $t$-tests<br>• Matched-pairs / related populations<br>• Two-proportion $z$-tests & pooling<br>• Two-variance $F$-tests<br>• Ethical comparative analysis | • [Source (`Week7.Rmd`)](Week7.Rmd)<br>• [Rendered Guide (`guides/Week7.html`)](guides/Week7.html)<br>• [Practice Notebook (`Week7.ipynb`)](Week7.ipynb) | • Custom `two_sample_z_test()`<br>• `t.test(..., var.equal = TRUE)`<br>• `t.test(..., var.equal = FALSE)`<br>• `t.test(..., paired = TRUE)`<br>• `prop.test(..., correct = FALSE)`<br>• `var.test()` |
+| **Week 8** | **Ch. 11:** Analysis of Variance<br>**Ch. 12:** Simple Linear Regression | • One-Way ANOVA & partitioning $SS$<br>• Tukey's HSD post-hoc testing<br>• Randomized Block & Two-Way ANOVA<br>• Simple Linear Regression (OLS)<br>• Correlation vs. Regression<br>• Goodness of fit ($R^2$, $s_e$) | • [Source (`Week8.Rmd`)](Week8.Rmd)<br>• [Rendered Guide (`guides/Week8.html`)](guides/Week8.html)<br>• [Practice Notebook (`Week8.ipynb`)](Week8.ipynb) | • `aov()` & `summary(aov())`<br>• `TukeyHSD()`<br>• `lm()`<br>• `summary(lm())`<br>• Residual analysis (`plot(lm())`)<br>• `predict()` |
 
 *(Additional weekly modules will be added as the study guide expands.)*
 
@@ -103,6 +108,9 @@ rmarkdown::render("Week2.Rmd", output_dir = "guides")
 
 # Render Week 7 (uses custom knit hook targeting guides/)
 rmarkdown::render("Week7.Rmd", output_dir = "guides")
+
+# Render Week 8
+rmarkdown::render("Week8.Rmd", output_dir = "guides")
 ```
 
 Or from the command line:
@@ -111,6 +119,7 @@ Or from the command line:
 Rscript -e 'rmarkdown::render("Week1.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week2.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week7.Rmd", output_dir = "guides")'
+Rscript -e 'rmarkdown::render("Week8.Rmd", output_dir = "guides")'
 ```
 
 Using Positron or Quarto CLI:
@@ -118,6 +127,7 @@ Using Positron or Quarto CLI:
 ```bash
 quarto render Week2.Rmd
 quarto render Week7.Rmd
+quarto render Week8.Rmd
 ```
 
 ---
