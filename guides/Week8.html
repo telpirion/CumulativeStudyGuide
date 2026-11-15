@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Statistics Study Guide">
+<meta name="dcterms.date" content="2026-11-14">
+
+<title>Week 8 Statistics Study Guide: ANOVA &amp; Simple Linear Regression</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Week8_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Week8_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="Week8_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="Week8_files/libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="Week8_files/libs/quarto-html/popper.min.js"></script>
+<script src="Week8_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Week8_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Week8_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Week8_files/libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Week8_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Week8_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Week8_files/libs/bootstrap/bootstrap-7a1ba01e1618e08d8f307002997fc2d6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link rel="stylesheet" href="/CumulativeStudyGuide/assets/css/style.css?v=bc02835c1438cab733e218d466001544d44a5f26">
+<style>
+.page-columns{
+    margin: 35px;
+    padding: 16px;
+}
+</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Week 8 Statistics Study Guide: ANOVA &amp; Simple Linear Regression</h1>
+<p class="subtitle lead">Ken Black, Business Statistics (Chapter 11 &amp; Chapter 12, Sections 1–3)</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Statistics Study Guide </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview-learning-objectives" class="level1">
+<h1>Overview &amp; Learning Objectives</h1>
+<p>The Week 8 readings cover <strong>Chapter 11 (Analysis of Variance)</strong> and <strong>Chapter 12, Sections 1–3 (Simple Linear Regression)</strong> from Ken Black’s <em>Business Statistics</em>. By the end of this module, you should be able to:</p>
+<ol type="1">
+<li>Understand the logic of <strong>Analysis of Variance (ANOVA)</strong> and why multiple <span class="math inline">\(t\)</span>-tests inflate Type I error (<span class="math inline">\(\alpha\)</span>).</li>
+<li>Conduct and interpret a <strong>One-Way ANOVA</strong> (completely randomized design), including constructing the ANOVA summary table and calculating the <span class="math inline">\(F\)</span>-statistic.</li>
+<li>Perform <strong>multiple comparison tests</strong> (Tukey’s HSD) when the null hypothesis in ANOVA is rejected.</li>
+<li>Distinguish between <strong>Randomized Block Designs</strong> and <strong>Two-Way ANOVA</strong> (factorial designs with interaction effects).</li>
+<li>Formulate a <strong>Simple Linear Regression</strong> model, compute <strong>Ordinary Least Squares (OLS)</strong> slope and intercept estimates, and interpret their business meaning.</li>
+<li>Partition total variation into <span class="math inline">\(SSR\)</span>, <span class="math inline">\(SSE\)</span>, and <span class="math inline">\(SST\)</span> to compute the <strong>Coefficient of Determination (<span class="math inline">\(R^2\)</span>)</strong> and the <strong>Standard Error of the Estimate (<span class="math inline">\(s_e\)</span>)</strong>.</li>
+</ol>
+<hr>
+</section>
+<section id="chapter-11-analysis-of-variance-anova" class="level1">
+<h1>Chapter 11: Analysis of Variance (ANOVA)</h1>
+<p>ANOVA is a statistical technique used to test whether the means of <strong>three or more populations</strong> are equal by analyzing sample variances.</p>
+<section id="why-not-multiple-t-tests" class="level2">
+<h2 class="anchored" data-anchor-id="why-not-multiple-t-tests">Why Not Multiple <span class="math inline">\(t\)</span>-Tests?</h2>
+<p>If you want to compare <span class="math inline">\(k = 4\)</span> group means, there are <span class="math inline">\(\binom{4}{2} = 6\)</span> pairwise comparisons. Conducting each test at <span class="math inline">\(\alpha = 0.05\)</span> compounds the experiment-wise Type I error rate: <span class="math display">\[\alpha_{\text{overall}} = 1 - (1 - \alpha)^c\]</span> For <span class="math inline">\(c = 6\)</span> comparisons, <span class="math inline">\(\alpha_{\text{overall}} = 1 - (0.95)^6 \approx 0.265\)</span> (a <span class="math inline">\(26.5\%\)</span> chance of at least one false positive). ANOVA tests all means simultaneously at a single <span class="math inline">\(\alpha\)</span> level.</p>
+</section>
+<section id="one-way-anova-completely-randomized-design" class="level2">
+<h2 class="anchored" data-anchor-id="one-way-anova-completely-randomized-design">One-Way ANOVA (Completely Randomized Design)</h2>
+<section id="hypotheses-assumptions" class="level3">
+<h3 class="anchored" data-anchor-id="hypotheses-assumptions">Hypotheses &amp; Assumptions</h3>
+<ul>
+<li><strong>Null Hypothesis (<span class="math inline">\(H_0\)</span>):</strong> <span class="math inline">\(\mu_1 = \mu_2 = \dots = \mu_k\)</span> (All population means are equal).</li>
+<li><strong>Alternative Hypothesis (<span class="math inline">\(H_a\)</span>):</strong> At least one population mean differs from the others.</li>
+<li><strong>Assumptions:</strong>
+<ol type="1">
+<li>Observations are independent within and across groups.</li>
+<li>Populations are normally distributed.</li>
+<li><strong>Homoscedasticity:</strong> Population variances are equal (<span class="math inline">\(\sigma_1^2 = \sigma_2^2 = \dots = \sigma_k^2\)</span>).</li>
+</ol></li>
+</ul>
+</section>
+<section id="partitioning-sum-of-squares" class="level3">
+<h3 class="anchored" data-anchor-id="partitioning-sum-of-squares">Partitioning Sum of Squares</h3>
+<p>Total variability in the data (<span class="math inline">\(SST\)</span>) is partitioned into variability <em>between</em> treatment groups (<span class="math inline">\(SSC\)</span>) and variability <em>within</em> treatment groups (<span class="math inline">\(SSE\)</span>):</p>
+<p><span class="math display">\[SST = SSC + SSE\]</span></p>
+<ul>
+<li><strong>Sum of Squares Between Columns / Treatments (<span class="math inline">\(SSC\)</span>):</strong> <span class="math display">\[SSC = \sum_{j=1}^{k} n_j (\bar{x}_j - \bar{\bar{x}})^2\]</span></li>
+<li><strong>Sum of Squares Error / Within (<span class="math inline">\(SSE\)</span>):</strong> <span class="math display">\[SSE = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (x_{ij} - \bar{x}_j)^2\]</span></li>
+<li><strong>Total Sum of Squares (<span class="math inline">\(SST\)</span>):</strong> <span class="math display">\[SST = \sum_{j=1}^{k} \sum_{i=1}^{n_j} (x_{ij} - \bar{\bar{x}})^2\]</span></li>
+</ul>
+<p><em>(where <span class="math inline">\(k\)</span> is the number of groups, <span class="math inline">\(n_j\)</span> is the sample size of group <span class="math inline">\(j\)</span>, <span class="math inline">\(N = \sum n_j\)</span> is total observations, <span class="math inline">\(\bar{x}_j\)</span> is the group mean, and <span class="math inline">\(\bar{\bar{x}}\)</span> is the grand mean).</em></p>
+</section>
+<section id="one-way-anova-summary-table" class="level3">
+<h3 class="anchored" data-anchor-id="one-way-anova-summary-table">One-Way ANOVA Summary Table</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source of Variation</th>
+<th>Sum of Squares (<span class="math inline">\(SS\)</span>)</th>
+<th>Degrees of Freedom (<span class="math inline">\(df\)</span>)</th>
+<th>Mean Square (<span class="math inline">\(MS\)</span>)</th>
+<th><span class="math inline">\(F\)</span>-Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Between (Treatments)</strong></td>
+<td><span class="math inline">\(SSC\)</span></td>
+<td><span class="math inline">\(k - 1\)</span></td>
+<td><span class="math inline">\(MSC = \frac{SSC}{k - 1}\)</span></td>
+<td><span class="math inline">\(F = \frac{MSC}{MSE}\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Within (Error)</strong></td>
+<td><span class="math inline">\(SSE\)</span></td>
+<td><span class="math inline">\(N - k\)</span></td>
+<td><span class="math inline">\(MSE = \frac{SSE}{N - k}\)</span></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><strong>Total</strong></td>
+<td><span class="math inline">\(SST\)</span></td>
+<td><span class="math inline">\(N - 1\)</span></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Decision Rule:</strong> Reject <span class="math inline">\(H_0\)</span> if <span class="math inline">\(F &gt; F_{\alpha, \, df_1 = k-1, \, df_2 = N-k}\)</span> (or if <span class="math inline">\(p\text{-value} &lt; \alpha\)</span>). Note that ANOVA <span class="math inline">\(F\)</span>-tests are always <strong>right-tailed</strong>.</li>
+</ul>
+</section>
+</section>
+<section id="multiple-comparisons-post-hoc-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="multiple-comparisons-post-hoc-analysis">Multiple Comparisons (Post-Hoc Analysis)</h2>
+<p>If <span class="math inline">\(H_0\)</span> is rejected, ANOVA tells us <em>that</em> a difference exists, not <em>where</em> it exists. <strong>Tukey’s Honestly Significant Difference (HSD)</strong> tests all pairwise differences <span class="math inline">\(|\bar{x}_i - \bar{x}_j|\)</span> against a critical range (for equal sample sizes <span class="math inline">\(n\)</span>):</p>
+<p><span class="math display">\[\text{HSD} = q_{\alpha, \, k, \, N-k} \sqrt{\frac{MSE}{n}}\]</span></p>
+<p>where <span class="math inline">\(q\)</span> is obtained from the Studentized Range Distribution table. If <span class="math inline">\(|\bar{x}_i - \bar{x}_j| &gt; \text{HSD}\)</span>, the two group means differ significantly.</p>
+</section>
+<section id="randomized-block-design-two-way-anova" class="level2">
+<h2 class="anchored" data-anchor-id="randomized-block-design-two-way-anova">Randomized Block Design &amp; Two-Way ANOVA</h2>
+<ul>
+<li><strong>Randomized Block Design (Section 11.3):</strong> Controls for an extraneous source of variation (a <strong>blocking variable</strong>, such as store location or shift) by partitioning <span class="math inline">\(SST\)</span> into three components: <span class="math display">\[SST = SSC + SSB + SSE\]</span> where <span class="math inline">\(SSB\)</span> is the Sum of Squares for Blocks (<span class="math inline">\(df_{\text{blocks}} = b - 1\)</span>, <span class="math inline">\(df_{\text{error}} = (k-1)(b-1)\)</span>).</li>
+<li><strong>Two-Way ANOVA / Factorial Design (Section 11.4):</strong> Examines the simultaneous effects of <strong>two independent categorical factors</strong> (Factor A and Factor B) plus their <strong>interaction effect (<span class="math inline">\(A \times B\)</span>)</strong>: <span class="math display">\[SST = SSA + SSB + SS_{AB} + SSE\]</span>
+<ul>
+<li><em>Interaction Effect:</em> Occurs when the effect of one factor on the response variable depends on the level of the second factor. Always test the interaction term first before interpreting main effects.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample business scenario: Sales ($1000s) across 3 store display designs</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>display_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">design =</span> <span class="fu">factor</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Endcap"</span>, <span class="st">"Aisle"</span>, <span class="st">"Checkout"</span>), <span class="at">each =</span> <span class="dv">5</span>)),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">sales  =</span> <span class="fu">c</span>(<span class="dv">42</span>, <span class="dv">45</span>, <span class="dv">40</span>, <span class="dv">46</span>, <span class="dv">44</span>,   <span class="co"># Endcap</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>             <span class="dv">35</span>, <span class="dv">38</span>, <span class="dv">34</span>, <span class="dv">37</span>, <span class="dv">36</span>,   <span class="co"># Aisle</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>             <span class="dv">50</span>, <span class="dv">54</span>, <span class="dv">49</span>, <span class="dv">52</span>, <span class="dv">55</span>)   <span class="co"># Checkout</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Run One-Way ANOVA</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>anova_model <span class="ot">&lt;-</span> <span class="fu">aov</span>(sales <span class="sc">~</span> design, <span class="at">data =</span> display_data)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+design       2  641.2   320.6   64.99 3.65e-07 ***
+Residuals   12   59.2     4.9                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Post-hoc Tukey HSD pairwise comparisons</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">TukeyHSD</span>(anova_model, <span class="at">conf.level =</span> <span class="fl">0.95</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = sales ~ design, data = display_data)
+
+$design
+                diff        lwr       upr     p adj
+Checkout-Aisle  16.0  12.252308 19.747692 0.0000002
+Endcap-Aisle     7.4   3.652308 11.147692 0.0005378
+Endcap-Checkout -8.6 -12.347692 -4.852308 0.0001413</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="chapter-12-sections-13-simple-linear-regression" class="level1">
+<h1>Chapter 12 (Sections 1–3): Simple Linear Regression</h1>
+<p>Simple linear regression models the linear relationship between a single <strong>independent (predictor) variable (<span class="math inline">\(X\)</span>)</strong> and a <strong>dependent (response) variable (<span class="math inline">\(Y\)</span>)</strong>.</p>
+<section id="correlation-vs.-regression-section-12.1" class="level2">
+<h2 class="anchored" data-anchor-id="correlation-vs.-regression-section-12.1">Correlation vs.&nbsp;Regression (Section 12.1)</h2>
+<ul>
+<li><strong>Correlation (<span class="math inline">\(r\)</span>):</strong> Measures the <em>strength and direction</em> of a linear association symmetrically (<span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are interchangeable).</li>
+<li><strong>Regression:</strong> Establishes a directional functional equation to <em>predict</em> <span class="math inline">\(Y\)</span> from <span class="math inline">\(X\)</span> and quantify how much <span class="math inline">\(Y\)</span> changes per unit change in <span class="math inline">\(X\)</span>.</li>
+</ul>
+<section id="population-vs.-sample-regression-model" class="level3">
+<h3 class="anchored" data-anchor-id="population-vs.-sample-regression-model">Population vs.&nbsp;Sample Regression Model</h3>
+<ul>
+<li><strong>Population Regression Model:</strong> <span class="math display">\[Y_i = \beta_0 + \beta_1 X_i + \epsilon_i\]</span> where <span class="math inline">\(\beta_0\)</span> is the population <span class="math inline">\(Y\)</span>-intercept, <span class="math inline">\(\beta_1\)</span> is the population slope, and <span class="math inline">\(\epsilon_i\)</span> is the random error term.</li>
+<li><strong>Estimated Sample Regression Line:</strong> <span class="math display">\[\hat{y}_i = b_0 + b_1 x_i\]</span> where <span class="math inline">\(\hat{y}_i\)</span> is the predicted value of <span class="math inline">\(Y\)</span>, <span class="math inline">\(b_0\)</span> is the sample intercept, and <span class="math inline">\(b_1\)</span> is the sample slope.</li>
+</ul>
+</section>
+</section>
+<section id="determining-the-equation-of-the-regression-line-section-12.2" class="level2">
+<h2 class="anchored" data-anchor-id="determining-the-equation-of-the-regression-line-section-12.2">Determining the Equation of the Regression Line (Section 12.2)</h2>
+<p>The <strong>Ordinary Least Squares (OLS)</strong> method finds <span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span> by minimizing the <strong>Sum of Squared Errors (Residuals)</strong>: <span class="math display">\[\min \sum_{i=1}^{n} e_i^2 = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2\]</span></p>
+<section id="ols-formulas" class="level3">
+<h3 class="anchored" data-anchor-id="ols-formulas">OLS Formulas</h3>
+<ul>
+<li><strong>Sample Slope (<span class="math inline">\(b_1\)</span>):</strong> <span class="math display">\[b_1 = \frac{SS_{xy}}{SS_{xx}} = \frac{\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n} (x_i - \bar{x})^2} = \frac{\sum x_i y_i - \frac{(\sum x_i)(\sum y_i)}{n}}{\sum x_i^2 - \frac{(\sum x_i)^2}{n}}\]</span></li>
+<li><strong>Sample <span class="math inline">\(Y\)</span>-Intercept (<span class="math inline">\(b_0\)</span>):</strong> <span class="math display">\[b_0 = \bar{y} - b_1 \bar{x}\]</span></li>
+</ul>
+</section>
+<section id="business-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="business-interpretation">Business Interpretation</h3>
+<ul>
+<li><strong><span class="math inline">\(b_1\)</span> (Slope):</strong> For every <span class="math inline">\(1\)</span>-unit increase in <span class="math inline">\(X\)</span>, <span class="math inline">\(Y\)</span> is predicted to change by <span class="math inline">\(b_1\)</span> units on average.</li>
+<li><strong><span class="math inline">\(b_0\)</span> (Intercept):</strong> The predicted value of <span class="math inline">\(Y\)</span> when <span class="math inline">\(X = 0\)</span> (only meaningful if <span class="math inline">\(X = 0\)</span> falls within the relevant scope of the data).</li>
+</ul>
+</section>
+</section>
+<section id="residual-analysis-standard-error-of-the-estimate-section-12.3" class="level2">
+<h2 class="anchored" data-anchor-id="residual-analysis-standard-error-of-the-estimate-section-12.3">Residual Analysis &amp; Standard Error of the Estimate (Section 12.3)</h2>
+<section id="line-assumptions-line" class="level3">
+<h3 class="anchored" data-anchor-id="line-assumptions-line">Line Assumptions (LINE)</h3>
+<ol type="1">
+<li><strong>L</strong>inearity: The relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is linear.</li>
+<li><strong>I</strong>ndependence: Residuals (<span class="math inline">\(\epsilon_i\)</span>) are independent of one another.</li>
+<li><strong>N</strong>ormality: For any given <span class="math inline">\(X\)</span>, the residuals are normally distributed with mean <span class="math inline">\(0\)</span>.</li>
+<li><strong>E</strong>qual Variance (Homoscedasticity): The variance of residuals (<span class="math inline">\(\sigma_\epsilon^2\)</span>) is constant across all values of <span class="math inline">\(X\)</span>.</li>
+</ol>
+</section>
+<section id="partitioning-variance-goodness-of-fit" class="level3">
+<h3 class="anchored" data-anchor-id="partitioning-variance-goodness-of-fit">Partitioning Variance &amp; Goodness of Fit</h3>
+<p>Just like ANOVA, regression partitions total variation in <span class="math inline">\(Y\)</span> (<span class="math inline">\(SST\)</span>) into explained variation (<span class="math inline">\(SSR\)</span>) and unexplained variation (<span class="math inline">\(SSE\)</span>):</p>
+<p><span class="math display">\[SST = SSR + SSE\]</span></p>
+<ul>
+<li><strong>Total Sum of Squares (<span class="math inline">\(SST\)</span>):</strong> <span class="math inline">\(\sum (y_i - \bar{y})^2\)</span></li>
+<li><strong>Regression Sum of Squares (<span class="math inline">\(SSR\)</span>):</strong> <span class="math inline">\(\sum (\hat{y}_i - \bar{y})^2\)</span></li>
+<li><strong>Error Sum of Squares (<span class="math inline">\(SSE\)</span>):</strong> <span class="math inline">\(\sum (y_i - \hat{y}_i)^2\)</span></li>
+</ul>
+</section>
+<section id="key-fit-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="key-fit-metrics">Key Fit Metrics</h3>
+<ol type="1">
+<li><p><strong>Standard Error of the Estimate (<span class="math inline">\(s_e\)</span>):</strong> Measures the typical dispersion of observed data points around the regression line (in the units of <span class="math inline">\(Y\)</span>): <span class="math display">\[s_e = \sqrt{\frac{SSE}{n - 2}}\]</span> <em>(Note: <span class="math inline">\(df = n - 2\)</span> because two parameters, <span class="math inline">\(b_0\)</span> and <span class="math inline">\(b_1\)</span>, are estimated).</em></p></li>
+<li><p><strong>Coefficient of Determination (<span class="math inline">\(R^2\)</span>):</strong> Represents the proportion of total variation in <span class="math inline">\(Y\)</span> explained by <span class="math inline">\(X\)</span>: <span class="math display">\[R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}\]</span></p>
+<ul>
+<li>Bounds: <span class="math inline">\(0 \le R^2 \le 1\)</span>. In simple linear regression, <span class="math inline">\(R^2 = r^2\)</span>.</li>
+</ul></li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Sample business scenario: Ad Spend ($100s) vs. Weekly Revenue ($1000s)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ad_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">ad_spend =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">14</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">revenue  =</span> <span class="fu">c</span>(<span class="dv">15</span>, <span class="dv">22</span>, <span class="dv">24</span>, <span class="dv">29</span>, <span class="dv">34</span>, <span class="dv">41</span>, <span class="dv">43</span>, <span class="dv">52</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit Simple Linear Regression model</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>reg_model <span class="ot">&lt;-</span> <span class="fu">lm</span>(revenue <span class="sc">~</span> ad_spend, <span class="at">data =</span> ad_data)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(reg_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = revenue ~ ad_spend, data = ad_data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.7991 -0.5312 -0.1607  0.4107  1.1205 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  9.39732    0.58528   16.06 3.71e-06 ***
+ad_spend     3.08036    0.06983   44.11 9.09e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.739 on 6 degrees of freedom
+Multiple R-squared:  0.9969,    Adjusted R-squared:  0.9964 
+F-statistic:  1946 on 1 and 6 DF,  p-value: 9.087e-09</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract key metrics</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>b0 <span class="ot">&lt;-</span> <span class="fu">coef</span>(reg_model)[<span class="dv">1</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>b1 <span class="ot">&lt;-</span> <span class="fu">coef</span>(reg_model)[<span class="dv">2</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>r_sq <span class="ot">&lt;-</span> <span class="fu">summary</span>(reg_model)<span class="sc">$</span>r.squared</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>s_e  <span class="ot">&lt;-</span> <span class="fu">summary</span>(reg_model)<span class="sc">$</span>sigma</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Regression Equation: Revenue_hat = %.2f + %.2f * Ad_Spend</span><span class="sc">\n</span><span class="st">"</span>, b0, b1))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Regression Equation: Revenue_hat = 9.40 + 3.08 * Ad_Spend</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"R-squared: %.4f | Standard Error (s_e): %.4f</span><span class="sc">\n</span><span class="st">"</span>, r_sq, s_e))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>R-squared: 0.9969 | Standard Error (s_e): 0.7390</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize regression line and residuals</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(ad_data, <span class="fu">aes</span>(<span class="at">x =</span> ad_spend, <span class="at">y =</span> revenue)) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"darkblue"</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Simple Linear Regression: Ad Spend vs. Revenue"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Ad Spend ($100s)"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Weekly Revenue ($1000s)"</span>) <span class="sc">+</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Week8_files/figure-html/regression-example-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+</section>
+<section id="week-8-key-formula-summary-sheet" class="level1">
+<h1>Week 8 Key Formula Summary Sheet</h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concept / Metric</th>
+<th>Formula</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Experiment-Wise Error</strong></td>
+<td><span class="math inline">\(\alpha_{\text{overall}} = 1 - (1 - \alpha)^c\)</span></td>
+<td><span class="math inline">\(c = \frac{k(k-1)}{2}\)</span> pairwise comparisons</td>
+</tr>
+<tr class="even">
+<td><strong>One-Way ANOVA <span class="math inline">\(F\)</span>-Stat</strong></td>
+<td><span class="math inline">\(F = \frac{MSC}{MSE} = \frac{SSC / (k - 1)}{SSE / (N - k)}\)</span></td>
+<td>Always right-tailed</td>
+</tr>
+<tr class="odd">
+<td><strong>Tukey’s HSD</strong></td>
+<td><span class="math inline">\(\text{HSD} = q_{\alpha, \, k, \, N-k} \sqrt{\frac{MSE}{n}}\)</span></td>
+<td>Equal group sizes <span class="math inline">\(n\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>OLS Slope (<span class="math inline">\(b_1\)</span>)</strong></td>
+<td><span class="math inline">\(b_1 = \frac{SS_{xy}}{SS_{xx}} = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2}\)</span></td>
+<td>Marginal change in <span class="math inline">\(\hat{y}\)</span> per unit <span class="math inline">\(x\)</span></td>
+</tr>
+<tr class="odd">
+<td><strong>OLS Intercept (<span class="math inline">\(b_0\)</span>)</strong></td>
+<td><span class="math inline">\(b_0 = \bar{y} - b_1 \bar{x}\)</span></td>
+<td>Line always passes through <span class="math inline">\((\bar{x}, \bar{y})\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Standard Error (<span class="math inline">\(s_e\)</span>)</strong></td>
+<td><span class="math inline">\(s_e = \sqrt{\frac{SSE}{n - 2}}\)</span></td>
+<td>Standard deviation of residuals</td>
+</tr>
+<tr class="odd">
+<td><strong>Coeff. of Determination (<span class="math inline">\(R^2\)</span>)</strong></td>
+<td><span class="math inline">\(R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}\)</span></td>
+<td>Proportion of variance in <span class="math inline">\(Y\)</span> explained</td>
+</tr>
+</tbody>
+</table>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
