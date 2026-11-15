@@ -1,0 +1,349 @@
+---
+title: "Week 6 Statistics Study Guide: Hypothesis Testing & Categorical Data Analysis"
+subtitle: "Ken Black, Business Statistics (Chapters 9 & 16)"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(knitr)
+```
+
+# Overview & Learning Objectives
+
+The Week 6 readings cover **Chapter 9 (Statistical Inference: Hypothesis Testing for Single Populations)** and **Chapter 16 (Analysis of Categorical Data)** from Ken Black's *Business Statistics*, alongside R implementations from **Kabacoff (Chapter 7)**, **Davies (Chapter 18)**, and **Stowell (Chapter 10)**. By the end of this module, you should be able to:
+
+1. Formulate **null ($H_0$)** and **alternative ($H_a$)** hypotheses for one-tailed and two-tailed tests using the **eight-step hypothesis testing process**, and distinguish between **statistical significance** and **substantive (practical) significance**.
+2. Differentiate between **Type I ($\alpha$)** and **Type II ($\beta$)** errors, compute **Statistical Power ($1 - \beta$)**, and interpret **Power** and **Operating Characteristic (OC)** curves.
+3. Execute and interpret single-sample hypothesis tests for a **population mean ($\mu$)** (both $\sigma$ known via $z$-test and $\sigma$ unknown via $t$-test), a **population proportion ($p$)**, and a **population variance ($\sigma^2$)**.
+4. Distinguish between **parametric** and **nonparametric** statistical procedures.
+5. Conduct a **Chi-Square Goodness-of-Fit Test** (for uniform, Poisson, and normal distributions) to determine whether observed frequency counts conform to an expected theoretical distribution.
+6. Conduct a **Chi-Square Test of Independence** on $r \times c$ contingency tables to evaluate whether two categorical variables are statistically related.
+
+---
+
+# Chapter 9: Hypothesis Testing for Single Populations
+
+Hypothesis testing is a formal inferential procedure used to evaluate competing claims about a population parameter based on sample evidence.
+
+## Fundamentals & The Eight-Step Process (Section 9.1)
+
+* **Null Hypothesis ($H_0$):** The status quo or baseline claim of no effect or no difference. The researcher initially assumes $H_0$ is true; it always contains an equality relationship ($=$, $\le$, or $\ge$).
+* **Alternative Hypothesis ($H_a$):** The research claim or condition we seek sample evidence to support; uses a strict inequality ($\neq$, $<$, or $>$).
+  * **Two-Tailed Test (Nondirectional):** $H_a: \mu \neq \mu_0$ (rejection region split equally into $\alpha/2$ in both tails).
+  * **Left-Tailed Test (Directional):** $H_a: \mu < \mu_0$ (rejection region $\alpha$ entirely in the lower tail).
+  * **Right-Tailed Test (Directional):** $H_a: \mu > \mu_0$ (rejection region $\alpha$ entirely in the upper tail).
+* **Critical Value & Regions:** The **critical value** divides the **rejection region** (where $H_0$ is rejected) from the **nonrejection region** (formerly called the acceptance region, where we fail to reject $H_0$).
+
+### The Eight-Step Hypothesis Testing Procedure
+1. **Establish hypotheses:** State the null ($H_0$) and alternative ($H_a$) hypotheses.
+2. **Determine the statistical test:** Select the appropriate test statistic ($z$, $t$, or $\chi^2$) based on parameter and assumptions.
+3. **Specify $\alpha$:** Choose the level of significance (acceptable Type I error probability).
+4. **State the decision rule:** Identify the critical value(s) and rejection region(s) or $p$-value threshold.
+5. **Gather sample data:** Collect a random sample and compute summary statistics.
+6. **Compute the test statistic:** Calculate the observed $z$, $t$, or $\chi^2$ value (and $p$-value).
+7. **Reach a statistical conclusion:** Reject or fail to reject $H_0$.
+8. **Reach a practical conclusion:** Translate the statistical decision into substantive business or scientific action.
+
+### Decision Errors, Significance & Decision Methods
+
+| Decision | $H_0$ is Actually True | $H_0$ is Actually False |
+|---|---|---|
+| **Fail to Reject $H_0$** | Correct Decision ($1 - \alpha$) | **Type II Error ($\beta$)** (False Negative) |
+| **Reject $H_0$** | **Type I Error ($\alpha$)** (False Positive) | Correct Decision / **Power ($1 - \beta$)** |
+
+* **Level of Significance ($\alpha$):** Maximum acceptable probability of committing a Type I error (rejecting a true null hypothesis), commonly $0.01$, $0.05$, or $0.10$.
+* **Type II Error ($\beta$) & Power ($1 - \beta$):** $\beta$ is the probability of failing to reject a false $H_0$. **Power** is $1 - \beta$, the probability of correctly rejecting a false $H_0$.
+* **$p$-Value Method:** The probability of observing a test statistic as extreme as, or more extreme than, the sample result assuming $H_0$ is true. **Reject $H_0$ if $p\text{-value} < \alpha$.**
+  * *Two-tailed adjustment:* If you compute a one-tail probability $p_{\text{tail}}$ for a two-tailed test, the two-tailed $p$-value is $2 \cdot p_{\text{tail}}$ (equivalently, reject $H_0$ only if $p_{\text{tail}} < \alpha / 2$).
+
+---
+
+## Testing Hypotheses About a Population Mean ($\mu$) (Sections 9.2 – 9.3)
+
+### Case 1: Population Standard Deviation ($\sigma$) Known ($z$-Test)
+Applicable when $\sigma$ is known and the population is normally distributed (or $n \ge 30$ by the Central Limit Theorem):
+$$z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}$$
+
+Base R does not include a built-in one-sample $z$-test function, though `BSDA::z.test()` provides one in an external package. Below we write a reusable base-R `one_sample_z_test()` function and apply it to **Demonstration Problem 9.1 (Dental Tooth Fillings, p. 281)**: historical mean out-of-pocket expenditure is $\$141$ ($\sigma = \$30$), and a researcher tests whether current costs are higher ($H_a: \mu > 141$) using $n = 32$ fillings at $\alpha = 0.05$.
+
+```{r ch9-z-test}
+one_sample_z_test <- function(x, mu0, sigma, alternative = "two.sided", alpha = 0.05) {
+  n <- length(x)
+  x_bar <- mean(x, na.rm = TRUE)
+  se <- sigma / sqrt(n)
+  z_obs <- (x_bar - mu0) / se
+  if (alternative == "greater") {
+    crit_z <- qnorm(1 - alpha)
+    p_val <- pnorm(z_obs, lower.tail = FALSE)
+    decision <- ifelse(z_obs > crit_z, "Reject H0", "Fail to Reject H0")
+  } else if (alternative == "less") {
+    crit_z <- qnorm(alpha)
+    p_val <- pnorm(z_obs, lower.tail = TRUE)
+    decision <- ifelse(z_obs < crit_z, "Reject H0", "Fail to Reject H0")
+  } else {
+    crit_z <- qnorm(1 - alpha / 2)
+    p_val <- 2 * pnorm(abs(z_obs), lower.tail = FALSE)
+    decision <- ifelse(abs(z_obs) > crit_z, "Reject H0", "Fail to Reject H0")
+  }
+  data.frame(
+    n = n,
+    Sample_Mean = round(x_bar, 4),
+    z_Statistic = round(z_obs, 4),
+    Critical_z = round(crit_z, 4),
+    p_Value = round(p_val, 5),
+    Decision = decision
+  )
+}
+
+fillings <- c(147, 145, 175, 163, 152, 166, 125, 175, 119, 149, 147, 120, 142,
+              130, 210, 135, 163, 158, 132, 207, 151, 175, 156, 141, 123, 142,
+              139, 170, 118, 160, 122, 110)
+
+print(one_sample_z_test(fillings, mu0 = 141, sigma = 30, alternative = "greater", alpha = 0.05))
+```
+
+Because $z = 1.5026 < z_{\text{crit}} = 1.6449$ ($p = 0.06647 > 0.05$), we fail to reject $H_0$; there is insufficient evidence at $\alpha = 0.05$ that dental filling expenditures exceed $\$141$.
+
+### Case 2: Population Standard Deviation ($\sigma$) Unknown ($t$-Test)
+When $\sigma$ is unknown (the typical practical case) and is estimated by the sample standard deviation $s$, we use Student's $t$-distribution (assuming a normal population or $n \ge 30$):
+$$t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}, \quad \text{with } df = n - 1$$
+
+In **Demonstration Problem 9.2 (U.S. Farm Sizes, p. 287)**, a researcher tests whether average farm size now exceeds the 1997 average of $471$ acres ($H_a: \mu > 471$) using $n = 23$ randomly sampled farms at $\alpha = 0.05$. Additionally, when testing multiple subgroups simultaneously (such as comparing three hot dog types in `hot_dogs.csv` against a benchmark), analysts should be aware that running multiple classical tests increases family-wise Type I error and warrants adjusting critical values when multiple significant results emerge.
+
+```{r ch9-t-test, fig.height=3.6, fig.width=6.5}
+acres <- c(445, 557, 545, 489, 502, 511, 474, 449, 590, 505, 438, 561, 553, 500,
+           560, 477, 466, 454, 477, 463, 557, 466, 433)
+
+t_acres <- t.test(x = acres, mu = 471, alternative = "greater", conf.level = 0.95)
+print(t_acres)
+
+t_manual <- (mean(acres) - 471) / (sd(acres) / sqrt(length(acres)))
+p_manual <- pt(q = t_manual, df = length(acres) - 1, lower.tail = FALSE)
+print(sprintf("Manual t = %.4f, p-value = %.6f", t_manual, p_manual))
+
+hotdogs <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/hot_dogs.csv")
+boxplot(Calories ~ Type, data = hotdogs, horizontal = TRUE,
+        col = c("salmon", "tan", "lightblue"),
+        main = "Hot Dog Calories by Type (Benchmark = 140)",
+        xlab = "Calories", ylab = "Type")
+abline(v = 140, lty = 2, lwd = 2, col = "darkred")
+
+poultry <- subset(hotdogs, Type == "Poultry")
+print(t.test(poultry$Calories, mu = 140, alternative = "less", conf.level = 0.95))
+```
+
+---
+
+## Testing Hypotheses About a Population Proportion ($p$) (Section 9.4)
+
+Applicable for large samples where $n p_0 \ge 5$ and $n(1 - p_0) \ge 5$:
+$$z = \frac{\hat{p} - p_0}{\sqrt{\frac{p_0 (1 - p_0)}{n}}}, \quad \text{where } \hat{p} = \frac{x}{n}$$
+
+In R, `prop.test()` computes Pearson's chi-square statistic ($X^2$) rather than $z$ directly; without Yates' continuity correction (`correct = FALSE`), the two statistics satisfy $z^2 = X^2$, so $|z| = \sqrt{X^2}$. For small or moderate counts, `correct = TRUE` (the default in `prop.test()`) applies Yates' continuity correction.
+
+In **Demonstration Problem 9.3 (Wisconsin Milk Consumption, p. 294)**, a producer tests whether more than $17\%$ of Wisconsin residents choose milk as their primary breakfast beverage ($H_a: p > 0.17$) using $x = 116$ out of $n = 550$ residents at $\alpha = 0.01$.
+
+```{r ch9-prop-test}
+z_test_milk <- prop.test(x = 116, n = 550, p = 0.17, alternative = "greater",
+                         conf.level = 0.99, correct = FALSE)
+print(z_test_milk)
+print(sprintf("Recovered z-statistic = %.4f (p = %.5f)",
+              sqrt(z_test_milk$statistic), z_test_milk$p.value))
+```
+
+Because $z = 2.5541 > z_{0.01} = 2.3263$ ($p = 0.00532 < 0.01$), we reject $H_0$ and conclude that the proportion of Wisconsin residents choosing milk as their primary breakfast beverage is significantly higher than $17\%$.
+
+---
+
+## Testing Hypotheses About a Population Variance ($\sigma^2$) (Section 9.5)
+
+Requires the underlying population to be **strictly normally distributed**:
+$$\chi^2 = \frac{(n - 1)s^2}{\sigma_0^2}, \quad \text{with } df = n - 1$$
+
+Base R's `chisq.test()` and `var.test()` do not perform a single-sample variance test (which is provided by `EnvStats::varTest()`). However, we can implement both the exact $\chi^2$ hypothesis test and the exact $(1 - \alpha)$ variance confidence interval directly using `qchisq()` and `pchisq()`.
+
+In **Demonstration Problem 9.4 (Overtime Hours Variance)**, a small business tests whether weekly overtime variance differs from $\sigma_0^2 = 25$ ($H_a: \sigma^2 \neq 25$) across $n = 16$ weeks at $\alpha = 0.10$.
+
+```{r ch9-var-test}
+one_sample_var_test <- function(x, sigma2_0, alternative = "two.sided", conf.level = 0.95) {
+  n <- length(x)
+  df <- n - 1
+  s2 <- var(x)
+  chi2_obs <- df * s2 / sigma2_0
+  alpha <- 1 - conf.level
+  if (alternative == "greater") {
+    p_val <- pchisq(chi2_obs, df = df, lower.tail = FALSE)
+    ci <- c(df * s2 / qchisq(1 - alpha, df = df), Inf)
+  } else if (alternative == "less") {
+    p_val <- pchisq(chi2_obs, df = df, lower.tail = TRUE)
+    ci <- c(0, df * s2 / qchisq(alpha, df = df))
+  } else {
+    p_val <- 2 * min(pchisq(chi2_obs, df = df, lower.tail = TRUE),
+                     pchisq(chi2_obs, df = df, lower.tail = FALSE))
+    ci <- c(df * s2 / qchisq(1 - alpha / 2, df = df),
+            df * s2 / qchisq(alpha / 2, df = df))
+  }
+  list(sample_var = s2, chi_squared = chi2_obs, df = df, p_value = p_val, conf_int = ci)
+}
+
+overtime_hrs <- c(57, 46, 48, 63, 56, 53, 51, 53, 52, 44, 55, 51, 44, 44, 48, 50)
+ot_res <- one_sample_var_test(overtime_hrs, sigma2_0 = 25, alternative = "two.sided", conf.level = 0.90)
+print(sprintf("Overtime s^2 = %.4f | chi^2 = %.4f (df = %d) | p-value = %.4f",
+              ot_res$sample_var, ot_res$chi_squared, ot_res$df, ot_res$p_value))
+print(sprintf("90%% CI for variance: [%.4f, %.4f] | Critical chi^2 bounds: [%.4f, %.4f]",
+              ot_res$conf_int[1], ot_res$conf_int[2],
+              qchisq(0.05, 15), qchisq(0.95, 15)))
+```
+
+Because $\chi^2 = 16.8375$ lies well inside the nonrejection region $[7.2609, 24.9958]$ ($p = 0.6573 > 0.10$), and $\sigma_0^2 = 25$ lies inside the $90\%$ CI $[17.34, 57.97]$, we fail to reject $H_0$.
+
+---
+
+## Type II Error ($\beta$), Statistical Power ($1 - \beta$), and OC/Power Curves (Section 9.6)
+
+To compute $\beta$ for a specific true alternative value $\mu_a$:
+
+1. Find the critical sample mean $\bar{x}_c$ corresponding to $\alpha$ under $H_0$:
+   $$\bar{x}_c = \mu_0 \pm z_{\alpha} \left(\frac{\sigma}{\sqrt{n}}\right)$$
+2. Compute the $z$-score of $\bar{x}_c$ under the alternative distribution centered at $\mu_a$:
+   $$z_\beta = \frac{\bar{x}_c - \mu_a}{\sigma / \sqrt{n}}$$
+3. Determine $\beta = P(\text{fail to reject } H_0 \mid \mu = \mu_a)$, and compute **$\text{Power} = 1 - \beta$**.
+
+* **Operating Characteristic (OC) Curve:** Plots the probability of a Type II error ($\beta$) against a range of possible true alternative values $\mu_a$.
+* **Power Curve:** Plots statistical power ($1 - \beta$) against possible true alternative values $\mu_a$. As $\mu_a$ moves further from $\mu_0$ (or as sample size $n$ increases), $\beta$ decreases and Power approaches $1$.
+
+```{r ch9-power-curve, fig.height=4, fig.width=7}
+mu0 <- 30
+sigma <- 0.63
+n <- 49
+alpha <- 0.05
+se <- sigma / sqrt(n)
+x_crit <- mu0 - qnorm(1 - alpha) * se
+
+mu_alt <- seq(29.4, 30.0, by = 0.01)
+beta_vals <- pnorm(x_crit, mean = mu_alt, sd = se, lower.tail = FALSE)
+power_vals <- 1 - beta_vals
+
+curve_df <- data.frame(
+  mu_a = rep(mu_alt, 2),
+  Probability = c(power_vals, beta_vals),
+  Curve = rep(c("Power (1 - beta)", "Type II Error (beta)"), each = length(mu_alt))
+)
+
+ggplot(curve_df, aes(x = mu_a, y = Probability, color = Curve)) +
+  geom_line(linewidth = 1.1) +
+  geom_vline(xintercept = 29.6, linetype = "dashed", color = "gray40") +
+  labs(title = "Power and Operating Characteristic (OC) Curves (Left-Tailed Test)",
+       subtitle = expression(paste(mu[0], " = 30, ", sigma, " = 0.63, n = 49, ", alpha, " = 0.05")),
+       x = expression("True Alternative Mean (" * mu[a] * ")"),
+       y = "Probability") +
+  theme_minimal()
+```
+
+---
+
+# Chapter 16: Analysis of Categorical Data
+
+Chapter 16 introduces **nonparametric** Chi-Square ($\chi^2$) procedures for analyzing **nominal or ordinal frequency counts**. Unlike **parametric statistics** (which rely on restrictive assumptions about population parameters and distributions, such as normality), nonparametric methods require fewer distributional assumptions.
+
+## Chi-Square Goodness-of-Fit Test (Section 16.1)
+
+Tests whether observed sample frequencies ($f_o$) across $k$ categories conform to a hypothesized theoretical or historical distribution ($f_e$).
+
+* **Hypotheses:**
+  * $H_0$: The population follows the specified distribution ($p_1 = p_{1,0}, \, p_2 = p_{2,0}, \dots, p_k = p_{k,0}$).
+  * $H_a$: The population distribution differs from the specified distribution.
+
+* **Test Statistic:**
+  $$\chi^2 = \sum_{i=1}^{k} \frac{(f_{o,i} - f_{e,i})^2}{f_{e,i}}, \quad \text{where } f_{e,i} = n \cdot p_{i,0}$$
+
+* **Degrees of Freedom:**
+  $$df = k - 1 - m$$
+  *(where $k$ is the number of categories and $m$ is the number of population parameters estimated from the sample data)*:
+  * **Uniform / Fixed Proportions:** $m = 0 \implies df = k - 1$.
+  * **Poisson Distribution:** $m = 1$ (since $\lambda$ is estimated by $\hat{\lambda} = \bar{x}$) $\implies df = k - 2$.
+  * **Normal Distribution:** $m = 2$ (since $\mu$ and $\sigma$ are estimated by $\bar{x}$ and $s$) $\implies df = k - 3$.
+
+* **Sample Size Requirement:** Every category must have an expected frequency of **$f_{e,i} \ge 5$** (combine adjacent categories if necessary). Goodness-of-fit tests are always **right-tailed**.
+
+In **Demonstration Problem 16.1 (Supermarket Milk Sales)**, producers test at $\alpha = 0.01$ whether monthly milk sales (in gallons) are **uniformly distributed** across the 12 months of the year ($p_i = 1/12$ for each month, $df = 12 - 1 = 11$).
+
+```{r ch16-gof}
+gallons <- c(1610, 1585, 1649, 1590, 1540, 1397, 1410, 1350, 1495, 1564, 1602, 1655)
+gof_milk <- chisq.test(x = gallons, p = rep(1 / length(gallons), length(gallons)))
+print(gof_milk)
+print(sprintf("Critical chi^2 (alpha = 0.01, df = 11): %.4f", qchisq(0.99, df = 11)))
+```
+
+Because $\chi^2 = 74.3758 > \chi^2_{0.01, 11} = 24.7250$ ($p < 0.0001$), we reject $H_0$; monthly milk sales are not uniformly distributed across the year (notice the summer dip in June–August).
+
+---
+
+## Chi-Square Test of Independence (Section 16.2)
+
+Tests whether two categorical variables organized in an $r \times c$ **contingency table** (two-way frequency table with $r$ rows and $c$ columns) are statistically independent.
+
+* **Hypotheses:**
+  * $H_0$: The two categorical variables are independent (no association).
+  * $H_a$: The two categorical variables are dependent (related).
+
+* **Expected Frequency for Cell $(i, j)$:**
+  $$f_{e,ij} = \frac{(\text{Row } i \text{ Total}) \times (\text{Column } j \text{ Total})}{N}$$
+
+* **Test Statistic & Degrees of Freedom:**
+  $$\chi^2 = \sum_{i=1}^{r} \sum_{j=1}^{c} \frac{(f_{o,ij} - f_{e,ij})^2}{f_{e,ij}}, \quad \text{with } df = (r - 1)(c - 1)$$
+
+* **Decision Rule:** Reject $H_0$ if $\chi^2 > \chi^2_{\alpha, \, df}$ (or if $p\text{-value} < \alpha$). Requires $f_{e,ij} \ge 5$ in all cells.
+
+In **Demonstration Problem 16.3 (Age vs. Lunch Beverage Preference)**, $N = 309$ lunch customers are cross-classified by age group (`21-34`, `35-55`, `>55`) and preferred beverage (`Coffee/Tea`, `Soft Drink`, `Other`) at $\alpha = 0.05$.
+
+```{r ch16-independence}
+bev_mat <- matrix(data = c(26, 95, 18,
+                           41, 40, 20,
+                           24, 13, 32),
+                  nrow = 3, byrow = TRUE,
+                  dimnames = list(Age = c("21-34", "35-55", ">55"),
+                                  Beverage = c("Coffee/Tea", "Soft Drink", "Other")))
+print(bev_mat)
+
+indep_bev <- chisq.test(x = bev_mat)
+print(indep_bev)
+print(round(indep_bev$expected, 2))
+print(sprintf("Critical chi^2 (alpha = 0.05, df = 4): %.4f", qchisq(0.95, df = 4)))
+```
+
+Because $\chi^2 = 59.4046 > \chi^2_{0.05, 4} = 9.4877$ ($p = 3.87 \times 10^{-12} < 0.05$), and all expected cell counts exceed $5$, we reject $H_0$ and conclude that preferred lunch beverage depends strongly on customer age.
+
+---
+
+# Week 6 Key Formula & R Summary Sheet
+
+| Test / Concept | Test Statistic Formula | Degrees of Freedom ($df$) | Key Conditions & R Implementation |
+|---|---|---|---|
+| **1-Sample Mean ($\sigma$ known)** | $z = \frac{\bar{x} - \mu_0}{\sigma / \sqrt{n}}$ | — | Normal pop. or $n \ge 30$; custom `one_sample_z_test()` or `BSDA::z.test()` |
+| **1-Sample Mean ($\sigma$ unknown)** | $t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}$ | $n - 1$ | Normal pop. or $n \ge 30$; `t.test(x, mu = mu0, alternative = ...)` |
+| **1-Sample Proportion ($p$)** | $z = \frac{\hat{p} - p_0}{\sqrt{p_0(1 - p_0)/n}}$ | — | $np_0 \ge 5$ and $n(1 - p_0) \ge 5$; `prop.test(x, n, p = p0, correct = FALSE)` |
+| **1-Sample Variance ($\sigma^2$)** | $\chi^2 = \frac{(n - 1)s^2}{\sigma_0^2}$ | $n - 1$ | Underlying pop. strictly normal; `qchisq()`, `pchisq()`, or `EnvStats::varTest()` |
+| **Type II Error & Power** | $z_\beta = \frac{\bar{x}_c - \mu_a}{\sigma / \sqrt{n}}$ | — | $\text{Power} = 1 - \beta$; `pnorm()` around $\bar{x}_c$ under $\mu_a$ |
+| **$\chi^2$ Goodness-of-Fit** | $\chi^2 = \sum \frac{(f_o - f_e)^2}{f_e}$ | $k - 1 - m$ | $m = 0$ (fixed/uniform), $m = 1$ (Poisson), $m = 2$ (Normal); $f_e \ge 5$; `chisq.test(x, p = ...)` |
+| **$\chi^2$ Test of Independence** | $\chi^2 = \sum \sum \frac{(f_{o,ij} - f_{e,ij})^2}{f_{e,ij}}$ | $(r - 1)(c - 1)$ | $f_{e,ij} = \frac{R_i \cdot C_j}{N} \ge 5$; right-tailed; `chisq.test(matrix)` |
