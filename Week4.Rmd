@@ -1,0 +1,485 @@
+---
+title: "Week 4 Statistics Study Guide: Continuous & Sampling Distributions"
+subtitle: "Ken Black (Chapters 6 & 7) and Wilcox (Chapter 4.7)"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+```
+
+# Overview & Learning Objectives
+
+The Week 4 readings cover **Chapter 6 (Continuous Distributions)** and **Chapter 7 (Sampling and Sampling Distributions)** from Ken Black's *Business Statistics*, paired with **Wilcox Chapter 4 (Section 4.7)** on modern insights into non-normality, heavy-tailed distributions, and skewness, as well as R methods from **Teetor (Chapter 8)**. By the end of this module, you should be able to:
+
+1. Differentiate between **discrete** (counting) and **continuous** (measuring) probability distributions, recognizing that for continuous variables $P(X = x) = 0$ and probabilities correspond to **areas under a density curve**.
+2. Compute probabilities, quantiles, and summary parameters for the **Continuous Uniform**, **Normal** (and **Standard Normal $z$**), and **Exponential** distributions in R (`punif`, `pnorm`, `qnorm`, `pexp`).
+3. Assess normality visually using **histograms**, **kernel density curves**, and **Normal Q-Q plots**.
+4. Apply the **Normal Approximation to the Binomial Distribution** using a **continuity correction** ($\pm 0.5$) and compare approximate vs. exact binomial probabilities.
+5. Distinguish **sampling** vs. **census**, **sampling** vs. **non-sampling error**, and execute **simple** and **stratified random sampling** in R (`sample()`, `sample.int()`, `set.seed()`, and grouped sampling).
+6. Apply the **Central Limit Theorem (CLT)** to characterize the sampling distribution of the sample mean ($\bar{x}$) and the sample proportion ($\hat{p}$), including the **Finite Population Correction Factor**.
+7. Critically evaluate the limitations of normality using **Wilcox's contaminated (mixed) normal**, **skewness**, and **logarithmic transformation** insights.
+
+---
+
+# Black Chapter 6: Continuous Distributions
+
+Unlike discrete random variables that take countable values (e.g., counts of defects or arrivals) and sum individual probabilities, a **continuous random variable** arises from **measuring** and can assume any value over an uninterrupted interval. Probabilities are calculated over intervals $[a, b]$ via integration (the area under the probability density function $f(x)$), with total area equal to $1$ and $P(X = x) = 0$ at any single exact point.
+
+## The Continuous Uniform Distribution (Section 6.1)
+
+Also known as the **rectangular distribution**, every sub-interval of equal width within $[a, b]$ has an equal probability of occurring because the density height is constant across the finite interval.
+
+* **Probability Density Function (PDF):**
+  $$f(x) = \frac{1}{b - a}, \quad \text{for } a \le x \le b \quad (\text{and } 0 \text{ otherwise})$$
+* **Probability over Sub-interval $[x_1, x_2] \subseteq [a, b]$:**
+  $$P(x_1 \le X \le x_2) = \frac{x_2 - x_1}{b - a}$$
+* **Mean & Standard Deviation:**
+  $$\mu = \frac{a + b}{2}, \qquad \sigma = \frac{b - a}{\sqrt{12}}$$
+* **Inputs:**
+  * $a$: Minimum (lower endpoint) of the uniform interval.
+  * $b$: Maximum (upper endpoint) of the uniform interval ($b > a$).
+  * $x_1, x_2$: Lower and upper bounds of the target probability interval (clamped to $[a, b]$).
+
+### R Implementation: Plastic Module Assembly & Table 6.1 (Black Ch. 6 R Supplement)
+
+* **Demonstration Problem 6.1:** The time required to assemble a plastic module is uniformly distributed between $a = 27$ and $b = 39$ seconds. Thus, $\mu = 33$ seconds, $\sigma = 3.4641$ seconds, $P(30 \le X \le 35) = \frac{35 - 30}{39 - 27} = 0.4167$, and $P(X < 30) = \frac{30 - 27}{39 - 27} = 0.2500$.
+* **Table 6.1 Benchmark:** For $X \sim \text{Uniform}(200, 1182)$, $P(410 \le X \le 825) = 0.4226$.
+
+```{r uniform-demo, fig.height=3.6, fig.width=6.5}
+a <- 27
+b <- 39
+
+mu_unif <- (a + b) / 2
+sd_unif <- (b - a) / sqrt(12)
+prob_30_35_manual <- (35 - 30) / (b - a)
+prob_30_35_r <- punif(q = 35, min = a, max = b, lower.tail = TRUE) -
+  punif(q = 30, min = a, max = b, lower.tail = TRUE)
+prob_lt_30 <- punif(q = 30, min = a, max = b, lower.tail = TRUE)
+prob_table_6_1 <- punif(q = 825, min = 200, max = 1182, lower.tail = TRUE) -
+  punif(q = 410, min = 200, max = 1182, lower.tail = TRUE)
+
+print(sprintf("Demo 6.1 -> Mean: %.2f | SD: %.4f", mu_unif, sd_unif))
+print(sprintf("P(30 <= X <= 35) manual: %.4f | punif(): %.4f", prob_30_35_manual, prob_30_35_r))
+print(sprintf("P(X < 30): %.4f | Table 6.1 P(410 <= X <= 825): %.4f", prob_lt_30, prob_table_6_1))
+
+unif_df <- data.frame(x = seq(25, 41, length.out = 400))
+unif_df$y <- dunif(unif_df$x, min = a, max = b)
+
+ggplot(unif_df, aes(x = x, y = y)) +
+  geom_area(data = subset(unif_df, x >= 30 & x <= 35), fill = "steelblue", alpha = 0.45) +
+  geom_step(color = "navy", linewidth = 1) +
+  labs(title = "Continuous Uniform Distribution U(27, 39): Shaded P(30 <= X <= 35) = 0.4167",
+       x = "Assembly Time (seconds)",
+       y = "Density f(x)") +
+  theme_minimal()
+```
+
+---
+
+## The Normal & Standard Normal Distributions (Section 6.2)
+
+The **Normal (Gaussian) Distribution** is symmetric around its mean ($\text{Mean} = \text{Median} = \text{Mode}$), unimodal, bell-shaped, asymptotic to the horizontal axis (tails extend to $\pm\infty$ without touching the axis), and completely defined by two parameters: its mean ($\mu$) and standard deviation ($\sigma$).
+
+* **Normal Probability Density Function:**
+  $$f(x) = \frac{1}{\sigma \sqrt{2\pi}} e^{-\frac{1}{2}\left(\frac{x - \mu}{\sigma}\right)^2}, \quad -\infty < x < +\infty$$
+* **Standard Normal Distribution ($Z$) & $z$-Score Transformation:** A normal distribution with $\mu = 0$ and $\sigma = 1$. Any normal variable $X \sim N(\mu, \sigma^2)$ can be standardized into a **$z$-score**, measuring how many standard deviations $x$ lies above or below $\mu$:
+  $$z = \frac{x - \mu}{\sigma}$$
+* **Inputs:**
+  * $x$: Observed or threshold value of the normal random variable.
+  * $\mu$: Population mean (center of the distribution).
+  * $\sigma$: Population standard deviation ($\sigma = \sqrt{\sigma^2} > 0$, spread of the distribution).
+* **Key Empirical Benchmarks:**
+  * $P(\mu - \sigma < X < \mu + \sigma) \approx 0.6826$ ($68\%$)
+  * $P(\mu - 1.96\sigma < X < \mu + 1.96\sigma) = 0.9500$ ($95\%$)
+  * $P(\mu - 2\sigma < X < \mu + 2\sigma) \approx 0.9544$ ($95.4\%$)
+  * $P(\mu - 3\sigma < X < \mu + 3\sigma) \approx 0.9973$ ($99.7\%$)
+
+### R Implementation: EPA Waste Generation & Quantiles (Black Ch. 6 R Supplement)
+
+In **Demonstration Problem 6.3**, daily per-capita waste generation in the U.S. is normally distributed with $\mu = 4.43$ pounds and $\sigma = 1.32$ pounds. Unlike printed $z$-tables (which round $z$ to two decimal places), R computes exact cumulative probabilities via `pnorm()` directly from $\mu$ and $\sigma$ and exact inverse percentiles via `qnorm()`.
+
+```{r normal-demo, fig.height=3.8, fig.width=6.8}
+mu_waste <- 4.43
+sd_waste <- 1.32
+
+z_waste <- (6.00 - mu_waste) / sd_waste
+p_gt_6_z <- pnorm(q = z_waste, mean = 0, sd = 1, lower.tail = FALSE)
+p_gt_6_direct <- pnorm(q = 6.00, mean = mu_waste, sd = sd_waste, lower.tail = FALSE)
+p_36_50 <- pnorm(q = 5.00, mean = mu_waste, sd = sd_waste, lower.tail = TRUE) -
+  pnorm(q = 3.60, mean = mu_waste, sd = sd_waste, lower.tail = TRUE)
+p_53_65 <- pnorm(q = 6.50, mean = mu_waste, sd = sd_waste) -
+  pnorm(q = 5.30, mean = mu_waste, sd = sd_waste)
+p90_waste <- qnorm(p = 0.90, mean = mu_waste, sd = sd_waste, lower.tail = TRUE)
+
+print(sprintf("Demo 6.3 -> z(6.00) = %.4f | P(X > 6.00) via z: %.4f | direct: %.4f",
+              z_waste, p_gt_6_z, p_gt_6_direct))
+print(sprintf("P(3.60 <= X <= 5.00): %.4f | P(5.30 <= X <= 6.50): %.4f | 90th percentile: %.4f lbs",
+              p_36_50, p_53_65, p90_waste))
+
+x_norm <- seq(mu_waste - 3.5 * sd_waste, mu_waste + 3.5 * sd_waste, length.out = 500)
+norm_df <- data.frame(x = x_norm, y = dnorm(x_norm, mean = mu_waste, sd = sd_waste))
+
+ggplot(norm_df, aes(x = x, y = y)) +
+  geom_area(data = subset(norm_df, x >= 3.60 & x <= 5.00), fill = "steelblue", alpha = 0.45) +
+  geom_area(data = subset(norm_df, x >= 6.00), fill = "firebrick", alpha = 0.45) +
+  geom_line(color = "gray20", linewidth = 1) +
+  geom_vline(xintercept = mu_waste, linetype = "dashed", color = "navy") +
+  labs(title = "U.S. Daily Waste per Person N(4.43, 1.32^2)",
+       subtitle = "Blue: P(3.60 <= X <= 5.00) = 0.4023 | Red: P(X > 6.00) = 0.1171",
+       x = "Waste Generated (lbs/day)",
+       y = "Density f(x)") +
+  theme_minimal()
+```
+
+### Checking Normality Visually: CEO Ages (`salaries.csv`)
+
+To evaluate whether empirical data plausibly follow a Normal distribution, combine a **histogram** (or kernel density plot) with a **Normal Q-Q plot** (`qqnorm()` and `qqline()`). Points aligning closely along the diagonal reference line indicate approximate normality. Using [`salaries.csv`](https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/salaries.csv) ($n = 60$ small-business CEOs), CEO `AGE` exhibits an approximately bell-shaped distribution and linear Q-Q alignment, whereas `SAL` is right-skewed.
+
+```{r salaries-normality, fig.height=4.0, fig.width=8.0}
+salaries <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/salaries.csv")
+
+print(sprintf("CEO AGE -> n = %d | Mean = %.2f | Median = %.2f | SD = %.2f",
+              nrow(salaries), mean(salaries$AGE), median(salaries$AGE), sd(salaries$AGE)))
+
+par(mfrow = c(1, 2))
+hist(salaries$AGE, probability = TRUE, col = "lightblue", border = "white",
+     main = "CEO Age Histogram & Density", xlab = "Age (years)")
+lines(density(salaries$AGE), col = "navy", lwd = 2)
+qqnorm(salaries$AGE, main = "Normal Q-Q Plot of CEO Age",
+       xlab = "Normal Quantiles", ylab = "Age Quantiles", pch = 19, col = "steelblue")
+qqline(salaries$AGE, distribution = qnorm, probs = c(0.25, 0.75), qtype = 7, col = "firebrick", lwd = 2)
+```
+
+---
+
+## Normal Approximation to the Binomial (Section 6.3)
+
+When the number of binomial trials $n$ is large enough that **$n p \ge 5$ and $n q \ge 5$** (where $q = 1 - p$, ensuring the interval $\mu \pm 3\sigma$ lies comfortably inside $[0, n]$), a discrete Binomial distribution $X \sim \text{Binomial}(n, p)$ can be approximated by a continuous Normal distribution $Y \sim N(\mu, \sigma^2)$ with:
+
+$$\mu = n p, \qquad \sigma = \sqrt{n p q}, \qquad z = \frac{x_{\text{corrected}} - n p}{\sqrt{n p q}}$$
+
+* **Inputs:**
+  * $n$: Fixed number of independent Bernoulli trials.
+  * $p$: Constant probability of success per trial ($q = 1 - p$).
+  * $x$: Discrete integer count of successes ($0 \le x \le n$).
+* **Continuity Correction ($\pm 0.5$):** Because a smooth normal curve approximates discrete integer probability bars of width $1$ centered at $x$, adjust endpoints by $0.5$ to include or exclude the boundary bar:
+  * Exact value: $P(X = x) \approx P(x - 0.5 \le Y \le x + 0.5)$
+  * At most $x$: $P(X \le x) \approx P(Y \le x + 0.5)$
+  * Fewer than $x$: $P(X < x) = P(X \le x - 1) \approx P(Y \le x - 0.5)$
+  * At least $x$: $P(X \ge x) \approx P(Y \ge x - 0.5)$
+  * More than $x$: $P(X > x) = P(X \ge x + 1) \approx P(Y \ge x + 0.5)$
+
+### R Implementation: Exact Binomial vs. Normal Approximation (Black Ch. 6 R Supplement)
+
+* **Demonstration Problem 6.6 ($n = 25, p = 0.40$):** Compare exact $P(X = 12)$ via `dbinom()` against the normal approximation over $[11.5, 12.5]$.
+* **Demonstration Problem 6.7 ($n = 100, p = 0.37$):** Compare exact $P(X < 27) = P(X \le 26)$ via `pbinom()` against the normal approximation $P(Y \le 26.5)$.
+
+```{r binom-normal-approx, fig.height=3.8, fig.width=6.8}
+n_66 <- 25
+p_66 <- 0.40
+exact_66 <- dbinom(x = 12, size = n_66, prob = p_66)
+approx_66 <- pnorm(q = 12.5, mean = n_66 * p_66, sd = sqrt(n_66 * p_66 * (1 - p_66))) -
+  pnorm(q = 11.5, mean = n_66 * p_66, sd = sqrt(n_66 * p_66 * (1 - p_66)))
+
+n_67 <- 100
+p_67 <- 0.37
+exact_67 <- pbinom(q = 26, size = n_67, prob = p_67, lower.tail = TRUE)
+approx_67 <- pnorm(q = 26.5, mean = n_67 * p_67, sd = sqrt(n_67 * p_67 * (1 - p_67)))
+
+print(sprintf("Demo 6.6 P(X = 12) -> Exact Binomial: %.6f | Normal Approx: %.6f", exact_66, approx_66))
+print(sprintf("Demo 6.7 P(X < 27) -> Exact Binomial: %.6f | Normal Approx: %.6f", exact_67, approx_67))
+
+mu_66 <- n_66 * p_66
+sd_66 <- sqrt(n_66 * p_66 * (1 - p_66))
+binom_df <- data.frame(x = 0:n_66, prob = dbinom(0:n_66, size = n_66, prob = p_66))
+binom_df$highlight <- ifelse(binom_df$x == 12, "Target (x = 12)", "Other")
+
+ggplot(binom_df, aes(x = x, y = prob, fill = highlight)) +
+  geom_col(width = 0.85, alpha = 0.8) +
+  stat_function(fun = dnorm, args = list(mean = mu_66, sd = sd_66),
+                color = "navy", linewidth = 1.1) +
+  scale_fill_manual(values = c("Other" = "gray70", "Target (x = 12)" = "firebrick")) +
+  labs(title = "Normal Approximation to Binomial(n = 25, p = 0.40)",
+       subtitle = "Continuity correction covers [11.5, 12.5] to approximate P(X = 12)",
+       x = "Number of Successes (x)",
+       y = "Probability / Density",
+       fill = NULL) +
+  theme_minimal()
+```
+
+---
+
+## The Exponential Distribution (Section 6.4)
+
+The **Exponential Distribution** is the continuous counterpart to the discrete Poisson distribution: whereas Poisson counts the number of random events occurring over an interval, the Exponential distribution models the **continuous waiting time or space between independent events** occurring at a constant average rate $\lambda$. It is **positively (right) skewed**, **left-bound at zero** ($x \ge 0$), and exhibits strictly decreasing density as $x$ increases.
+
+* **Probability Density Function (PDF):**
+  $$f(x) = \lambda e^{-\lambda x}, \quad x \ge 0, \; \lambda > 0$$
+* **Cumulative & Tail Probabilities:**
+  $$P(X \le x_0) = 1 - e^{-\lambda x_0}, \qquad P(X \ge x_0) = e^{-\lambda x_0}$$
+* **Mean & Standard Deviation:**
+  $$\mu = \frac{1}{\lambda}, \qquad \sigma = \frac{1}{\lambda}$$
+  *(Note: For the exponential distribution, the mean and standard deviation are always equal).*
+* **Inputs:**
+  * $\lambda$: Mean occurrence rate per **one unit** of time or space (must match the units of $x_0$).
+  * $x_0$: Target waiting time or distance between consecutive events ($x_0 \ge 0$).
+
+### R Implementation: Interarrival Time Between Defects (Black Demo 6.8)
+
+In **Demonstration Problem 6.8**, defective parts arrive in a Poisson pattern at an average rate of $1.38$ defects every $20$ minutes. Converting to a per-minute rate gives $\lambda_{\text{min}} = \frac{1.38}{20} = 0.069$ defects/minute, so the mean interarrival time is $\mu = \frac{20}{1.38} = 14.4928$ minutes. The probability that less than $15$ minutes elapse between any two defects is $P(X < 15) = 1 - e^{-0.069(15)} = 0.6448$.
+
+```{r exponential-demo, fig.height=3.6, fig.width=6.5}
+lambda_20 <- 1.38
+mu_intervals <- 1 / lambda_20
+mean_minutes <- mu_intervals * 20
+rate_per_min <- 1 / mean_minutes
+
+prob_lt_15 <- pexp(q = 15, rate = rate_per_min, lower.tail = TRUE)
+prob_lt_15_comp <- 1 - pexp(q = 15, rate = rate_per_min, lower.tail = FALSE)
+
+print(sprintf("Demo 6.8 -> Mean interval: %.4f min | Rate: %.4f/min | P(X < 15): %.4f (comp: %.4f)",
+              mean_minutes, rate_per_min, prob_lt_15, prob_lt_15_comp))
+
+x_exp <- seq(0, 60, length.out = 400)
+exp_df <- data.frame(x = x_exp, y = dexp(x_exp, rate = rate_per_min))
+
+ggplot(exp_df, aes(x = x, y = y)) +
+  geom_area(data = subset(exp_df, x <= 15), fill = "darkorange", alpha = 0.45) +
+  geom_line(color = "saddlebrown", linewidth = 1) +
+  labs(title = "Exponential Distribution (Mean = 14.49 min, Rate = 0.069/min)",
+       subtitle = "Shaded Area: P(X < 15 minutes) = 0.6448",
+       x = "Time Between Defects (minutes)",
+       y = "Density f(x)") +
+  theme_minimal()
+```
+
+---
+
+# Wilcox Chapter 4 (Section 4.7): Modern Advances & Insights on Normality
+
+Rand Wilcox (*Basic Statistics*, Section 4.7) classifies distributions along two dimensions—**symmetry** and **outlier frequency**—warning that classical normal-based inferences break down quickly under subtle, visually undetectable departures from normality.
+
+## Four Distribution Archetypes
+
+1. **Symmetric with outliers rarely occurring** (includes the exact Normal distribution).
+2. **Symmetric with outliers commonly occurring** (e.g., heavy-tailed / contaminated normals).
+3. **Asymmetric (skewed) with outliers rarely occurring**.
+4. **Asymmetric (skewed) with outliers commonly occurring**.
+
+## The Contaminated (Mixed) Normal Distribution
+
+A **mixed (contaminated) normal distribution** arises when two normal populations with different variances (or means) are combined.
+
+* **Wilcox's Classic Illustration:** Suppose $90\%$ of adults follow a standard normal distribution ($\mu = 0, \sigma = 1$) and $10\%$ (e.g., dieters) follow a normal distribution with the same mean ($\mu = 0$) but larger spread ($\sigma = 10$).
+* **Three Critical Consequences:**
+  1. **Bell-Shaped $\ne$ Normal:** Visually, the mixed normal curve looks symmetric and bell-shaped, closely resembling a normal curve, **yet it is not normal** and has **heavy tails** (greater probability of extreme outliers).
+  2. **Extreme Sensitivity of Variance:** While the standard normal has $\sigma^2 = 1$, this $10\%$-contaminated mixed normal inflates the population variance to **$\sigma^2 = 0.9(1^2) + 0.1(10^2) = 10.9$** ($\sigma \approx 3.30$). In samples, just a few outliers drastically inflate $s^2$ regardless of sample size.
+  3. **Breakdown of the $68\%$ Rule & Equal-Variance Shape:** Under normality, $P(\mu - \sigma \le X \le \mu + \sigma) = 0.6826$. For Wilcox's mixed normal, this probability **exceeds $0.925$**. Furthermore, two symmetric bell-shaped curves can share the exact same mean and variance yet have radically different shapes (a sharp central peak with heavy tails vs. a broad normal bell).
+
+## Skewness & Limitations of Logarithmic Transformations
+
+* **Mean vs. Median in Skewed Distributions:** In a right-skewed distribution (Figure 4.7 in Wilcox, where $\text{Median} = 3.75$ and $\text{Mean} = 7.6$), the mean is pulled far into the upper tail ($74\%$ of observations fall below the mean). Thus, the **median** (or a trimmed mean) better reflects a "typical" observation than $\mu$.
+* **Why Log Transformations Often Fall Short:**
+  1. **Outliers Persist:** Taking $\log(X)$ can make a histogram look more symmetric, yet boxplot outlier rules frequently flag the **exact same observations** as outliers (or reduce them only slightly, e.g., from $6$ to $4$).
+  2. **Back-Transformation Bias:** Computing the mean of log-transformed data and exponentiating back ($10^{\overline{\log_{10} X}}$ or $e^{\overline{\ln X}}$, known as the **geometric mean**) estimates the **median** of the original data, **not the original arithmetic mean** (e.g., in Wilcox's dataset where $\bar{x} = 62.9$ and $\text{Median} = 6.5$, back-transforming the log mean yields $6.48$).
+
+```{r wilcox-demo, fig.height=3.8, fig.width=6.8}
+set.seed(123)
+is_outlier_group <- rbinom(100000, size = 1, prob = 0.10)
+mixed_sample <- ifelse(is_outlier_group == 1,
+                       rnorm(100000, mean = 0, sd = 10),
+                       rnorm(100000, mean = 0, sd = 1))
+
+mixed_sd <- sd(mixed_sample)
+within_1sd <- mean(abs(mixed_sample - mean(mixed_sample)) <= mixed_sd)
+print(sprintf("Wilcox Mixed Normal -> Variance: %.2f | P(|X - mu| <= sigma): %.3f (vs 0.683 for Normal)",
+              var(mixed_sample), within_1sd))
+
+wilcox_vec <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 200, 500)
+back_transformed <- 10^(mean(log10(wilcox_vec)))
+print(sprintf("Original Mean: %.2f | Original Median: %.2f | Back-Transformed Log Mean: %.2f",
+              mean(wilcox_vec), median(wilcox_vec), back_transformed))
+
+x_grid <- seq(-5, 5, length.out = 500)
+compare_df <- data.frame(
+  x = rep(x_grid, 2),
+  density = c(
+    dnorm(x_grid, 0, 1),
+    0.9 * dnorm(x_grid, 0, 1) + 0.1 * dnorm(x_grid, 0, 10)
+  ),
+  Distribution = rep(c("Standard Normal N(0, 1)", "Wilcox Mixed Normal (var = 10.9)"), each = length(x_grid))
+)
+
+ggplot(compare_df, aes(x = x, y = density, color = Distribution, linetype = Distribution)) +
+  geom_line(linewidth = 1.1) +
+  labs(title = "Bell-Shaped Does Not Guarantee Normality (Wilcox Sec. 4.7)",
+       x = "Value (x)",
+       y = "Density") +
+  theme_minimal()
+```
+
+---
+
+# Black Chapter 7: Sampling and Sampling Distributions
+
+## Sampling Techniques, Frames & Error Types (Section 7.1)
+
+* **Reasons for Sampling vs. a Census:** Sampling saves time and money and is essential when testing is **destructive** (e.g., crash-testing vehicles or stress-testing bulbs). A **census** (observing every unit) eliminates sampling error entirely when feasible.
+* **Sampling Frame & Underregistration:** The directory, map, or list from which a sample is drawn is the **sampling frame**. If the frame contains fewer units than the target population, it suffers from **underregistration** (coverage bias).
+* **Sampling Error:** The natural, unavoidable discrepancy between a sample statistic ($\bar{x}, \hat{p}$) and the true population parameter ($\mu, p$) arising by chance because only a subset of the population is observed.
+* **Non-Sampling Error:** Errors caused by missing data, recording/data-entry mistakes, measurement problems, or non-response bias (not reduced by increasing $n$).
+
+### Probability (Random) vs. Non-Probability (Nonrandom) Sampling
+
+1. **Probability (Random) Sampling** (every unit has a known, nonzero probability of selection):
+   * **Simple Random Sample (SRS):** Every possible sample of size $n$ has an equal chance of selection.
+   * **Stratified Random Sample:** Partition the population into homogeneous, non-overlapping subgroups (**strata**) and draw an SRS from each stratum. Can be **proportionate** (matching population stratum shares) or **disproportionate** (varying sampling fractions across strata).
+   * **Systematic Sample:** Select every $k$-th item ($k = \lfloor N/n \rfloor$) from an ordered frame after a random start.
+   * **Cluster (Area) Sample:** Divide the population into non-overlapping geographic/administrative **clusters** (areas), randomly select clusters, and sample all (or random subsets of) units within selected clusters.
+2. **Non-Probability (Nonrandom) Sampling** (probabilities of selection are unknown or unequal):
+   * **Convenience Sampling:** Elements chosen for ease of access to the researcher.
+   * **Judgment Sampling:** Elements selected using the researcher's expert judgment.
+   * **Quota Sampling:** Nonrandom counterpart to stratified sampling (filling preset subgroup quotas non-randomly).
+   * **Snowball Sampling:** Survey respondents refer additional subjects from their network.
+
+### R Implementation: Reproducible & Stratified Sampling (Black Ch. 7 R Supplement)
+
+R provides `sample()` and `sample.int()` for random sampling, governed by the 626-element RNG state vector `.Random.seed`. Calling `set.seed()` ensures exact reproducibility. When sampling rows from a data frame like `iris`, pass row indices (`1:nrow(iris)`) to `sample()`, or use `dplyr::slice_sample()` / `sample_n()` (including grouped stratified sampling) versus base R `split()` + `lapply()` + `do.call(rbind, ...)`.
+
+```{r sampling-r-supplement}
+our_vector <- rnorm(n = 1000, mean = 0, sd = 1)
+
+set.seed(999)
+sample_a <- sample(x = our_vector, size = 5, replace = FALSE)
+set.seed(999)
+sample_b <- sample(x = our_vector, size = 5, replace = FALSE)
+print(sprintf("Reproducible sample match: %s", identical(sample_a, sample_b)))
+
+data(iris)
+set.seed(8888)
+iris_idx <- sample.int(n = nrow(iris), size = 6, replace = FALSE)
+print(iris[iris_idx, c("Species", "Sepal.Length", "Petal.Length")])
+
+set.seed(777)
+strat_dplyr <- iris %>%
+  group_by(Species) %>%
+  slice_sample(n = 3, replace = FALSE)
+print(table(strat_dplyr$Species))
+
+set.seed(777)
+split_iris <- split(x = iris, f = iris$Species)
+iris_samples <- lapply(X = split_iris, function(df_sub) {
+  df_sub[sample(x = 1:nrow(df_sub), size = 3, replace = FALSE), ]
+})
+strat_base <- do.call(rbind, iris_samples)
+print(table(strat_base$Species))
+```
+
+---
+
+## Sampling Distribution of $\bar{x}$ & The Central Limit Theorem (Section 7.2)
+
+The **sampling distribution of $\bar{x}$** is the probability distribution of all possible sample means computed from samples of size $n$.
+
+* **Expected Value & Standard Error of the Mean ($\sigma_{\bar{x}}$):**
+  $$\mu_{\bar{x}} = \mu, \qquad \sigma_{\bar{x}} = \frac{\sigma}{\sqrt{n}}$$
+* **Finite Population Correction (FPC) Factor:** If sampling **without replacement** from a known finite population of size $N$ where $n > 0.05N$:
+  $$\sigma_{\bar{x}} = \frac{\sigma}{\sqrt{n}}\sqrt{\frac{N - n}{N - 1}}$$
+* **Standardizing $\bar{x}$ into a $z$-Score:**
+  $$z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}$$
+* **Inputs:**
+  * $\bar{x}$: Target sample mean value.
+  * $\mu$: Population mean.
+  * $\sigma$: Population standard deviation.
+  * $n$: Sample size ($N$: population size when applying FPC).
+* **The Central Limit Theorem (CLT):**
+  * If the underlying population is **Normal**, $\bar{x}$ is exactly Normally distributed for **any** sample size $n$.
+  * If the underlying population is **non-normal** (e.g., Uniform or Skewed), as sample size $n$ becomes sufficiently large (rule of thumb: **$n \ge 30$**, or larger if heavily skewed/heavy-tailed), the sampling distribution of $\bar{x}$ approaches a **Normal distribution** with mean $\mu$ and standard deviation $\sigma_{\bar{x}} = \frac{\sigma}{\sqrt{n}}$.
+
+### R Implementation: Sample Mean Probability & CLT Simulation
+
+Below we compute $P(\bar{x} > 53)$ for a population with $\mu = 50, \sigma = 12, n = 36$, and simulate $2{,}000$ sample means drawn from a flat $\text{Uniform}(0, 1)$ population at $n = 2$, $n = 10$, and $n = 30$ to illustrate how the sampling distribution converges to a Normal bell curve with shrinking standard error $\sigma / \sqrt{n}$.
+
+```{r clt-demo, fig.height=3.8, fig.width=7.5}
+mu_pop <- 50
+sigma_pop <- 12
+n_samp <- 36
+se_xbar <- sigma_pop / sqrt(n_samp)
+prob_xbar <- pnorm(53, mean = mu_pop, sd = se_xbar, lower.tail = FALSE)
+print(sprintf("Sampling Dist P(x_bar > 53): %.4f (SE = %.2f)", prob_xbar, se_xbar))
+
+set.seed(2026)
+reps <- 2000
+sample_sizes <- c(2, 10, 30)
+clt_list <- lapply(sample_sizes, function(sz) {
+  means <- replicate(reps, mean(runif(sz, min = 0, max = 1)))
+  data.frame(sample_mean = means, n_label = factor(paste("n =", sz), levels = paste("n =", sample_sizes)))
+})
+clt_df <- do.call(rbind, clt_list)
+
+ggplot(clt_df, aes(x = sample_mean)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 30, fill = "steelblue", color = "white", alpha = 0.8) +
+  facet_wrap(~ n_label, scales = "free_y") +
+  labs(title = "Central Limit Theorem: Means of Uniform(0, 1) Samples",
+       x = "Sample Mean (x_bar)",
+       y = "Density") +
+  theme_minimal()
+```
+
+---
+
+## Sampling Distribution of the Sample Proportion ($\hat{p}$) (Section 7.3)
+
+For a sample proportion $\hat{p} = \frac{x}{n}$, when **$n p \ge 5$ and $n q \ge 5$** (where $q = 1 - p$), the sampling distribution of $\hat{p}$ is approximately Normal:
+
+* **Mean & Standard Error of the Proportion ($\sigma_{\hat{p}}$):**
+  $$\mu_{\hat{p}} = p, \qquad \sigma_{\hat{p}} = \sqrt{\frac{p(1 - p)}{n}} = \sqrt{\frac{p q}{n}}$$
+* **Standardizing $\hat{p}$ into a $z$-Score:**
+  $$z = \frac{\hat{p} - p}{\sqrt{\frac{p(1 - p)}{n}}}$$
+* **Inputs:**
+  * $\hat{p} = x / n$: Sample proportion of successes ($x$: observed successes in sample).
+  * $p$: True population proportion of successes ($q = 1 - p$).
+  * $n$: Sample size.
+
+```{r phat-demo}
+p_pop <- 0.60
+n_prop <- 300
+se_phat <- sqrt(p_pop * (1 - p_pop) / n_prop)
+prob_phat <- pnorm(0.53, mean = p_pop, sd = se_phat, lower.tail = TRUE)
+print(sprintf("Sampling Dist of p_hat (p = 0.60, n = 300) -> SE: %.4f | P(p_hat <= 0.53): %.4f",
+              se_phat, prob_phat))
+```
+
+---
+
+# Week 4 Key Formula Summary Sheet
+
+| Distribution / Concept | Density / Statistic Formula | Mean ($\mu$) & Std. Dev. ($\sigma$) | R Functions & Key Conditions |
+| :--- | :--- | :--- | :--- |
+| **Continuous Uniform** | $f(x) = \frac{1}{b - a}$ ($a \le x \le b$) | $\mu = \frac{a+b}{2}$, $\sigma = \frac{b-a}{\sqrt{12}}$ | `dunif()`, `punif()`, `qunif()`, `runif()` |
+| **Normal / Standard Normal** | $z = \frac{x - \mu}{\sigma}$ | $\mu$, $\sigma$ (for $Z$: $0, 1$) | `dnorm()`, `pnorm()`, `qnorm()`, `rnorm()`; $68\text{--}95\text{--}99.7$ fails under heavy tails |
+| **Binomial Normal Approx.** | $z = \frac{(x \pm 0.5) - np}{\sqrt{npq}}$ | $\mu = np$, $\sigma = \sqrt{npq}$ | Valid when $np \ge 5$ and $nq \ge 5$; apply $\pm 0.5$ continuity correction |
+| **Exponential** | $f(x) = \lambda e^{-\lambda x}$, $P(X \ge x) = e^{-\lambda x}$ | $\mu = \frac{1}{\lambda}$, $\sigma = \frac{1}{\lambda}$ | `dexp()`, `pexp()`, `qexp()`; right-skewed, left-bound at $0$ |
+| **Sampling Dist. of $\bar{x}$** | $z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}$ | $\mu_{\bar{x}} = \mu$, $\sigma_{\bar{x}} = \frac{\sigma}{\sqrt{n}}$ | Normal if pop. is normal or $n \ge 30$ (CLT); use FPC if $n > 0.05N$ |
+| **Sampling Dist. of $\hat{p}$** | $z = \frac{\hat{p} - p}{\sqrt{pq/n}}$ | $\mu_{\hat{p}} = p$, $\sigma_{\hat{p}} = \sqrt{\frac{pq}{n}}$ | Valid when $np \ge 5$ and $nq \ge 5$ |
