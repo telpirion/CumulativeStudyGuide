@@ -34,6 +34,8 @@ statistical foundations and their application in R. Each module includes:
 - 📓 [**Week 7 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week7.ipynb) — 44 Chapter 10 review questions with full mathematical solutions and 5 applied R exercises
 - 📘 [**Week 8 Study Guide (HTML)**](guides/Week8.html) — Analysis of Variance & Simple Linear Regression
 - 📓 [**Week 8 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week8.ipynb) — ANOVA and Regression application exercises and R code examples
+- 📘 [**Week 9 Study Guide (HTML)**](guides/Week9.html) — Regression Inference, Diagnostics, Correlation ($r^2$) & Multiple Regression
+- 📓 [**Week 9 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week9.ipynb) — 36 Chapter 12 & 7 Chapter 13 study questions plus `newspapers`, `tableware`, and R supplement applied exercises
 
 ---
 
@@ -49,6 +51,7 @@ CumulativeStudyGuide/
 │   ├── home_prices.csv       # Home attributes and selling prices
 │   ├── hot_dogs.csv          # Hot dog types, calories, and sodium content (ANOVA & Week 6)
 │   ├── mileage.csv           # 1991 US EPA passenger car mileage, HP, and weight classes
+│   ├── newspapers.csv        # 1994 Gale Directory daily and Sunday newspaper circulations
 │   ├── nsalary.csv           # New Mexico social services salary data (rural vs. non-rural)
 │   ├── pontus.csv            # US Presidential inauguration ages and candidate heights
 │   ├── salaries.csv          # Forbes CEO age and salary data for 60 small business firms
@@ -66,16 +69,17 @@ CumulativeStudyGuide/
 │   ├── Week7.html            # Rendered HTML study guide for Week 7
 │   ├── Week7_files/          # Supporting assets and dependencies for Week 7 HTML
 │   ├── Week8.html            # Rendered HTML study guide for Week 8
-│   └── Week8_files/          # Supporting assets and plots for Week 8 HTML
+│   ├── Week8_files/          # Supporting assets and plots for Week 8 HTML
+│   └── Week9.html            # Rendered HTML study guide for Week 9
 ├── LICENSE                   # Repository license (MIT)
 ├── README.md                 # Curriculum overview and repository documentation
 ├── sources/                  # Curriculum slide decks, solution guides, and reference literature
-│   ├── Chapter9PracticeProblems.pdf
-│   ├── Chapter16PracticeProblems.pdf
+│   ├── Chapter12PracticeProblems.pdf
+│   ├── Chapter13PracticeProblems.pdf
 │   ├── Exercises.txt
-│   ├── Lesson_09_Statistical_Inference,_Hypothesis_Testing_for_Single_Populations_Solutions.pdf
-│   ├── R supplement to Business Statistics, Ch 9.R
-│   └── R supplement to Business Statistics, Ch 16.R
+│   ├── Lesson_12_Simple_Regression_Analysis_and_Correlation_Solutions.pdf
+│   ├── R supplement to Business Statistics, Ch 12.R
+│   └── R supplement to Business Statistics, Ch 13.R
 ├── Week1.Rmd                 # Source R Markdown document for Week 1 (Chapters 1 & 2)
 ├── Week2.ipynb               # Jupyter Notebook with 41 study questions & 6 applied exercises
 ├── Week2.Rmd                 # Source R Markdown document for Week 2 (Chapter 3)
@@ -86,7 +90,9 @@ CumulativeStudyGuide/
 ├── Week7.ipynb               # Jupyter Notebook with 44 study questions & applied exercises
 ├── Week7.Rmd                 # Source R Markdown document for Week 7 (Chapter 10)
 ├── Week8.ipynb               # Jupyter Notebook with ANOVA/Regression exercises
-└── Week8.Rmd                 # Source R Markdown document for Week 8 (Chapters 11 & 12)
+├── Week8.Rmd                 # Source R Markdown document for Week 8 (Chapters 11 & 12)
+├── Week9.ipynb               # R Jupyter Notebook with 43 study questions & 9 applied exercises
+└── Week9.Rmd                 # Source R Markdown document for Week 9 (Ch. 12.4–12.9, Wilcox 8.3 & Ch. 13)
 ```
 
 ---
@@ -101,6 +107,7 @@ CumulativeStudyGuide/
 | **Week 6** | **Ch. 9:** Hypothesis Testing for Single Populations<br>**Ch. 16:** Analysis of Categorical Data | • Eight-step hypothesis testing process & $p$-value method<br>• Type I ($\alpha$), Type II ($\beta$), Power ($1 - \beta$), OC & Power curves<br>• One-sample $z$-test & $t$-test for $\mu$<br>• One-sample proportion $z$-test & variance $\chi^2$-test<br>• Parametric vs. nonparametric methods<br>• $\chi^2$ Goodness-of-Fit & Test of Independence | • [Source (`Week6.Rmd`)](Week6.Rmd)<br>• [Rendered Guide (`guides/Week6.html`)](guides/Week6.html)<br>• [Practice Notebook (`Week6.ipynb`)](Week6.ipynb) | • Custom `one_sample_z_test()` & `one_sample_var_test()`<br>• `t.test()`, `prop.test()`, `pt()`, `pnorm()`<br>• `qchisq()`, `pchisq()`, `chisq.test()`<br>• `ggplot2` Power/OC curves & horizontal boxplots<br>• Applied analyses (`hot_dogs`, `salaries`) |
 | **Week 7** | **Ch. 10:** Inferences About Two Populations | • Test selection framework<br>• Difference in two means ($\sigma$ known vs. unknown)<br>• Pooled vs. Welch's unequal-variance $t$-tests<br>• Matched-pairs / related populations<br>• Two-proportion $z$-tests & pooling<br>• Two-variance $F$-tests<br>• Ethical comparative analysis | • [Source (`Week7.Rmd`)](Week7.Rmd)<br>• [Rendered Guide (`guides/Week7.html`)](guides/Week7.html)<br>• [Practice Notebook (`Week7.ipynb`)](Week7.ipynb) | • Custom `two_sample_z_test()`<br>• `t.test(..., var.equal = TRUE)`<br>• `t.test(..., var.equal = FALSE)`<br>• `t.test(..., paired = TRUE)`<br>• `prop.test(..., correct = FALSE)`<br>• `var.test()` |
 | **Week 8** | **Ch. 11:** Analysis of Variance<br>**Ch. 12:** Simple Linear Regression | • One-Way ANOVA & partitioning $SS$<br>• Tukey's HSD post-hoc testing<br>• Randomized Block & Two-Way ANOVA<br>• Simple Linear Regression (OLS)<br>• Correlation vs. Regression<br>• Goodness of fit ($R^2$, $s_e$) | • [Source (`Week8.Rmd`)](Week8.Rmd)<br>• [Rendered Guide (`guides/Week8.html`)](guides/Week8.html)<br>• [Practice Notebook (`Week8.ipynb`)](Week8.ipynb) | • `aov()` & `summary(aov())`<br>• `TukeyHSD()`<br>• `lm()`<br>• `summary(lm())`<br>• Residual analysis (`plot(lm())`)<br>• `predict()` |
+| **Week 9** | **Ch. 12.4–12.9:** Regression Inference & Forecasting<br>**Wilcox Ch. 8.3:** Correlation & $r^2$<br>**Ch. 13:** Multiple Regression | • Residual diagnostics & LINE assumptions<br>• Slope $t$-test, CI & ANOVA $F$-test equivalence<br>• Confidence vs. Prediction intervals<br>• Trend-line forecasting<br>• Wilcox's 5 distorting features & heteroscedasticity trap<br>• Multiple regression, Adjusted $R^2$, dummy variables, $VIF$ & $\log_{10}$ transformations | • [Source (`Week9.Rmd`)](Week9.Rmd)<br>• [Rendered Guide (`guides/Week9.html`)](guides/Week9.html)<br>• [Practice Notebook (`Week9.ipynb`)](Week9.ipynb) | • `confint()`, `predict(..., interval = ...)`<br>• `cor.test()`, `anova()`, `pf()`, `pt()`<br>• `par(mfrow = c(2, 2)); plot(lm())`<br>• `bartlett.test()`, `MASS::rlm()`<br>• Manual $VIF_j = 1/(1 - R_j^2)$ calculations<br>• Applied analyses (`tableware`, `newspapers`, Airline Cost, Prime Interest Rate) |
 
 *(Additional weekly modules will be added as the study guide expands.)*
 
@@ -145,6 +152,9 @@ rmarkdown::render("Week7.Rmd", output_dir = "guides")
 
 # Render Week 8
 rmarkdown::render("Week8.Rmd", output_dir = "guides")
+
+# Render Week 9 (uses custom knit hook targeting guides/)
+rmarkdown::render("Week9.Rmd", output_dir = "guides")
 ```
 
 Or from the command line:
@@ -156,6 +166,7 @@ Rscript -e 'rmarkdown::render("Week3.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week6.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week7.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week8.Rmd", output_dir = "guides")'
+Rscript -e 'rmarkdown::render("Week9.Rmd", output_dir = "guides")'
 ```
 
 Using Positron or Quarto CLI:
@@ -167,6 +178,7 @@ quarto render Week3.Rmd
 quarto render Week6.Rmd
 quarto render Week7.Rmd
 quarto render Week8.Rmd
+quarto render Week9.Rmd
 ```
 
 ---

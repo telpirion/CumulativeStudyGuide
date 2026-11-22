@@ -1,0 +1,628 @@
+---
+title: "Week 9 Statistics Study Guide: Regression Inference, Diagnostics & Multiple Regression"
+subtitle: "Ken Black (Ch. 12.4–12.7 & Ch. 13) and Wilcox (Ch. 8.3)"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(knitr)
+library(MASS)
+```
+
+# Overview & Learning Objectives
+
+The Week 9 readings complete **Simple Linear Regression** (Ken Black Sections 12.4–12.7 and 12.9), introduce **Multiple Regression Analysis** (Ken Black Chapter 13), and examine the properties, limitations, and diagnostic cautions of **Pearson's Correlation** and the **Coefficient of Determination** (Wilcox Chapter 8, Section 8.3). By the end of this module, you should be able to:
+
+1. Perform **residual analysis** to verify the LINE assumptions (Linearity, Independence, Normality, Equal Variance / Homoscedasticity) and compute the **standard error of the estimate ($s_e$)**.
+2. Conduct **hypothesis tests** and construct **confidence intervals** for the population regression slope ($\beta_1$) and population correlation ($\rho$).
+3. Distinguish between a **confidence interval for the conditional mean** $E(Y \mid x_0)$ and a **prediction interval for an individual observation** $Y_0$, and apply regression to **trend-line forecasting**.
+4. Formulate and interpret a **Multiple Regression** model with $k$ predictor variables, including **Adjusted $R^2$**, the overall **$F$-test**, and individual predictor **$t$-tests**.
+5. Incorporate **dummy (indicator) variables**, diagnose **multicollinearity** using Variance Inflation Factors ($VIF$), and apply stabilizing transformations (such as $\log_{10}$) when heteroscedasticity appears.
+6. Critically evaluate Pearson's $r$ and $r^2$ using Wilcox's five data features (slope, residual magnitude, outliers, range restriction, and curvature) and understand why heteroscedasticity invalidates standard $t$-tests for $\rho = 0$.
+
+---
+
+# Black Chapter 12 (Sections 12.4–12.9): Simple Linear Regression Inference, Diagnostics & Forecasting
+
+## Residual Analysis & Standard Error of the Estimate (Section 12.4)
+
+A **residual** is the vertical distance between an observed value $y_i$ and its predicted value $\hat{y}_i$:
+
+$$e_i = y_i - \hat{y}_i$$
+
+* **Inputs:**
+  * $y_i$: The $i$-th observed value of the dependent variable.
+  * $\hat{y}_i = b_0 + b_1 x_i$: The $i$-th predicted (fitted) value from the estimated regression equation.
+
+Summing the squared residuals produces the **Sum of Squares of Error ($SSE$)**, from which the **Standard Error of the Estimate ($s_e$)** measures the typical dispersion of observed data points around the regression line in the units of $Y$:
+
+$$SSE = \sum_{i=1}^{n} e_i^2 = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2, \qquad s_e = \sqrt{\frac{SSE}{n - 2}}$$
+
+* **Inputs:**
+  * $e_i$: Residual for observation $i$.
+  * $n$: Total number of paired observations $(x_i, y_i)$ ($df = n - 2$ because two parameters, $b_0$ and $b_1$, are estimated).
+
+Under normally distributed errors centered at $0$, the Empirical Rule implies that roughly $95\%$ of residuals should fall within $0 \pm 2s_e$. Plotting residuals ($e_i$) against $x_i$ or $\hat{y}_i$ diagnoses violations of the **LINE** assumptions:
+
+1. **Linearity:** Residuals should scatter randomly around the horizontal $0$ line with no curved pattern.
+2. **Independence:** No systematic pattern across time/order (verified via time-sequence residual plots or the Durbin-Watson test).
+3. **Normality:** Histogram or Normal Q-Q plot of residuals should align closely along the diagonal reference line.
+4. **Equal Variance (Homoscedasticity):** The vertical spread of residuals should remain roughly constant across all values of $x_i$ (a "megaphone" or funnel shape indicates **heteroscedasticity**).
+
+### R Application: Airline Cost Data (Black Table 12.3, p. 429)
+
+In the Chapter 12 R supplement, operating cost (`cost_1000`, in $\$1,000\text{s}$) is modeled as a linear function of the number of passengers (`no_of_pass`) across $n = 12$ flights. We fit the model, visualize the vertical residual segments, calculate $SSE$ and $s_e$, and inspect the four standard R diagnostic plots.
+
+```{r airline-residuals, fig.height=4.5, fig.width=7}
+no_of_pass <- c(61, 63, 67, 69, 70, 74, 76, 81, 86, 91, 95, 97)
+cost_1000 <- c(4.28, 4.08, 4.42, 4.17, 4.48, 4.3, 4.82, 4.7, 5.11, 5.13, 5.64, 5.56)
+airline_df <- data.frame(no_of_pass = no_of_pass, cost_1000 = cost_1000)
+
+airline_model <- lm(cost_1000 ~ no_of_pass, data = airline_df)
+airline_df$fitted_cost <- fitted(airline_model)
+airline_df$resid_cost <- residuals(airline_model)
+
+sse_airline <- sum(airline_df$resid_cost^2)
+n_airline <- nrow(airline_df)
+rse_airline <- sqrt(sse_airline / (n_airline - 2))
+
+print(sprintf("Fitted Equation: cost_hat = %.4f + %.6f * no_of_pass",
+              coef(airline_model)[1], coef(airline_model)[2]))
+print(sprintf("SSE = %.6f | s_e (formula) = %.6f | summary()$sigma = %.6f",
+              sse_airline, rse_airline, summary(airline_model)$sigma))
+
+ggplot(airline_df, aes(x = no_of_pass, y = cost_1000)) +
+  geom_segment(aes(xend = no_of_pass, yend = fitted_cost), color = "gray45", linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "steelblue", linewidth = 1) +
+  geom_point(color = "red2", size = 2.5) +
+  labs(title = "Airline Cost vs. Number of Passengers with Residual Segments",
+       x = "Number of Passengers",
+       y = "Cost ($1,000)") +
+  theme_minimal()
+```
+
+```{r airline-diagnostics, fig.height=6, fig.width=7}
+par(mfrow = c(2, 2))
+plot(airline_model)
+```
+
+---
+
+## Hypothesis Tests About the Slope ($\beta_1$) & Confidence Intervals (Section 12.5)
+
+To test whether $X$ has a statistically significant linear effect on $Y$, we test whether the population slope $\beta_1$ differs from a hypothesized value $\beta_{1,0}$ (typically $\beta_{1,0} = 0$).
+
+### Standard Error of the Slope ($s_{b_1}$)
+
+$$s_{b_1} = \frac{s_e}{\sqrt{SS_{xx}}} = \frac{s_e}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2}} = \frac{s_e}{\sqrt{\sum_{i=1}^{n} x_i^2 - \frac{(\sum_{i=1}^{n} x_i)^2}{n}}}$$
+
+* **Inputs:**
+  * $s_e$: Standard error of the estimate.
+  * $SS_{xx} = \sum (x_i - \bar{x})^2$: Sum of squared deviations of the predictor $X$.
+  * $n$: Sample size.
+
+### Testing the Population Slope ($H_0: \beta_1 = \beta_{1,0}$) & Confidence Interval
+
+* **Test Statistic:**
+  $$t = \frac{b_1 - \beta_{1,0}}{s_{b_1}}, \quad \text{with } df = n - 2$$
+* **Confidence Interval for $\beta_1$:**
+  $$b_1 \pm t_{\alpha/2,\, n-2} \cdot s_{b_1}$$
+* **Inputs:**
+  * $b_1$: Sample regression slope.
+  * $\beta_{1,0}$: Hypothesized population slope under $H_0$ (usually $0$).
+  * $s_{b_1}$: Standard error of the sample slope.
+  * $t_{\alpha/2,\, n-2}$: Two-tailed critical $t$-value at significance level $\alpha$ with $df = n - 2$.
+
+```{r slope-test-ci}
+b1 <- coef(airline_model)[2]
+ss_xx <- sum((no_of_pass - mean(no_of_pass))^2)
+s_b1 <- rse_airline / sqrt(ss_xx)
+t_slope <- (b1 - 0) / s_b1
+p_slope <- 2 * pt(abs(t_slope), df = n_airline - 2, lower.tail = FALSE)
+t_crit_95 <- qt(0.975, df = n_airline - 2)
+ci_slope_manual <- c(b1 - t_crit_95 * s_b1, b1 + t_crit_95 * s_b1)
+
+print(sprintf("SS_xx = %.2f | s_b1 = %.6f | t_obs = %.4f | p-value = %.6e",
+              ss_xx, s_b1, t_slope, p_slope))
+print(sprintf("Manual 95%% CI for beta_1: [%.6f, %.6f]",
+              ci_slope_manual[1], ci_slope_manual[2]))
+print(coef(summary(airline_model)))
+print(confint(airline_model, level = 0.95))
+```
+
+Because $t = 9.439$ ($p = 2.69 \times 10^{-6} < 0.05$) and the $95\%$ confidence interval $[0.0311, 0.0503]$ excludes $0$, we reject $H_0: \beta_1 = 0$ and conclude that number of passengers is a statistically significant linear predictor of operating cost.
+
+---
+
+## Estimation & Prediction Intervals (Section 12.6)
+
+For a specific predictor value $x_0$, the point estimate is $\hat{y}_0 = b_0 + b_1 x_0$. However, the margin of error depends on whether we are estimating the **average** outcome across all units at $x_0$ or predicting a **single individual** outcome:
+
+1. **Confidence Interval for the Conditional Mean $E(Y \mid x_0)$:**
+   $$\hat{y}_0 \pm t_{\alpha/2,\, n-2} \, s_e \sqrt{\frac{1}{n} + \frac{(x_0 - \bar{x})^2}{SS_{xx}}}$$
+
+2. **Prediction Interval for a Single Individual Value $Y_0$:**
+   $$\hat{y}_0 \pm t_{\alpha/2,\, n-2} \, s_e \sqrt{1 + \frac{1}{n} + \frac{(x_0 - \bar{x})^2}{SS_{xx}}}$$
+
+* **Inputs:**
+  * $\hat{y}_0 = b_0 + b_1 x_0$: Predicted response at $x_0$.
+  * $t_{\alpha/2,\, n-2}$: Critical $t$-value for confidence level $1 - \alpha$ and $df = n - 2$.
+  * $s_e$: Standard error of the estimate.
+  * $n$: Number of sample observations.
+  * $x_0$: Target predictor value; $\bar{x}$: Sample mean of $X$; $SS_{xx}$: Sum of squares of $X$.
+
+*Key Insight:* The prediction interval is always **wider** than the confidence interval because of the additional $+1$ inside the square root (accounting for individual variation $\epsilon_i$ around the mean). Both intervals are narrowest at $x_0 = \bar{x}$ and widen as $x_0$ moves away from $\bar{x}$, making **extrapolation** beyond the observed range of $X$ risky.
+
+### R Application: Predicting Cost at 73 Passengers (Black pp. 453–454)
+
+```{r ci-vs-pi, fig.height=4.5, fig.width=7}
+x0 <- 73
+y0_hat <- coef(airline_model)[1] + b1 * x0
+leverage_term <- (1 / n_airline) + ((x0 - mean(no_of_pass))^2 / ss_xx)
+
+ci_manual <- y0_hat + c(-1, 1) * t_crit_95 * rse_airline * sqrt(leverage_term)
+pi_manual <- y0_hat + c(-1, 1) * t_crit_95 * rse_airline * sqrt(1 + leverage_term)
+
+new_pass <- data.frame(no_of_pass = x0)
+ci_r <- predict(airline_model, newdata = new_pass, interval = "confidence", level = 0.95)
+pi_r <- predict(airline_model, newdata = new_pass, interval = "prediction", level = 0.95)
+
+print(sprintf("Point Estimate at x0 = 73: %.6f", y0_hat))
+print(sprintf("Manual 95%% CI: [%.6f, %.6f] | predict(): [%.6f, %.6f]",
+              ci_manual[1], ci_manual[2], ci_r[2], ci_r[3]))
+print(sprintf("Manual 95%% PI: [%.6f, %.6f] | predict(): [%.6f, %.6f]",
+              pi_manual[1], pi_manual[2], pi_r[2], pi_r[3]))
+
+grid_x <- data.frame(no_of_pass = seq(min(no_of_pass), max(no_of_pass), length.out = 100))
+ci_band <- as.data.frame(predict(airline_model, newdata = grid_x, interval = "confidence"))
+pi_band <- as.data.frame(predict(airline_model, newdata = grid_x, interval = "prediction"))
+band_df <- data.frame(
+  no_of_pass = grid_x$no_of_pass,
+  fit = ci_band$fit,
+  ci_lwr = ci_band$lwr,
+  ci_upr = ci_band$upr,
+  pi_lwr = pi_band$lwr,
+  pi_upr = pi_band$upr
+)
+
+ggplot(band_df, aes(x = no_of_pass, y = fit)) +
+  geom_ribbon(aes(ymin = pi_lwr, ymax = pi_upr, fill = "95% Prediction Interval"), alpha = 0.2) +
+  geom_ribbon(aes(ymin = ci_lwr, ymax = ci_upr, fill = "95% Confidence Interval"), alpha = 0.35) +
+  geom_line(color = "navy", linewidth = 1) +
+  geom_point(data = airline_df, aes(x = no_of_pass, y = cost_1000), color = "red2", size = 2.5) +
+  geom_vline(xintercept = 73, linetype = "dotted", color = "gray30") +
+  scale_fill_manual(name = "Interval Type",
+                    values = c("95% Confidence Interval" = "steelblue",
+                               "95% Prediction Interval" = "orange")) +
+  labs(title = "Confidence Interval for Mean vs. Prediction Interval for Individual Flight",
+       x = "Number of Passengers",
+       y = "Operating Cost ($1,000)") +
+  theme_minimal()
+```
+
+---
+
+## Interpreting Regression Output, $r^2$, $F$-Test Equivalence & Trend-Line Forecasting (Sections 12.7 & 12.9)
+
+* **Coefficient of Determination ($r^2$):**
+  $$r^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}$$
+  * **Inputs:** $SSR = \sum (\hat{y}_i - \bar{y})^2$ (regression sum of squares), $SSE = \sum (y_i - \hat{y}_i)^2$ (error sum of squares), and $SST = \sum (y_i - \bar{y})^2$ (total sum of squares).
+* **Equivalence of Tests:** In simple linear regression, testing $H_0: \beta_1 = 0$ via the $t$-test is mathematically identical to the ANOVA regression $F$-test:
+  $$F = \frac{MSR}{MSE} = \frac{SSR / 1}{SSE / (n - 2)} = t^2$$
+
+```{r slr-anova-equivalence}
+anova_airline <- anova(airline_model)
+print(anova_airline)
+
+ssr_airline <- anova_airline["no_of_pass", "Sum Sq"]
+sst_airline <- ssr_airline + sse_airline
+r2_manual <- ssr_airline / sst_airline
+f_manual <- (ssr_airline / 1) / (sse_airline / (n_airline - 2))
+p_f_manual <- pf(f_manual, df1 = 1, df2 = n_airline - 2, lower.tail = FALSE)
+
+print(sprintf("R^2 (formula) = %.6f | summary()$r.squared = %.6f",
+              r2_manual, summary(airline_model)$r.squared))
+print(sprintf("t^2 = %.4f | F_obs = %.4f | F p-value = %.6e",
+              t_slope^2, f_manual, p_f_manual))
+```
+
+### Trend-Line Forecasting (Section 12.9 — Demonstration Problem 12.7)
+
+Simple linear regression can also model a linear time trend by encoding ordered time periods ($t = 1, 2, \dots, n$) as the independent variable. In **Demonstration Problem 12.7** (from the Chapter 12 R supplement), monthly sales from January ($t = 1$) through August ($t = 8$) are used to forecast sales for October ($t = 10$).
+
+```{r demo-12-7-trend, fig.height=4, fig.width=6.5}
+month_fac <- factor(c("January", "February", "March", "April", "May", "June", "July", "August"),
+                    levels = month.name)
+month_num <- as.numeric(month_fac)
+sales_trend <- c(32569, 32274, 32583, 32304, 32149, 32077, 31989, 31977)
+trend_df <- data.frame(month_fac = month_fac, month_num = month_num, sales = sales_trend)
+
+ts_regression <- lm(sales ~ month_num, data = trend_df)
+oct_pred <- predict(ts_regression, newdata = data.frame(month_num = 10), interval = "prediction")
+
+print(summary(ts_regression))
+print(sprintf("October (t = 10) Forecast: %.2f (95%% PI: [%.2f, %.2f])",
+              oct_pred[1], oct_pred[2], oct_pred[3]))
+
+ggplot(trend_df, aes(x = month_num, y = sales)) +
+  geom_point(color = "darkblue", size = 2.8) +
+  geom_smooth(method = "lm", se = FALSE, color = "firebrick") +
+  scale_x_continuous(breaks = 1:10, labels = c(month.abb[1:8], "Sep", "Oct")) +
+  geom_point(aes(x = 10, y = oct_pred[1]), color = "darkgreen", shape = 17, size = 3.5) +
+  labs(title = "Trend-Line Regression Forecast (Demonstration Problem 12.7)",
+       x = "Month",
+       y = "Sales") +
+  theme_minimal()
+```
+
+---
+
+# Wilcox Chapter 8 (Section 8.3): Deep Dive into Correlation & $r^2$
+
+Rand Wilcox (*Basic Statistics*, Section 8.3) provides crucial mathematical connections and practical warnings regarding Pearson's product-moment correlation ($r$) and the coefficient of determination ($r^2$).
+
+## Connecting Slope, Correlation, and $r^2$
+
+* **Algebraic Link Between $r$ and Slope $b_1$:**
+  $$r = b_1 \left(\frac{s_x}{s_y}\right) \quad \Longleftrightarrow \quad b_1 = r \left(\frac{s_y}{s_x}\right)$$
+  * **Inputs:** $b_1$ (OLS slope), $s_x$ (sample SD of $X$), $s_y$ (sample SD of $Y$).
+* **Three Equivalent Interpretations of $r^2$:**
+  1. **Proportional Reduction in Error:** Comparing prediction error using the regression line ($\sum (Y_i - \hat{Y}_i)^2$) against predicting with the sample mean alone ($\sum (Y_i - \bar{Y})^2$):
+     $$r^2 = \frac{\sum (Y_i - \bar{Y})^2 - \sum (Y_i - \hat{Y}_i)^2}{\sum (Y_i - \bar{Y})^2}$$
+  2. **Complement of Unexplained Variance:** $r^2 = 1 - \frac{\text{Var}(e)}{\text{Var}(Y)}$.
+  3. **Squared Correlation Between Observed and Predicted $Y$:** $r^2 = [\text{Cor}(Y, \hat{Y})]^2$.
+
+```{r wilcox-r2-identities}
+r_from_slope <- b1 * (sd(no_of_pass) / sd(cost_1000))
+r_direct <- cor(no_of_pass, cost_1000)
+
+r2_pre <- (sum((cost_1000 - mean(cost_1000))^2) - sum((cost_1000 - fitted(airline_model))^2)) /
+  sum((cost_1000 - mean(cost_1000))^2)
+r2_var <- 1 - var(residuals(airline_model)) / var(cost_1000)
+r2_y_yhat <- cor(cost_1000, fitted(airline_model))^2
+
+print(sprintf("r via b1*(sx/sy) = %.6f | cor(x, y) = %.6f", r_from_slope, r_direct))
+print(sprintf("r^2 (PRE) = %.6f | r^2 (1 - Var(e)/Var(Y)) = %.6f | Cor(Y, Y_hat)^2 = %.6f",
+              r2_pre, r2_var, r2_y_yhat))
+```
+
+## Population Correlation ($\rho$), Independence, and Testing $H_0: \rho = 0$
+
+* **Independence $\implies \rho = 0$:** If $X$ and $Y$ are statistically independent, then $\rho = 0$. Therefore, empirical evidence that $\rho \ne 0$ implies $X$ and $Y$ are dependent.
+* **$\rho = 0 \not\implies$ Independence:** Having $\rho = 0$ does **not** prove independence.
+  * *Curvature:* If $Y = X^2$ (symmetric around $0$), there is an exact deterministic relationship, yet $\rho = 0$.
+  * *Heteroscedasticity with Zero Slope:* Even when the regression line is completely flat ($\beta_1 = 0, \rho = 0$), if the spread of $Y$ changes with $X$, knowing $X$ still provides information about $Y$.
+
+### Classic Student's $t$-Test for $H_0: \rho = 0$
+
+$$T = r \sqrt{\frac{n - 2}{1 - r^2}}, \quad \text{with } df = n - 2$$
+
+* **Inputs:**
+  * $r$: Sample Pearson correlation coefficient.
+  * $n$: Number of paired observations.
+  * Reject $H_0: \rho = 0$ if $|T| \ge t_{1 - \alpha/2,\, n-2}$.
+
+### R Application: Interest Rate & Futures Index (Black Table 12.1, Ch. 12 R Supplement)
+
+```{r wilcox-cor-test}
+interest_rate <- c(7.43, 7.48, 8, 7.75, 7.6, 7.63, 7.68, 7.67, 7.59, 8.07, 8.03, 8)
+futures <- c(221, 222, 226, 225, 224, 223, 223, 226, 226, 235, 233, 241)
+
+n_fut <- length(interest_rate)
+r_fut <- cor(interest_rate, futures)
+T_fut <- r_fut * sqrt((n_fut - 2) / (1 - r_fut^2))
+p_fut <- 2 * pt(abs(T_fut), df = n_fut - 2, lower.tail = FALSE)
+
+print(sprintf("r = %.6f | Manual T = %.4f (df = %d) | p-value = %.6f",
+              r_fut, T_fut, n_fut - 2, p_fut))
+print(cor.test(interest_rate, futures, alternative = "two.sided", method = "pearson"))
+```
+
+### Wilcox's Critical Warning: Curvature & The Heteroscedasticity Trap
+
+The derivation of Student's $T$ relies heavily on **homoscedasticity**. When heteroscedasticity is present, $T$ uses the **wrong standard error**. Even when the true slope and correlation are zero ($\rho = 0$), the probability of falsely rejecting $H_0$ can inflate well above $\alpha = 0.05$. Thus, $T$ is more accurately viewed as a test of **independence** rather than strictly a test that $\rho = 0$.
+
+```{r wilcox-trap-demo}
+set.seed(401)
+x_curve <- seq(-5, 5, length.out = 21)
+y_curve <- x_curve^2
+curve_test <- cor.test(x_curve, y_curve)
+print(sprintf("Deterministic Y = X^2: r = %.4f | p-value = %.4f",
+              curve_test$estimate, curve_test$p.value))
+
+n_sim <- 1000
+n_obs <- 100
+reject_count <- 0
+for (i in 1:n_sim) {
+  x_het <- runif(n_obs, -3, 3)
+  y_het <- (x_het^2) * rnorm(n_obs, mean = 0, sd = 1)
+  if (cor.test(x_het, y_het)$p.value < 0.05) {
+    reject_count <- reject_count + 1
+  }
+}
+print(sprintf("Heteroscedastic rho = 0 simulation (alpha = 0.05): empirical rejection rate = %.3f",
+              reject_count / n_sim))
+```
+
+## Five Data Features That Distort the Magnitude of $r$
+
+Wilcox highlights five features that strongly influence $r$, warning against interpreting $r$ without plotting the data:
+
+1. **Slope of the Line:** When residual spread is held constant, a flatter slope (closer to $0$) produces a smaller $|r|$.
+2. **Magnitude of the Residuals:** Larger vertical scatter around the same regression line reduces $|r|$.
+3. **Outliers:** A single extreme point can dramatically inflate $r$ or reverse its sign.
+4. **Range Restriction:** Restricting the range of $X$ or $Y$ values can artificially raise or lower $r$.
+5. **Curvature:** Non-linear relationships are poorly captured by $r$, which only measures straight-line association.
+
+> **Wilcox's Golden Rule:** *Always inspect a scatterplot with the fitted regression line overlaid. Even a high $r^2$ close to $1$ does not guarantee that $\hat{Y}$ provides practically accurate predictions if both $\hat{Y}$ and $\bar{Y}$ have large errors.*
+
+```{r wilcox-five-features, fig.height=5.5, fig.width=8}
+set.seed(99)
+x_base <- seq(1, 10, length.out = 25)
+y_tight <- 2 + 1.5 * x_base + rnorm(25, 0, 1.0)
+y_noisy <- 2 + 1.5 * x_base + rnorm(25, 0, 5.5)
+
+x_out <- c(x_base[1:24], 25)
+y_out <- c(y_tight[1:24], -15)
+
+idx_sub <- x_base >= 4 & x_base <= 7
+x_rest <- x_base[idx_sub]
+y_rest <- y_noisy[idx_sub]
+
+r_tight <- cor(x_base, y_tight)
+r_noisy <- cor(x_base, y_noisy)
+r_out <- cor(x_out, y_out)
+r_rest <- cor(x_rest, y_rest)
+
+print(sprintf("r (Tight Linear) = %.3f | r (High Noise) = %.3f | r (Single Outlier) = %.3f | r (Restricted Range) = %.3f",
+              r_tight, r_noisy, r_out, r_rest))
+
+feat_df <- rbind(
+  data.frame(x = x_base, y = y_tight, scenario = sprintf("1. Tight Linear (r = %.2f)", r_tight)),
+  data.frame(x = x_base, y = y_noisy, scenario = sprintf("2. Large Residuals (r = %.2f)", r_noisy)),
+  data.frame(x = x_out,  y = y_out,   scenario = sprintf("3. Single Outlier (r = %.2f)", r_out)),
+  data.frame(x = x_rest, y = y_rest,  scenario = sprintf("4. Range Restricted (r = %.2f)", r_rest))
+)
+
+ggplot(feat_df, aes(x = x, y = y)) +
+  geom_point(color = "steelblue", size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "firebrick") +
+  facet_wrap(~ scenario, scales = "free") +
+  labs(title = "Wilcox Data Features Distorting Pearson's r",
+       x = "X",
+       y = "Y") +
+  theme_minimal()
+```
+
+---
+
+# Black Chapter 13: Multiple Regression Analysis
+
+Multiple regression extends simple linear regression by modeling a dependent variable $Y$ as a linear function of **$k$ independent predictor variables** ($X_1, X_2, \dots, X_k$).
+
+## The Multiple Regression Model (Section 13.1)
+
+* **Population Model:**
+  $$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \dots + \beta_k X_{ki} + \epsilon_i$$
+* **Estimated Sample Equation:**
+  $$\hat{y}_i = b_0 + b_1 x_{1i} + b_2 x_{2i} + \dots + b_k x_{ki}$$
+* **Inputs & Interpretation:**
+  * $b_0$: Sample $y$-intercept (predicted $Y$ when all $x_j = 0$).
+  * $b_j$ (**Partial Regression Coefficients**): Expected change in $\hat{y}$ for a $1$-unit increase in $x_j$, **holding all other independent variables constant** (*ceteris paribus*).
+
+### R Application: Demonstration Problem 13.1 — Prime Interest Rate (Black p. 479, Ch. 13 R Supplement)
+
+Using 15 even-numbered years over a 28-year span, we model the annual U.S. prime interest rate (`interest`) as a linear function of the annual unemployment rate (`unemployment`) and annual personal saving rate (`savings`), and predict the prime interest rate when `unemployment = 6.5` and `savings = 5.0`.
+
+```{r demo-13-1-fit}
+interest_rate <- c(8.33, 9.32, 10.01, 6.25, 7.15, 8.27, 8.35, 9.23, 4.67, 4.34,
+                   7.96, 5.09, 3.25, 3.25, 3.25)
+unemp_rate <- c(7, 5.5, 5.6, 7.5, 6.1, 5.4, 4.5, 4, 5.8, 5.5, 4.6, 5.8, 9.6, 8.1, 6.2)
+pers_saving <- c(8.2, 7.3, 7, 7.7, 4.8, 4, 4.3, 2.3, 2.4, 2.1, 0.7, 1.8, 5.8, 7.6, 4.8)
+
+demo_13.1 <- data.frame(interest = interest_rate,
+                        unemployment = unemp_rate,
+                        savings = pers_saving)
+
+prime_model <- lm(interest ~ unemployment + savings, data = demo_13.1)
+print(summary(prime_model))
+
+prime_pred <- predict(prime_model,
+                      newdata = data.frame(unemployment = 6.5, savings = 5.0),
+                      interval = "confidence")
+print(sprintf("Predicted Prime Interest Rate (unemp = 6.5, savings = 5.0): %.4f%% (95%% CI: [%.4f%%, %.4f%%])",
+              prime_pred[1], prime_pred[2], prime_pred[3]))
+```
+
+---
+
+## Evaluating the Multiple Regression Model (Sections 13.2–13.3)
+
+### Overall Significance: The Global $F$-Test
+
+Tests whether *at least one* predictor variable contributes significantly to explaining $Y$:
+
+* $H_0: \beta_1 = \beta_2 = \dots = \beta_k = 0$
+* $H_a: \text{At least one } \beta_j \ne 0$
+* **Test Statistic:**
+  $$F = \frac{MSR}{MSE} = \frac{SSR / k}{SSE / (n - k - 1)}, \quad \text{with } df_1 = k, \; df_2 = n - k - 1$$
+* **Inputs:** $SSR$ (regression sum of squares), $SSE$ (error sum of squares), $k$ (number of predictors), and $n$ (sample size).
+
+### Individual Predictor Significance: Partial $t$-Tests
+
+Tests whether a specific predictor $X_j$ is significant after accounting for all other predictors in the model:
+
+* $H_0: \beta_j = 0$ vs. $H_a: \beta_j \ne 0$
+* **Test Statistic:**
+  $$t = \frac{b_j - 0}{s_{b_j}}, \quad \text{with } df = n - k - 1$$
+* **Inputs:** $b_j$ (partial slope estimate) and $s_{b_j}$ (standard error of $b_j$).
+
+### Multiple $R^2$, Adjusted $R^2$, and Standard Error ($s_e$)
+
+* **Standard Error of the Estimate:**
+  $$s_e = \sqrt{\frac{SSE}{n - k - 1}}$$
+* **Multiple Coefficient of Determination ($R^2$):**
+  $$R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}$$
+  *(Adding any predictor—even pure noise—never decreases $R^2$).*
+* **Adjusted $R^2$ ($R_{\text{adj}}^2$):** Penalizes model complexity by adjusting for degrees of freedom:
+  $$R_{\text{adj}}^2 = 1 - \left[ (1 - R^2) \frac{n - 1}{n - k - 1} \right]$$
+  Use **$R_{\text{adj}}^2$** (not raw $R^2$) when comparing competing multiple regression models with different numbers of predictors.
+
+```{r mlr-formulas-diagnostics, fig.height=6, fig.width=7}
+n_p <- nrow(demo_13.1)
+k_p <- 2
+sse_p <- sum(residuals(prime_model)^2)
+sst_p <- sum((demo_13.1$interest - mean(demo_13.1$interest))^2)
+ssr_p <- sst_p - sse_p
+
+se_p <- sqrt(sse_p / (n_p - k_p - 1))
+r2_p <- ssr_p / sst_p
+adj_r2_p <- 1 - ((1 - r2_p) * (n_p - 1) / (n_p - k_p - 1))
+f_p <- (ssr_p / k_p) / (sse_p / (n_p - k_p - 1))
+p_f_p <- pf(f_p, df1 = k_p, df2 = n_p - k_p - 1, lower.tail = FALSE)
+
+print(sprintf("s_e = %.4f | R^2 = %.4f | Adjusted R^2 = %.4f", se_p, r2_p, adj_r2_p))
+print(sprintf("Global F(%d, %d) = %.4f | p-value = %.6f", k_p, n_p - k_p - 1, f_p, p_f_p))
+
+par(mfrow = c(2, 2))
+plot(prime_model)
+```
+
+---
+
+## Dummy Variables, Iterative Modeling & Multicollinearity (Sections 13.4–13.5)
+
+### Qualitative (Dummy / Indicator) Variables
+
+Categorical predictors with $c$ levels are encoded using **$c - 1$ binary ($0/1$) dummy variables** to avoid perfect collinearity (the "dummy variable trap"). The omitted category serves as the **reference (baseline) group**.
+
+### R Application: Tableware Pricing — Dummy Indicators, Covariate Addition & Log Transformation
+
+Using [`tableware.csv`](https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/tableware.csv) from the Lesson 12 solutions, we compare:
+1. **Binary indicator model (`PRICE ~ BOWL + CASS + DISH + TRAY`):** Here `plate` has $0$ across all four indicators and serves as the reference category ($\hat{y}_{\text{plate}} = b_0 = 51.83$), while each coefficient measures the incremental price difference relative to a plate.
+2. **Factor contrast model (`PRICE ~ TYPE`):** R automatically creates $c - 1$ treatment contrasts using the alphabetically first level (`bowl`) as the baseline ($b_0 = 67.39$).
+3. **Adding a quantitative covariate (`PRICE ~ DIAM + TYPE`):** Including diameter (`DIAM`) increases $R_{\text{adj}}^2$ from $0.2876$ to $0.7204$, though residual diagnostics show increasing error variance (heteroscedasticity).
+4. **Logarithmic transformation (`log10(PRICE) ~ log10(DIAM) + TYPE`):** Stabilizes variance ($R_{\text{adj}}^2 = 0.8187$), confirmed by Bartlett's test for homogeneity of variances ($p = 0.8267$) and cross-checked with robust regression (`MASS::rlm()`).
+
+```{r tableware-dummy-transform, fig.height=4.5, fig.width=7}
+tableware <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/tableware.csv")
+tableware$TYPE <- factor(tableware$TYPE)
+
+m_dummy <- lm(PRICE ~ BOWL + CASS + DISH + TRAY, data = tableware)
+m_factor <- lm(PRICE ~ TYPE, data = tableware)
+m_cov <- lm(PRICE ~ DIAM + TYPE, data = tableware)
+m_log <- lm(log10(PRICE) ~ log10(DIAM) + TYPE, data = tableware)
+
+print(summary(m_dummy))
+print(sprintf("Mean PRICE for plates (reference group): %.2f",
+              mean(tableware$PRICE[tableware$TYPE == "plate"])))
+
+print(sprintf("Adj R^2 comparison -> TYPE only: %.4f | DIAM + TYPE: %.4f | log10 model: %.4f",
+              summary(m_factor)$adj.r.squared,
+              summary(m_cov)$adj.r.squared,
+              summary(m_log)$adj.r.squared))
+
+class_intervals <- cut(fitted(m_log), breaks = 5)
+bartlett_res <- bartlett.test(residuals(m_log) ~ class_intervals)
+print(bartlett_res)
+
+m_robust <- rlm(log10(PRICE) ~ log10(DIAM) + TYPE, data = tableware)
+coef_compare <- cbind(OLS_log10 = round(coef(m_log), 3),
+                      Robust_rlm = round(coef(m_robust), 3))
+print(coef_compare)
+
+b_int <- coef(m_log)[1]
+type_levels <- levels(tableware$TYPE)
+line_df <- data.frame(
+  TYPE = type_levels,
+  intercept = c(b_int,
+                b_int + coef(m_log)["TYPEcass"],
+                b_int + coef(m_log)["TYPEdish"],
+                b_int + coef(m_log)["TYPEplate"],
+                b_int + coef(m_log)["TYPEtray"]),
+  slope = coef(m_log)["log10(DIAM)"]
+)
+
+ggplot(tableware, aes(x = log10(DIAM), y = log10(PRICE), color = TYPE)) +
+  geom_point(size = 2.2) +
+  geom_abline(data = line_df, aes(intercept = intercept, slope = slope, color = TYPE), linewidth = 0.9) +
+  labs(title = "Log10(PRICE) vs. Log10(DIAM) by Tableware Type",
+       x = "log10(Diameter)",
+       y = "log10(Price)") +
+  theme_minimal()
+```
+
+### Multicollinearity & Variance Inflation Factor ($VIF$)
+
+**Multicollinearity** occurs when two or more independent predictors ($X_j$ and $X_m$) are highly correlated with each other.
+
+* **Consequences:** Does not bias predictions ($\hat{y}$) or $R^2$, but dramatically inflates standard errors ($s_{b_j}$), causing partial $t$-statistics to shrink (predictors appear insignificant despite a highly significant overall $F$-test) and causing coefficient signs to flip erratically.
+* **Detection via $VIF$:** For each predictor $X_j$, regress $X_j$ on all remaining predictors to obtain $R_j^2$:
+  $$VIF_j = \frac{1}{1 - R_j^2}$$
+  * **Inputs:** $R_j^2$, the coefficient of determination from regressing $X_j$ onto all other predictors.
+  * $VIF_j = 1$: No correlation with other predictors.
+  * $VIF_j > 5$ (or $> 10$ in Black): Indicates problematic multicollinearity requiring variable removal or combination.
+
+```{r vif-demo}
+r2_unemp <- summary(lm(unemployment ~ savings, data = demo_13.1))$r.squared
+r2_sav <- summary(lm(savings ~ unemployment, data = demo_13.1))$r.squared
+vif_prime <- 1 / (1 - c(unemployment = r2_unemp, savings = r2_sav))
+print(sprintf("Demo 13.1 VIF -> unemployment: %.3f | savings: %.3f",
+              vif_prime["unemployment"], vif_prime["savings"]))
+
+set.seed(42)
+n_sim_vif <- 40
+ad_spend <- runif(n_sim_vif, 5, 25)
+ad_clicks <- 10 * ad_spend + rnorm(n_sim_vif, 0, 4)
+store_size <- runif(n_sim_vif, 5, 20)
+sales_vif <- 15 + 2.2 * ad_spend + 1.0 * store_size + rnorm(n_sim_vif, 0, 3)
+collinear_df <- data.frame(sales = sales_vif, ad_spend = ad_spend,
+                           ad_clicks = ad_clicks, store_size = store_size)
+
+m_collinear <- lm(sales ~ ad_spend + ad_clicks + store_size, data = collinear_df)
+print(summary(m_collinear))
+
+r2_spend <- summary(lm(ad_spend ~ ad_clicks + store_size, data = collinear_df))$r.squared
+r2_clicks <- summary(lm(ad_clicks ~ ad_spend + store_size, data = collinear_df))$r.squared
+r2_size <- summary(lm(store_size ~ ad_spend + ad_clicks, data = collinear_df))$r.squared
+vif_collinear <- 1 / (1 - c(ad_spend = r2_spend, ad_clicks = r2_clicks, store_size = r2_size))
+print(round(vif_collinear, 2))
+```
+
+Notice that in the collinear model, the overall $F$-test is overwhelmingly significant ($p < 10^{-10}$, $R^2 > 0.90$), yet both `ad_spend` and `ad_clicks` have inflated standard errors and high $VIF$ values ($VIF > 10$), masking their individual $t$-test significance.
+
+---
+
+# Week 9 Key Formula Summary Sheet
+
+| Concept / Metric | Formula | Degrees of Freedom / R Implementation |
+| :--- | :--- | :--- |
+| **Residual & $s_e$ (SLR)** | $e_i = y_i - \hat{y}_i, \quad s_e = \sqrt{\dfrac{SSE}{n - 2}}$ | $df = n - 2$; `residuals(m)`, `summary(m)$sigma` |
+| **Slope $t$-Test (SLR)** | $t = \dfrac{b_1 - \beta_{1,0}}{s_{b_1}}$, where $s_{b_1} = \dfrac{s_e}{\sqrt{SS_{xx}}}$ | $df = n - 2$; `coef(summary(m))`, `confint(m)` |
+| **Correlation $t$-Test (Wilcox)** | $T = r \sqrt{\dfrac{n - 2}{1 - r^2}}$ | $df = n - 2$; `cor.test(x, y)`; sensitive to heteroscedasticity |
+| **CI for Conditional Mean** | $\hat{y}_0 \pm t_{\alpha/2,\, n-2} \, s_e \sqrt{\dfrac{1}{n} + \dfrac{(x_0 - \bar{x})^2}{SS_{xx}}}$ | `predict(m, newdata, interval = "confidence")` |
+| **PI for Individual $Y_0$** | $\hat{y}_0 \pm t_{\alpha/2,\, n-2} \, s_e \sqrt{1 + \dfrac{1}{n} + \dfrac{(x_0 - \bar{x})^2}{SS_{xx}}}$ | `predict(m, newdata, interval = "prediction")` |
+| **Multiple Regression $F$-Test** | $F = \dfrac{MSR}{MSE} = \dfrac{SSR / k}{SSE / (n - k - 1)}$ | $df_1 = k$, $df_2 = n - k - 1$; `summary(m)$fstatistic` |
+| **Partial $t$-Test & $s_e$ (MLR)** | $t = \dfrac{b_j}{s_{b_j}}, \quad s_e = \sqrt{\dfrac{SSE}{n - k - 1}}$ | $df = n - k - 1$; `summary(m)$coefficients` |
+| **Adjusted $R^2$** | $R_{\text{adj}}^2 = 1 - \left[(1 - R^2)\dfrac{n - 1}{n - k - 1}\right]$ | `summary(m)$adj.r.squared`; penalizes extra predictors |
+| **Variance Inflation Factor** | $VIF_j = \dfrac{1}{1 - R_j^2}$ | $VIF > 5$ or $10$ signals multicollinearity |
