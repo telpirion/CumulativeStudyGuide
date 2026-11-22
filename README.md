@@ -30,6 +30,8 @@ statistical foundations and their application in R. Each module includes:
 - 📓 [**Week 3 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week3.ipynb) — 41 Chapter 4 & 30 Chapter 5 review questions with full mathematical solutions, plus applied R & Bayesian exercises
 - 📘 [**Week 4 Study Guide (HTML)**](guides/Week4.html) — Continuous & Sampling Distributions
 - 📓 [**Week 4 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week4.ipynb) — 44 Chapter 6 & 28 Chapter 7 review questions with full mathematical solutions, plus 6 applied R exercises
+- 📘 [**Week 5 Study Guide (HTML)**](guides/Week5.html) — Statistical Estimation & Modern Robust Intervals
+- 📓 [**Week 5 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week5.ipynb) — 34 Chapter 8 review questions with full mathematical solutions and 6 applied R exercises
 - 📘 [**Week 6 Study Guide (HTML)**](guides/Week6.html) — Hypothesis Testing for Single Populations & Categorical Data Analysis
 - 📓 [**Week 6 Practice & Exercises (Jupyter Notebook)**](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week6.ipynb) — 50 Chapter 9 & 19 Chapter 16 review questions with full mathematical solutions, plus 12 applied R exercises
 - 📘 [**Week 7 Study Guide (HTML)**](guides/Week7.html) — Inferences About Two Populations
@@ -68,6 +70,7 @@ CumulativeStudyGuide/
 │   ├── Week3.html            # Rendered HTML study guide for Week 3
 │   ├── Week3_files/          # Supporting assets and plots for Week 3 HTML
 │   ├── Week4.html            # Rendered HTML study guide for Week 4 (self-contained)
+│   ├── Week5.html            # Rendered HTML study guide for Week 5 (self-contained)
 │   ├── Week6.html            # Rendered HTML study guide for Week 6 (self-contained)
 │   ├── Week7.html            # Rendered HTML study guide for Week 7
 │   ├── Week7_files/          # Supporting assets and dependencies for Week 7 HTML
@@ -90,6 +93,8 @@ CumulativeStudyGuide/
 ├── Week3.Rmd                 # Source R Markdown document for Week 3 (Chapters 4 & 5)
 ├── Week4.ipynb               # R Jupyter Notebook with 72 study questions & 6 applied exercises
 ├── Week4.Rmd                 # Source R Markdown document for Week 4 (Chapters 6 & 7, Wilcox 4.7)
+├── Week5.ipynb               # R Jupyter Notebook with 34 study questions & 6 applied exercises
+├── Week5.Rmd                 # Source R Markdown document for Week 5 (Chapter 8, Wilcox 6.5)
 ├── Week6.ipynb               # R Jupyter Notebook with 69 study questions & 12 applied exercises
 ├── Week6.Rmd                 # Source R Markdown document for Week 6 (Chapters 9 & 16)
 ├── Week7.ipynb               # Jupyter Notebook with 44 study questions & applied exercises
@@ -110,6 +115,7 @@ CumulativeStudyGuide/
 | **Week 2** | **Ch. 3:** Descriptive Statistics | • Central Tendency (Mean, Median, Mode, Trimmed Mean)<br>• Dispersion (Range, $IQR$, MAD, Variance, Standard Deviation, $CV$)<br>• Grouped Data Central Tendency & Variance<br>• Chebyshev's Theorem vs. The Empirical Rule<br>• Shape (Skewness, Kurtosis) & Tukey Outlier Fences<br>• Wilcox Masking & Winsorized Variance<br>• Pearson's Correlation ($r$) | • [Source (`Week2.Rmd`)](Week2.Rmd)<br>• [Rendered Guide (`guides/Week2.html`)](guides/Week2.html)<br>• [Practice Notebook (`Week2.ipynb`)](Week2.ipynb) | • `mean(..., trim = 0.2)`, `median()`, `table()`<br>• `quantile(..., type = 6)`, `IQR()`, `diff(range())`<br>• `var()`, `sd()`, custom `calc_winsorized_var()`<br>• Grouped $\bar{x}$ & $s^2$ calculations<br>• `boxplot(..., horizontal = TRUE)`<br>• `cor()`, `cor.test()`, `plot()` with `lm()`<br>• Applied analyses (`mileage`, `shoppers`, `pontus`, `geyser`) |
 | **Week 3** | **Ch. 4:** Probability<br>**Ch. 5:** Discrete Distributions<br>**Think Bayes Ch. 1–2** | • Classical, Relative Frequency & Subjective Probability<br>• Counting Rules ($mn$ rule, Combinations)<br>• Set Operations, Addition, Multiplication & Conditional Rules<br>• Independence & Mutually Exclusive Events<br>• Bayes' Theorem (Diachronic & Table Method)<br>• Discrete Expected Value & Variance<br>• Binomial, Poisson & Hypergeometric Distributions | • [Source (`Week3.Rmd`)](Week3.Rmd)<br>• [Rendered Guide (`guides/Week3.html`)](guides/Week3.html)<br>• [Practice Notebook (`Week3.ipynb`)](Week3.ipynb) | • `sample()`, `expand.grid()`, `choose()`, `combn()`<br>• `union()`, `intersect()`, `replicate()`<br>• Custom `bayes_table()` & `discrete_summary()`<br>• `dbinom()`, `pbinom()`, `dpois()`, `ppois()`<br>• `dhyper()`, `phyper()`<br>• Monte Carlo simulations & `ggplot2` PMF charts |
 | **Week 4** | **Ch. 6:** Continuous Distributions<br>**Ch. 7:** Sampling & Sampling Distributions<br>**Wilcox Ch. 4.7** | • Continuous Uniform, Normal ($z$) & Exponential Distributions<br>• Normal Approximation to the Binomial ($\pm 0.5$ continuity correction)<br>• Normality Diagnostics (Histograms, Density, Q-Q Plots)<br>• Probability vs. Non-Probability Sampling & Error Types<br>• Central Limit Theorem ($\bar{x}$ & $\hat{p}$) & FPC Factor<br>• Wilcox Contaminated Normal & Log Back-Transformation | • [Source (`Week4.Rmd`)](Week4.Rmd)<br>• [Rendered Guide (`guides/Week4.html`)](guides/Week4.html)<br>• [Practice Notebook (`Week4.ipynb`)](Week4.ipynb) | • `dunif()`, `punif()`, `runif()`<br>• `dnorm()`, `pnorm()`, `qnorm()`, `rnorm()`<br>• `qqnorm()`, `qqline()`, `dexp()`, `pexp()`<br>• `sample()`, `sample.int()`, `set.seed()`, stratified sampling<br>• CLT simulations & `ggplot2` distribution curves |
+| **Week 5** | **Ch. 8:** Estimation for Single Populations<br>**Wilcox Ch. 6.5** | • Point vs. Interval Estimates & Probability Coverage ($1 - \alpha$)<br>• Mean CIs ($\sigma$ known $z$-interval, FPC, & $\sigma$ unknown $t$-interval)<br>• One-Sided Confidence Intervals<br>• Proportion CIs (Wald, Agresti-Coull, Wilson Score, Blyth)<br>• Variance ($\sigma^2$) & Standard Deviation ($\sigma$) $\chi^2$ CIs<br>• Minimum Sample Size ($n$) for $\mu$ and $p$<br>• Wilcox 20% Trimmed Mean (Winsorized SE), Bootstrap-$t$ & Percentile Bootstrap | • [Source (`Week5.Rmd`)](Week5.Rmd)<br>• [Rendered Guide (`guides/Week5.html`)](guides/Week5.html)<br>• [Practice Notebook (`Week5.ipynb`)](Week5.ipynb) | • `qnorm()`, `qt()`, `qchisq()`, `ceiling()`<br>• `t.test()` (two-sided & one-sided)<br>• `prop.test()` & Agresti-Coull comparison<br>• Custom `var_conf_int_summary()`, `trim_ci()`, `boot_t_ci()`<br>• `replicate()`, `sample(..., replace = TRUE)`, `quantile()`<br>• Horizontal `boxplot()` & `hot_dogs.csv` analysis |
 | **Week 6** | **Ch. 9:** Hypothesis Testing for Single Populations<br>**Ch. 16:** Analysis of Categorical Data | • Eight-step hypothesis testing process & $p$-value method<br>• Type I ($\alpha$), Type II ($\beta$), Power ($1 - \beta$), OC & Power curves<br>• One-sample $z$-test & $t$-test for $\mu$<br>• One-sample proportion $z$-test & variance $\chi^2$-test<br>• Parametric vs. nonparametric methods<br>• $\chi^2$ Goodness-of-Fit & Test of Independence | • [Source (`Week6.Rmd`)](Week6.Rmd)<br>• [Rendered Guide (`guides/Week6.html`)](guides/Week6.html)<br>• [Practice Notebook (`Week6.ipynb`)](Week6.ipynb) | • Custom `one_sample_z_test()` & `one_sample_var_test()`<br>• `t.test()`, `prop.test()`, `pt()`, `pnorm()`<br>• `qchisq()`, `pchisq()`, `chisq.test()`<br>• `ggplot2` Power/OC curves & horizontal boxplots<br>• Applied analyses (`hot_dogs`, `salaries`) |
 | **Week 7** | **Ch. 10:** Inferences About Two Populations | • Test selection framework<br>• Difference in two means ($\sigma$ known vs. unknown)<br>• Pooled vs. Welch's unequal-variance $t$-tests<br>• Matched-pairs / related populations<br>• Two-proportion $z$-tests & pooling<br>• Two-variance $F$-tests<br>• Ethical comparative analysis | • [Source (`Week7.Rmd`)](Week7.Rmd)<br>• [Rendered Guide (`guides/Week7.html`)](guides/Week7.html)<br>• [Practice Notebook (`Week7.ipynb`)](Week7.ipynb) | • Custom `two_sample_z_test()`<br>• `t.test(..., var.equal = TRUE)`<br>• `t.test(..., var.equal = FALSE)`<br>• `t.test(..., paired = TRUE)`<br>• `prop.test(..., correct = FALSE)`<br>• `var.test()` |
 | **Week 8** | **Ch. 11:** Analysis of Variance<br>**Ch. 12:** Simple Linear Regression | • One-Way ANOVA & partitioning $SS$<br>• Tukey's HSD post-hoc testing<br>• Randomized Block & Two-Way ANOVA<br>• Simple Linear Regression (OLS)<br>• Correlation vs. Regression<br>• Goodness of fit ($R^2$, $s_e$) | • [Source (`Week8.Rmd`)](Week8.Rmd)<br>• [Rendered Guide (`guides/Week8.html`)](guides/Week8.html)<br>• [Practice Notebook (`Week8.ipynb`)](Week8.ipynb) | • `aov()` & `summary(aov())`<br>• `TukeyHSD()`<br>• `lm()`<br>• `summary(lm())`<br>• Residual analysis (`plot(lm())`)<br>• `predict()` |
@@ -153,6 +159,9 @@ rmarkdown::render("Week3.Rmd", output_dir = "guides")
 # Render Week 4 (uses custom knit hook targeting guides/)
 rmarkdown::render("Week4.Rmd", output_dir = "guides")
 
+# Render Week 5 (uses custom knit hook targeting guides/)
+rmarkdown::render("Week5.Rmd", output_dir = "guides")
+
 # Render Week 6 (uses custom knit hook targeting guides/)
 rmarkdown::render("Week6.Rmd", output_dir = "guides")
 
@@ -173,6 +182,7 @@ Rscript -e 'rmarkdown::render("Week1.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week2.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week3.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week4.Rmd", output_dir = "guides")'
+Rscript -e 'rmarkdown::render("Week5.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week6.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week7.Rmd", output_dir = "guides")'
 Rscript -e 'rmarkdown::render("Week8.Rmd", output_dir = "guides")'
@@ -186,6 +196,7 @@ quarto render Week1.Rmd
 quarto render Week2.Rmd
 quarto render Week3.Rmd
 quarto render Week4.Rmd
+quarto render Week5.Rmd
 quarto render Week6.Rmd
 quarto render Week7.Rmd
 quarto render Week8.Rmd

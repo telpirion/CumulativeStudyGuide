@@ -1,0 +1,512 @@
+---
+title: "Week 5 Statistics Study Guide: Statistical Estimation & Modern Robust Intervals"
+subtitle: "Ken Black (Chapter 8) and Wilcox (Chapter 6.5)"
+author: "Eric Schmidt"
+date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+    theme: readable
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+```
+
+# Overview & Learning Objectives
+
+The Week 5 readings cover **Chapter 8 (Statistical Inference: Estimation for Single Populations)** from Ken Black's *Business Statistics* alongside **Chapter 6 (Section 6.5: Modern Advances and Insights)** from Rand Wilcox's *Basic Statistics*, as well as R implementations from **Davies (Chapter 17)** and **Stowell (Chapters 5–6)**. By the end of this module, you should be able to:
+
+1. Distinguish between a **point estimate** ($\bar{x}, \hat{p}, s^2$) and an **interval estimate (confidence interval)**, and interpret **probability coverage** ($1 - \alpha$) accurately.
+2. Construct two-sided and one-sided confidence intervals for a **population mean ($\mu$)** when $\sigma$ is known ($z$-interval, including the finite population correction factor when $n > 0.05N$) and when $\sigma$ is unknown ($t$-interval).
+3. Construct confidence intervals for a **population proportion ($p$)** (classical Wald interval, Wilson score interval via `prop.test()`, and Wilcox's recommended Agresti-Coull adjustment) and for a **population variance ($\sigma^2$) and standard deviation ($\sigma$)** ($\chi^2$-interval).
+4. Determine the **minimum sample size ($n$)** required to achieve a desired margin of error ($E$) for estimating $\mu$ or $p$.
+5. Diagnose when **Student's $t$ confidence intervals fail** under skewness and heavy-tailed distributions (Wilcox Section 6.5), and apply modern robust alternatives including **20% trimmed means (Winsorized standard error)**, **bootstrap-$t$**, and **percentile bootstrap** intervals.
+
+---
+
+# Black Chapter 8: Estimation for Single Populations
+
+Statistical estimation uses sample statistics to infer unknown population parameters. A single number computed from a sample (such as $\bar{x}$, $\hat{p}$, or $s^2$) is a **point estimate**, whereas a range of plausible values around that statistic is an **interval estimate (confidence interval)**. Every symmetric confidence interval takes the general form:
+
+$$\text{Point Estimate} \pm (\text{Critical Value}) \times (\text{Standard Error}) = \text{Point Estimate} \pm \text{Margin of Error } (E)$$
+
+Because R functions such as `t.test()` and `prop.test()` are designed to accept raw sample vectors or success counts, summary-level textbook problems (given $\bar{x}$, $s$, or $\hat{p}$) are implemented directly from the analytical formulas using R's quantile functions (`qnorm()`, `qt()`, `qchisq()`).
+
+## Estimating a Population Mean ($\mu$): $\sigma$ Known ($z$-Interval, Section 8.1)
+
+Valid when the population is normally distributed or when the sample size is large ($n \ge 30$) via the Central Limit Theorem:
+
+$$\bar{x} \pm z_{\alpha/2} \left(\frac{\sigma}{\sqrt{n}}\right)$$
+
+When sampling **without replacement** from a finite population of size $N$ where the sampling fraction exceeds $5\%$ ($n > 0.05N$), apply the **Finite Population Correction (FPC)** factor:
+
+$$\bar{x} \pm z_{\alpha/2} \left(\frac{\sigma}{\sqrt{n}}\right)\sqrt{\frac{N - n}{N - 1}}$$
+
+* **Inputs:**
+  * $\bar{x}$: Sample mean (point estimate of $\mu$).
+  * $\sigma$: Known population standard deviation ($\sigma > 0$).
+  * $n$: Sample size ($N$: total population size when applying FPC).
+  * $1 - \alpha$: Desired confidence level ($\alpha$ is the significance / tail error probability; e.g., $90\%$ confidence $\implies \alpha = 0.10$, $\alpha/2 = 0.05$).
+  * $z_{\alpha/2}$: Upper-tail standard normal critical value, computed in R via `qnorm(1 - alpha / 2)`.
+
+### R Implementation: U.S. Firms Trading in India (Black Ch. 8 R Supplement — Demo Problem 8.1)
+
+A survey of $n = 44$ U.S. companies trading with firms in India yields a sample mean of $\bar{x} = 10.455$ years. Assuming a known population standard deviation of $\sigma = 7.7$ years, construct a $90\%$ confidence interval for the population mean duration $\mu$.
+
+```{r demo-8-1-z-interval}
+n <- 44
+x_bar <- 10.455
+pop_sd <- 7.7
+alpha <- 1 - 0.90
+
+crit_z <- qnorm(p = 1 - (alpha / 2), mean = 0, sd = 1, lower.tail = TRUE)
+se_z <- pop_sd / sqrt(n)
+me_z <- crit_z * se_z
+ci_z <- c(x_bar - me_z, x_bar + me_z)
+
+print(sprintf("Critical z (90%% CI): %.4f | Standard Error: %.4f | Margin of Error: %.4f",
+              crit_z, se_z, me_z))
+print(sprintf("90%% z-CI for mu: [%.4f, %.4f]", ci_z[1], ci_z[2]))
+```
+
+---
+
+## Estimating a Population Mean ($\mu$): $\sigma$ Unknown ($t$-Interval, Section 8.2)
+
+In most business applications, $\sigma$ is unknown and must be estimated by the sample standard deviation $s$. Under normality (or large $n$), the standardized quantity $\frac{\bar{x} - \mu}{s / \sqrt{n}}$ follows **Student's $t$-distribution** (developed by William S. Gosset) with $df = n - 1$ degrees of freedom:
+
+$$\bar{x} \pm t_{\alpha/2,\, n-1} \left(\frac{s}{\sqrt{n}}\right)$$
+
+* **Inputs:**
+  * $\bar{x}$: Sample mean.
+  * $s$: Sample standard deviation.
+  * $n$: Sample size, giving degrees of freedom $df = n - 1$.
+  * $\alpha$: Tail error probability ($1 - \text{confidence level}$).
+  * $t_{\alpha/2,\, n-1}$: Upper-tail $t$ critical value, computed in R via `qt(1 - alpha / 2, df = n - 1)`.
+* **Properties of Student's $t$-Distribution:**
+  * Symmetric, unimodal, and bell-shaped around $0$, with **heavier (fatter) tails** than the standard normal $Z$ distribution to reflect extra uncertainty from estimating $\sigma$ with $s$.
+  * As degrees of freedom ($df = n - 1$) increase, the $t$-distribution converges toward the standard normal $Z$ distribution.
+* **One-Sided Confidence Intervals:** When only an upper or lower bound is needed, place the entire $\alpha$ in one tail (`qt(1 - alpha, df = n - 1)`):
+  * **One-sided upper-bounded interval** (`alternative = "less"` in `t.test()`): $\left(-\infty, \; \bar{x} + t_{\alpha,\, n-1}\frac{s}{\sqrt{n}}\right]$
+  * **One-sided lower-bounded interval** (`alternative = "greater"` in `t.test()`): $\left[\bar{x} - t_{\alpha,\, n-1}\frac{s}{\sqrt{n}}, \; +\infty\right)$
+
+```{r t-vs-z-plot, fig.height=3.6, fig.width=6.8}
+z_grid <- seq(-4, 4, length.out = 500)
+t_compare <- data.frame(
+  x = rep(z_grid, 4),
+  density = c(
+    dt(z_grid, df = 2),
+    dt(z_grid, df = 5),
+    dt(z_grid, df = 15),
+    dnorm(z_grid, mean = 0, sd = 1)
+  ),
+  Distribution = factor(
+    rep(c("t (df = 2)", "t (df = 5)", "t (df = 15)", "Standard Normal Z"), each = length(z_grid)),
+    levels = c("t (df = 2)", "t (df = 5)", "t (df = 15)", "Standard Normal Z")
+  )
+)
+
+ggplot(t_compare, aes(x = x, y = density, color = Distribution, linetype = Distribution)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Student's t-Distribution Converges Toward Standard Normal Z as df Increases",
+       x = "Standardized Value",
+       y = "Density") +
+  theme_minimal()
+```
+
+### R Implementation: Equipment Rental Durations & Hot Dog Calories (Black Ch. 8 R Supplement — Demo Problem 8.3 & `hot_dogs.csv`)
+
+In **Demonstration Problem 8.3 (p. 244)**, an equipment rental company samples $n = 14$ rental invoices for ditchdiggers (assuming normally distributed rental durations) and constructs a $99\%$ confidence interval using both manual $t$-formulas and `t.test()`. We then inspect calorie distributions in `hot_dogs.csv` using horizontal boxplots and compute two-sided $95\%$ and one-sided $99\%$ confidence intervals by hot dog type.
+
+```{r demo-8-3-t-interval, fig.height=3.6, fig.width=6.8}
+rental_days <- c(3, 1, 3, 2, 5, 1, 2, 1, 4, 2, 1, 3, 1, 1)
+n_rent <- length(rental_days)
+xbar_rent <- mean(rental_days)
+s_rent <- sd(rental_days)
+alpha_rent <- 1 - 0.99
+
+crit_t <- qt(p = 1 - (alpha_rent / 2), df = n_rent - 1, lower.tail = TRUE)
+ci_rent_manual <- c(xbar_rent - crit_t * (s_rent / sqrt(n_rent)),
+                    xbar_rent + crit_t * (s_rent / sqrt(n_rent)))
+ci_rent_ttest <- t.test(x = rental_days, conf.level = 0.99)
+
+print(sprintf("Demo 8.3 -> n = %d | Mean = %.4f | SD = %.4f | Critical t = %.4f",
+              n_rent, xbar_rent, s_rent, crit_t))
+print(sprintf("99%% Manual t-CI: [%.4f, %.4f] | t.test() CI: [%.4f, %.4f]",
+              ci_rent_manual[1], ci_rent_manual[2],
+              ci_rent_ttest$conf.int[1], ci_rent_ttest$conf.int[2]))
+
+hotdogs <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/hot_dogs.csv")
+boxplot(Calories ~ Type, data = hotdogs, horizontal = TRUE,
+        col = c("salmon", "tan", "lightblue"),
+        main = "Hot Dog Calories by Type",
+        xlab = "Calories per Hot Dog", ylab = "Type")
+
+hd_types <- levels(factor(hotdogs$Type))
+hd_ci_table <- do.call(rbind, lapply(hd_types, function(tp) {
+  vals <- subset(hotdogs, Type == tp)$Calories
+  ci95 <- t.test(vals, conf.level = 0.95)$conf.int
+  ci99_upper <- t.test(vals, alternative = "less", conf.level = 0.99)$conf.int
+  ci99_lower <- t.test(vals, alternative = "greater", conf.level = 0.99)$conf.int
+  data.frame(
+    Type = tp,
+    n = length(vals),
+    Mean = round(mean(vals), 2),
+    SD = round(sd(vals), 2),
+    CI95_Lower = round(ci95[1], 2),
+    CI95_Upper = round(ci95[2], 2),
+    OneSided99_UpperBound = round(ci99_upper[2], 2),
+    OneSided99_LowerBound = round(ci99_lower[1], 2)
+  )
+}))
+kable(hd_ci_table, caption = "95% Two-Sided and 99% One-Sided Mean Calorie CIs by Hot Dog Type")
+```
+
+---
+
+## Estimating a Population Proportion ($p$) (Section 8.3)
+
+When the large-sample normal approximation conditions hold—$n\hat{p} \ge 5$ and $n(1 - \hat{p}) \ge 5$, where $\hat{p} = \frac{x}{n}$ and $\hat{q} = 1 - \hat{p}$—the classical **Wald $z$-interval** for a population proportion $p$ is:
+
+$$\hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1 - \hat{p})}{n}}$$
+
+* **Inputs:**
+  * $x$: Number of observed successes in the sample.
+  * $n$: Total sample size.
+  * $\hat{p} = x / n$: Sample proportion (point estimate of $p$), with $\hat{q} = 1 - \hat{p}$.
+  * $\alpha$: Tail error probability ($z_{\alpha/2} = \text{qnorm}(1 - \alpha/2)$).
+* **Wilcox & Modern Coverage Recommendations:**
+  * The classical Wald interval can suffer poor probability coverage when $p$ is near $0$ or $1$ or when $n$ is small.
+  * **Agresti-Coull Method:** Add $z_{\alpha/2}^2 / 2$ successes and $z_{\alpha/2}^2 / 2$ failures (for a $95\%$ CI, simply add $2$ successes and $2$ failures: $\tilde{p} = \frac{x + 2}{n + 4}$, $\tilde{n} = n + 4$) and compute $\tilde{p} \pm z_{\alpha/2}\sqrt{\frac{\tilde{p}(1 - \tilde{p})}{\tilde{n}}}$.
+  * **Wilson Score Interval:** Computed directly in R by `prop.test(x, n, conf.level = 1 - alpha, correct = FALSE)` (or `correct = TRUE` with Yates' continuity correction).
+  * **Blyth's Method:** Recommended for extreme boundary counts ($x = 0, 1, n - 1,$ or $n$).
+
+### R Implementation: Management Succession Plans & Proportion CI Comparison (Black Ch. 8 R Supplement — Demo Problem 8.4)
+
+In **Demonstration Problem 8.4 (p. 249)**, Coopers & Lybrand surveyed $n = 210$ chief executives of fast-growing small companies and found $\hat{p} = 0.51$ had a management succession plan. Below we compute the $92\%$ Wald CI and compare Wald, Agresti-Coull, and Wilson Score intervals on Wilcox Problem 31 ($x = 180, n = 1000$) and a small-sample case ($x = 2, n = 20$).
+
+```{r demo-8-4-prop-interval}
+sample_p <- 0.51
+q_hat <- 1 - sample_p
+n_prop <- 210
+alpha_prop <- 1 - 0.92
+crit_z_prop <- qnorm(p = 1 - (alpha_prop / 2), mean = 0, sd = 1, lower.tail = TRUE)
+se_prop <- sqrt(sample_p * q_hat / n_prop)
+ci_prop_92 <- c(sample_p - crit_z_prop * se_prop, sample_p + crit_z_prop * se_prop)
+
+print(sprintf("Demo 8.4 -> Critical z (92%% CI): %.4f | 92%% Wald CI: [%.4f, %.4f]",
+              crit_z_prop, ci_prop_92[1], ci_prop_92[2]))
+
+compare_prop_ci <- function(x, n, conf_level = 0.95) {
+  z <- qnorm(1 - (1 - conf_level) / 2)
+  p_hat <- x / n
+  wald <- p_hat + c(-1, 1) * z * sqrt(p_hat * (1 - p_hat) / n)
+  n_tilde <- n + z^2
+  p_tilde <- (x + z^2 / 2) / n_tilde
+  agresti_coull <- p_tilde + c(-1, 1) * z * sqrt(p_tilde * (1 - p_tilde) / n_tilde)
+  wilson_no_cc <- as.numeric(prop.test(x = x, n = n, conf.level = conf_level, correct = FALSE)$conf.int)
+  wilson_cc <- as.numeric(prop.test(x = x, n = n, conf.level = conf_level, correct = TRUE)$conf.int)
+  data.frame(
+    Method = c("Wald (Classical)", "Agresti-Coull", "Wilson Score (prop.test)", "Wilson + Yates CC"),
+    Lower = round(c(wald[1], agresti_coull[1], wilson_no_cc[1], wilson_cc[1]), 4),
+    Upper = round(c(wald[2], agresti_coull[2], wilson_no_cc[2], wilson_cc[2]), 4)
+  )
+}
+
+kable(compare_prop_ci(x = 180, n = 1000),
+      caption = "95% Proportion CIs for Large Sample (x = 180, n = 1000)")
+kable(compare_prop_ci(x = 2, n = 20),
+      caption = "95% Proportion CIs for Small Sample (x = 2, n = 20): Wald Undercovers Near 0")
+```
+
+---
+
+## Estimating a Population Variance ($\sigma^2$) & Standard Deviation ($\sigma$) (Section 8.4)
+
+Assuming the underlying population is **strictly normally distributed**, the pivot $\frac{(n - 1)s^2}{\sigma^2}$ follows a **Chi-Square ($\chi^2$) distribution** with $df = n - 1$ degrees of freedom. Because the $\chi^2$ distribution is non-negative and right-skewed (asymmetric), the confidence interval is **not** symmetric around $s^2$:
+
+$$\frac{(n - 1)s^2}{\chi^2_{\alpha/2,\, n-1}} \le \sigma^2 \le \frac{(n - 1)s^2}{\chi^2_{1 - \alpha/2,\, n-1}}$$
+
+Taking the square root of both bounds gives the $(1 - \alpha)$ confidence interval for the population standard deviation $\sigma$.
+
+* **Inputs:**
+  * $n$: Sample size ($df = n - 1$).
+  * $s^2$: Sample variance ($s$: sample standard deviation).
+  * $\chi^2_{\alpha/2,\, n-1}$: Upper-tail critical value (`qchisq(1 - alpha / 2, df = n - 1)`), placed in the denominator of the **lower** CI bound.
+  * $\chi^2_{1 - \alpha/2,\, n-1}$: Lower-tail critical value (`qchisq(alpha / 2, df = n - 1)`), placed in the denominator of the **upper** CI bound.
+
+### R Implementation: Hourly Wages in Greece (Black Ch. 8 R Supplement — Demo Problem 8.6)
+
+In **Demonstration Problem 8.6 (p. 253)**, $n = 25$ production workers in manufacturing across Greece yield a sample standard deviation of $s = \$1.12$ (assuming hourly wages are normally distributed). Construct a $95\%$ confidence interval for $\sigma^2$ and $\sigma$, and visualize the two asymmetric $\chi^2_{24}$ critical cutoffs.
+
+```{r demo-8-6-var-interval, fig.height=3.6, fig.width=6.8}
+var_conf_int_summary <- function(s, n, conf_level = 0.95) {
+  df <- n - 1
+  alpha <- 1 - conf_level
+  chi_upper <- qchisq(p = 1 - alpha / 2, df = df, lower.tail = TRUE)
+  chi_lower <- qchisq(p = alpha / 2, df = df, lower.tail = TRUE)
+  s2 <- s^2
+  ci_var <- c(df * s2 / chi_upper, df * s2 / chi_lower)
+  list(s2 = s2, chi_lower = chi_lower, chi_upper = chi_upper,
+       ci_var = ci_var, ci_sd = sqrt(ci_var))
+}
+
+greece_res <- var_conf_int_summary(s = 1.12, n = 25, conf_level = 0.95)
+print(sprintf("Sample Variance s^2 = %.4f | chi^2 cutoffs (df = 24): [%.4f, %.4f]",
+              greece_res$s2, greece_res$chi_lower, greece_res$chi_upper))
+print(sprintf("95%% CI for sigma^2: [%.4f, %.4f] | 95%% CI for sigma: [%.4f, %.4f]",
+              greece_res$ci_var[1], greece_res$ci_var[2],
+              greece_res$ci_sd[1], greece_res$ci_sd[2]))
+
+chi_grid <- seq(4, 52, length.out = 500)
+chi_df <- data.frame(x = chi_grid, y = dchisq(chi_grid, df = 24))
+ggplot(chi_df, aes(x = x, y = y)) +
+  geom_area(data = subset(chi_df, x <= greece_res$chi_lower), fill = "firebrick", alpha = 0.4) +
+  geom_area(data = subset(chi_df, x >= greece_res$chi_upper), fill = "firebrick", alpha = 0.4) +
+  geom_line(color = "navy", linewidth = 1) +
+  geom_vline(xintercept = c(greece_res$chi_lower, greece_res$chi_upper), linetype = "dashed") +
+  labs(title = "Asymmetric Chi-Square Distribution (df = 24) with 95% CI Critical Values",
+       subtitle = sprintf("Lower cutoff = %.2f (alpha/2 = 0.025) | Upper cutoff = %.2f (1 - alpha/2 = 0.975)",
+                          greece_res$chi_lower, greece_res$chi_upper),
+       x = expression(chi^2),
+       y = "Density") +
+  theme_minimal()
+```
+
+---
+
+## Determining Sample Size ($n$) (Section 8.5)
+
+Before collecting data, analysts determine the minimum sample size $n$ required so that the margin of error does not exceed a target bound $E$ at confidence level $1 - \alpha$ (note: if a problem specifies total interval width $W$, then $E = W / 2$). Always **round $n$ up** to the next integer using `ceiling()` so the margin-of-error guarantee is met.
+
+* **Sample Size for Estimating $\mu$:**
+  $$n = \left( \frac{z_{\alpha/2} \cdot \sigma}{E} \right)^2$$
+  * **Inputs:**
+    * $z_{\alpha/2}$: Critical normal $z$-value for confidence level $1 - \alpha$.
+    * $\sigma$: Known or estimated population standard deviation (if unknown, approximate using a pilot study or the range rule $\sigma \approx \frac{\text{Range}}{4}$).
+    * $E$: Maximum allowable margin of error ($|\bar{x} - \mu| \le E$).
+
+* **Sample Size for Estimating $p$:**
+  $$n = \frac{z_{\alpha/2}^2 \cdot p(1 - p)}{E^2}$$
+  * **Inputs:**
+    * $z_{\alpha/2}$: Critical normal $z$-value for confidence level $1 - \alpha$.
+    * $p$: Prior estimate of the population proportion; if no prior information is available, use the conservative worst-case value **$p = 0.50$**, which maximizes $p(1 - p) = 0.25$.
+    * $E$: Maximum allowable margin of error ($|\hat{p} - p| \le E$).
+
+### R Implementation: Boeing 737-300 Fleet Age & Refinery Workers (Black Ch. 8 R Supplement — Demo Problems 8.7 & 8.9)
+
+* **Demonstration Problem 8.7:** Estimate the mean age of active domestic Boeing 737-300 airplanes within $E = 1$ year at $95\%$ confidence when active aircraft ages span $0$ to $20$ years ($\text{Range} = 20 \implies \sigma \approx 20 / 4 = 5$).
+* **Demonstration Problem 8.9:** Estimate the proportion of U.S. refinery contract workers within $E = 0.05$ at $99\%$ confidence with no prior proportion estimate ($p = 0.50$).
+
+```{r demo-8-7-8-9-sample-size}
+E_mean <- 1
+alpha_mean <- 1 - 0.95
+sd_est <- (20 - 0) / 4
+crit_z_mean <- qnorm(p = 1 - alpha_mean / 2, mean = 0, sd = 1)
+n_mean_raw <- (crit_z_mean * sd_est / E_mean)^2
+
+E_prop <- 0.05
+alpha_prop_n <- 1 - 0.99
+p_worst <- 0.50
+crit_z_prop_n <- qnorm(p = 1 - alpha_prop_n / 2, mean = 0, sd = 1)
+n_prop_raw <- crit_z_prop_n^2 * p_worst * (1 - p_worst) / E_prop^2
+
+print(sprintf("Demo 8.7 (Mean Sample Size) -> Exact: %.4f | Rounded Up: %d",
+              n_mean_raw, ceiling(n_mean_raw)))
+print(sprintf("Demo 8.9 (Prop Sample Size) -> Exact: %.4f | Rounded Up: %d",
+              n_prop_raw, ceiling(n_prop_raw)))
+```
+
+---
+
+# Wilcox Chapter 6 (Section 6.5): Modern Advances & Insights
+
+Rand Wilcox (*Basic Statistics*, Section 6.5) examines **probability coverage**—the actual proportion of confidence intervals across repeated studies that successfully trap the true population parameter—and demonstrates when classical Student's $t$ intervals break down.
+
+## When Student's $t$ Succeeds vs. Fails Under Non-Normality
+
+Consider the studentized statistic $T = \frac{\bar{X} - \mu}{s / \sqrt{n}}$. Under exact normality, $T$ follows Student's $t$-distribution with $df = n - 1$. However, simulation studies reveal serious flaws when sampling from non-normal populations:
+
+1. **Asymmetric (Skewed) Distributions:**
+   * Even when $n$ is large enough for the Central Limit Theorem to make $\bar{X}$ look approximately normal (e.g., $n = 40$ in Wilcox Figure 6.5), the distribution of $T$ can remain **heavily skewed** (Figure 6.6) because $\bar{X}$ and $s$ are correlated in skewed data.
+   * Consequently, the actual quantiles of $T$ diverge sharply from theoretical $t$-table critical values (e.g., an actual $0.975$ quantile of $1.37$ instead of $2.02$), resulting in poor probability coverage.
+   * For skewed distributions with outliers, sample sizes of **$n \ge 200$ to $300+$** may be required before Student's $t$ achieves accurate coverage.
+2. **Symmetric, Heavy-Tailed Distributions (Contaminated Normals):**
+   * When sampling from symmetric distributions where outliers are common, Student's $t$ maintains probability coverage at or above $1 - \alpha$ (often overly conservative).
+   * However, because outliers inflate $s$, the **length of the Student's $t$ confidence interval becomes excessively wide** compared to robust estimators (e.g., $(-3.62, 1.71)$ via Student's $t$ vs. $(-0.49, 0.34)$ via the median in Wilcox Example 4).
+
+### Summary Matrix of Student's $t$ Performance (Wilcox)
+
+| Underlying Distribution | Probability Coverage ($1 - \alpha$) | Confidence Interval Length | Recommended Strategy |
+| :--- | :--- | :--- | :--- |
+| **Symmetric, Light-Tailed (Normal)** | Accurate ($\approx 1 - \alpha$) | Optimal (Shortest) | Standard Student's $t$ |
+| **Symmetric, Heavy-Tailed (Outliers Common)** | Conservative ($\ge 1 - \alpha$) | Very Wide (Inefficient) | **20% Trimmed Mean** or Median |
+| **Asymmetric (Skewed), Outliers Rare** | Poor unless $n \ge 200$ | Competitive | **20% Trimmed Mean** / Bootstrap-$t$ |
+| **Asymmetric (Skewed), Outliers Common** | Poor unless $n \ge 300+$ | Wide & Inaccurate | **20% Trimmed Mean** + Percentile Bootstrap |
+
+## Modern Robust Alternatives to Student's $t$
+
+### Confidence Interval for the 20% Trimmed Mean ($\bar{X}_t$)
+
+Trimming $20\%$ from each tail removes extreme outliers while retaining high statistical efficiency under normality. To compute a $1 - \alpha$ confidence interval for the population $20\%$ trimmed mean ($\mu_t$):
+
+1. Sort the $n$ observations and trim $g = \lfloor 0.20 n \rfloor$ observations from each end, leaving $h = n - 2g$ observations. Compute the trimmed mean $\bar{X}_t$.
+2. Compute the **Winsorized sample standard deviation ($s_w$)**: replace the $g$ smallest values with the smallest untrimmed value, replace the $g$ largest values with the largest untrimmed value, and compute the standard deviation of all $n$ Winsorized values.
+3. Construct the confidence interval using Student's $t$ critical value $c = t_{1 - \alpha/2,\, h - 1}$ with $df = h - 1$:
+
+$$\left( \bar{X}_t - c \frac{s_w}{0.6\sqrt{n}}, \quad \bar{X}_t + c \frac{s_w}{0.6\sqrt{n}} \right)$$
+
+* **Inputs:**
+  * $x$: Numeric sample vector of size $n$.
+  * $\gamma = 0.20$: Trimming proportion from each tail ($g = \lfloor \gamma n \rfloor$, effective sample size $h = n - 2g$).
+  * $s_w$: Winsorized sample standard deviation across all $n$ Winsorized observations.
+  * $c = t_{1 - \alpha/2,\, h - 1}$: Critical $t$-value (`qt(1 - alpha / 2, df = h - 1)`), with standard error $SE_t = \frac{s_w}{(1 - 2\gamma)\sqrt{n}}$.
+
+*(In Wilcox's self-awareness study, Table 6.3, using the 20% trimmed mean cuts the standard error by a factor of $2.4$, from $136.0$ down to $56.1$).*
+
+### Bootstrap Resampling Methods
+
+Instead of relying on theoretical normal assumptions, **bootstrap methods** treat the observed sample $X_1, \dots, X_n$ as an empirical population and draw $B$ (e.g., $B = 1,000+$) **bootstrap samples of size $n$ with replacement**:
+
+* **Bootstrap-$t$ Method:** For each bootstrap sample $b$, compute $T_b^* = \frac{\bar{X}_b^* - \bar{X}}{s_b^* / \sqrt{n}}$. Let $T^*_{(\alpha/2)}$ and $T^*_{(1 - \alpha/2)}$ denote the empirical $\alpha/2$ and $1 - \alpha/2$ quantiles of $T^*$; the asymmetric confidence interval is:
+  $$\left( \bar{X} - T^*_{(1 - \alpha/2)} \frac{s}{\sqrt{n}}, \quad \bar{X} - T^*_{(\alpha/2)} \frac{s}{\sqrt{n}} \right)$$
+  Preferred when making inferences about the **population mean ($\mu$)** under skewness.
+* **Percentile Bootstrap Method:** For each bootstrap sample $b$, compute the estimator of interest (such as the **median** or **20% trimmed mean**). Sort the $B$ bootstrap estimates in ascending order; the middle $(1 - \alpha) \times 100\%$ (from the $\alpha/2$ to $1 - \alpha/2$ empirical quantile) directly forms the confidence interval. Especially effective for small samples and handles tied values in medians cleanly.
+
+---
+
+# R Simulation & Comparative Implementation (Wilcox Section 6.5)
+
+## Skewness of Student's $T$ Under Non-Normality ($n = 40$)
+
+Below we simulate $5,000$ samples of size $n = 40$ from a right-skewed Lognormal$(0, 1)$ population (whose true mean is $\mu = e^{0.5} \approx 1.6487$) to verify Wilcox's finding: even at $n = 40$, the distribution of $T = \frac{\bar{X} - \mu}{s / \sqrt{n}}$ is noticeably skewed and its empirical $0.025$ and $0.975$ quantiles diverge from $\pm t_{0.975,\, 39} = \pm 2.0227$.
+
+```{r wilcox-t-skew-sim, fig.height=3.6, fig.width=6.8}
+set.seed(2026)
+mu_lnorm <- exp(0.5)
+t_sim <- replicate(5000, {
+  samp <- rlnorm(n = 40, meanlog = 0, sdlog = 1)
+  (mean(samp) - mu_lnorm) / (sd(samp) / sqrt(40))
+})
+
+emp_q <- quantile(t_sim, probs = c(0.025, 0.975))
+theo_q <- qt(c(0.025, 0.975), df = 39)
+coverage_t <- mean(t_sim >= theo_q[1] & t_sim <= theo_q[2])
+
+print(sprintf("Theoretical 95%% t-cutoffs (df = 39): [%.4f, %.4f]", theo_q[1], theo_q[2]))
+print(sprintf("Empirical 95%% T-quantiles (n = 40 Lognormal): [%.4f, %.4f] | Actual Coverage: %.3f",
+              emp_q[1], emp_q[2], coverage_t))
+
+t_grid <- seq(-5, 4, length.out = 400)
+ggplot(data.frame(T_val = t_sim), aes(x = T_val)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 45, fill = "steelblue", color = "white", alpha = 0.75) +
+  geom_line(data = data.frame(x = t_grid, y = dt(t_grid, df = 39)),
+            aes(x = x, y = y), color = "firebrick", linewidth = 1.1) +
+  coord_cartesian(xlim = c(-5, 4)) +
+  labs(title = "Studentized Statistic T Under Lognormal Skewness (n = 40) vs. Theoretical t(39)",
+       x = "T = (x_bar - mu) / (s / sqrt(n))",
+       y = "Density") +
+  theme_minimal()
+```
+
+## Self-Awareness Study: Classical $t$ vs. Robust & Bootstrap Intervals
+
+Using Wilcox's self-awareness dataset (Table 6.3), we inspect the extreme right outliers (`1310` and `2611`) with a horizontal boxplot and compare four $95\%$ confidence intervals: Classical Student's $t$, 20% Trimmed Mean (Winsorized SE), Bootstrap-$t$ for $\mu$, and Percentile Bootstrap for the Median and 20% Trimmed Mean.
+
+```{r wilcox-self-aware, fig.height=3.6, fig.width=6.8}
+self_aware <- c(77, 87, 88, 114, 151, 210, 219, 246, 253, 262,
+                296, 299, 306, 376, 428, 515, 666, 1310, 2611)
+
+boxplot(self_aware, horizontal = TRUE, col = "tan",
+        main = "Wilcox Table 6.3: Self-Awareness Data (Severe Right Outliers)",
+        xlab = "Self-Awareness Score")
+
+trim_ci <- function(x, tr = 0.20, alpha = 0.05) {
+  x_sorted <- sort(x)
+  n <- length(x)
+  g <- floor(tr * n)
+  h <- n - 2 * g
+  x_bar_t <- mean(x_sorted[(g + 1):(n - g)])
+  x_win <- x_sorted
+  x_win[1:g] <- x_sorted[g + 1]
+  x_win[(n - g + 1):n] <- x_sorted[n - g]
+  s_w <- sd(x_win)
+  se_trim <- s_w / ((1 - 2 * tr) * sqrt(n))
+  c_crit <- qt(1 - alpha / 2, df = h - 1)
+  c(Lower = x_bar_t - c_crit * se_trim,
+    Estimate = x_bar_t,
+    Upper = x_bar_t + c_crit * se_trim,
+    SE = se_trim)
+}
+
+boot_t_ci <- function(x, B = 2000, alpha = 0.05) {
+  n <- length(x)
+  x_bar <- mean(x)
+  se_x <- sd(x) / sqrt(n)
+  t_star <- replicate(B, {
+    b <- sample(x, size = n, replace = TRUE)
+    s_b <- sd(b)
+    if (s_b == 0) NA else (mean(b) - x_bar) / (s_b / sqrt(n))
+  })
+  t_star <- t_star[!is.na(t_star)]
+  q_star <- quantile(t_star, probs = c(alpha / 2, 1 - alpha / 2))
+  c(Lower = x_bar - q_star[2] * se_x,
+    Estimate = x_bar,
+    Upper = x_bar - q_star[1] * se_x)
+}
+
+set.seed(101)
+t_res <- t.test(self_aware)$conf.int
+trim_res <- trim_ci(self_aware)
+bt_res <- boot_t_ci(self_aware, B = 2000)
+boot_medians <- replicate(2000, median(sample(self_aware, replace = TRUE)))
+pct_med_ci <- quantile(boot_medians, probs = c(0.025, 0.975))
+boot_trims <- replicate(2000, mean(sample(self_aware, replace = TRUE), trim = 0.20))
+pct_trim_ci <- quantile(boot_trims, probs = c(0.025, 0.975))
+
+print(sprintf("Standard SE = %.1f vs. 20%% Trimmed SE = %.1f (Reduction factor: %.2fx)",
+              sd(self_aware) / sqrt(length(self_aware)), trim_res["SE"],
+              (sd(self_aware) / sqrt(length(self_aware))) / trim_res["SE"]))
+
+ci_summary <- data.frame(
+  Method = c("Student's t (Mean)", "Bootstrap-t (Mean)",
+             "20% Trimmed Mean (Winsorized SE)", "Percentile Bootstrap (20% Trim)",
+             "Percentile Bootstrap (Median)"),
+  Estimate = round(c(mean(self_aware), bt_res["Estimate"], trim_res["Estimate"],
+                     mean(self_aware, trim = 0.20), median(self_aware)), 1),
+  Lower_95 = round(c(t_res[1], bt_res["Lower"], trim_res["Lower"], pct_trim_ci[1], pct_med_ci[1]), 1),
+  Upper_95 = round(c(t_res[2], bt_res["Upper"], trim_res["Upper"], pct_trim_ci[2], pct_med_ci[2]), 1)
+)
+ci_summary$Width <- round(ci_summary$Upper_95 - ci_summary$Lower_95, 1)
+kable(ci_summary, caption = "Comparison of 95% Confidence Intervals on Skewed Self-Awareness Data")
+```
+
+---
+
+# Week 5 Key Formula Summary Sheet
+
+| Parameter / Method | Confidence Interval / Formula | Degrees of Freedom / Notes | Primary R Functions |
+| :--- | :--- | :--- | :--- |
+| **Mean ($\sigma$ known)** | $\bar{x} \pm z_{\alpha/2} \left(\dfrac{\sigma}{\sqrt{n}}\right)$ | Normal pop. or $n \ge 30$; multiply SE by $\sqrt{\frac{N-n}{N-1}}$ if $n > 0.05N$ | `qnorm()` |
+| **Mean ($\sigma$ unknown)** | $\bar{x} \pm t_{\alpha/2,\, n-1} \left(\dfrac{s}{\sqrt{n}}\right)$ | $df = n - 1$; sensitive to skewness & heavy tails | `qt()`, `t.test()` |
+| **Proportion ($p$)** | $\hat{p} \pm z_{\alpha/2} \sqrt{\dfrac{\hat{p}(1 - \hat{p})}{n}}$ | $n\hat{p} \ge 5, \; n(1-\hat{p}) \ge 5$ (Agresti-Coull / Wilson preferred) | `qnorm()`, `prop.test()` |
+| **Variance ($\sigma^2$)** | $\left[ \dfrac{(n - 1)s^2}{\chi^2_{\alpha/2,\, n-1}}, \; \dfrac{(n - 1)s^2}{\chi^2_{1 - \alpha/2,\, n-1}} \right]$ | $df = n - 1$; requires strictly normal population | `qchisq()` |
+| **Sample Size ($n$)** | $n_{\mu} = \left(\dfrac{z_{\alpha/2}\sigma}{E}\right)^2$, $\quad n_{p} = \dfrac{z_{\alpha/2}^2 p(1-p)}{E^2}$ | Always round up (`ceiling()`); use $p = 0.50$ if unknown | `qnorm()`, `ceiling()` |
+| **20% Trimmed Mean (Wilcox)** | $\bar{X}_t \pm t_{1 - \alpha/2,\, h-1} \left(\dfrac{s_w}{0.6\sqrt{n}}\right)$ | $h = n - 2\lfloor 0.2n \rfloor$, $df = h - 1$; robust to outliers | `mean(..., trim = 0.2)`, `qt()` |
+| **Bootstrap-$t$ / Percentile** | Empirical quantiles of $T_b^*$ or $\hat{\theta}_b^*$ | Nonparametric resampling with replacement ($B \ge 1,000$) | `sample(..., replace = TRUE)`, `replicate()`, `quantile()` |
