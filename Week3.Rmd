@@ -404,3 +404,11 @@ print(sprintf("Table 5.13/5.14 P(X = 3 women): %.4f | mu = %.4f, sigma = %.4f",
 | **Binomial** | $P(x) = \binom{n}{x} p^x (1-p)^{n-x}$ | $\mu = np$, $\sigma = \sqrt{np(1-p)}$; `dbinom()`, `pbinom()` |
 | **Poisson** | $P(x) = \frac{\lambda^x e^{-\lambda}}{x!}$ | $\mu = \lambda$, $\sigma = \sqrt{\lambda}$; `dpois()`, `ppois()` |
 | **Hypergeometric** | $P(x) = \frac{\binom{A}{x}\binom{N-A}{n-x}}{\binom{N}{n}}$ | $\mu = n\frac{A}{N}$, $\sigma = \sqrt{n\frac{A}{N}\left(1-\frac{A}{N}\right)\left(\frac{N-n}{N-1}\right)}$; `dhyper()`, `phyper()` |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 3 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week3.ipynb)
+* **Next Lesson:** [Week 4 Study Guide — Continuous & Sampling Distributions](Week4.html)
+

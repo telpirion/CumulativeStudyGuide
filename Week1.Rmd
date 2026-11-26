@@ -262,3 +262,9 @@ abline(lm(sales_revenue ~ advertising), col = "red", lwd = 2, lty = 2)
 * Selecting honest, non-manipulative bin widths and class bounds for frequency distributions to avoid misrepresenting dispersion.
 * Avoiding the use of stretched, compressed, or truncated axes on histograms and line graphs to exaggerate or downplay trends.
 * Using appropriate analytical models calibrated directly to the level of data measurement (i.e., avoiding parametric computations on purely nominal or ordinal classifications).
+
+---
+
+## Navigation & Practice {-}
+
+* **Next Lesson:** [Week 2 Study Guide — Descriptive Statistics & Modern Robust Analytics](Week2.html)

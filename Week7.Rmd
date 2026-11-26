@@ -361,3 +361,11 @@ print(var_test_result)
 * **Reporting Effect Sizes & Confidence Intervals:** Presenting confidence intervals alongside $p$-values to communicate the practical magnitude and uncertainty of observed differences, avoiding over-reliance on bare statistical significance.
 * **Preserving Study Design Integrity:** Accurately distinguishing between independent and paired designs. Treating paired data as independent artificially alters the variance estimate and degrees of freedom, undermining inferential validity.
 
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 7 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week7.ipynb)
+* **Next Lesson:** [Week 8 Study Guide — Analysis of Variance & Simple Linear Regression](Week8.html)
+
+

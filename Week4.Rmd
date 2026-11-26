@@ -497,3 +497,11 @@ print(sprintf("Sampling Dist of p_hat (p = 0.60, n = 300) -> SE: %.4f | z = %.4f
 | **Exponential** | $f(x) = \lambda e^{-\lambda x}$, $P(X \ge x) = e^{-\lambda x}$ | $\mu = \frac{1}{\lambda}$, $\sigma = \frac{1}{\lambda}$ | `dexp()`, `pexp()`, `qexp()`; right-skewed, left-bound at $0$ |
 | **Sampling Dist. of $\bar{x}$** | $z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}$ | $\mu_{\bar{x}} = \mu$, $\sigma_{\bar{x}} = \frac{\sigma}{\sqrt{n}}$ | Normal if pop. is normal or $n \ge 30$ (CLT); use FPC if $n > 0.05N$ |
 | **Sampling Dist. of $\hat{p}$** | $z = \frac{\hat{p} - p}{\sqrt{pq/n}}$ | $\mu_{\hat{p}} = p$, $\sigma_{\hat{p}} = \sqrt{\frac{pq}{n}}$ | Valid when $np \ge 5$ and $nq \ge 5$ |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 4 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week4.ipynb)
+* **Next Lesson:** [Week 5 Study Guide — Statistical Estimation & Modern Robust Intervals](Week5.html)
+

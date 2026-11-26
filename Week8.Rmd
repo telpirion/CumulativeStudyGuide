@@ -271,3 +271,10 @@ ggplot(ad_data, aes(x = ad_spend, y = revenue)) +
 | **OLS Intercept ($b_0$)** | $b_0 = \bar{y} - b_1 \bar{x}$ | Line always passes through $(\bar{x}, \bar{y})$ |
 | **Standard Error ($s_e$)** | $s_e = \sqrt{\frac{SSE}{n - 2}}$ | Standard deviation of residuals |
 | **Coeff. of Determination ($R^2$)** | $R^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}$ | Proportion of variance in $Y$ explained |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 8 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week8.ipynb)
+* **Next Lesson:** [Week 9 Study Guide — Regression Inference, Diagnostics, Correlation ($r^2$) & Multiple Regression](Week9.html)

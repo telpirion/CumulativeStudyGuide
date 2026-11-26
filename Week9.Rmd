@@ -626,3 +626,10 @@ Notice that in the collinear model, the overall $F$-test is overwhelmingly signi
 | **Partial $t$-Test & $s_e$ (MLR)** | $t = \dfrac{b_j}{s_{b_j}}, \quad s_e = \sqrt{\dfrac{SSE}{n - k - 1}}$ | $df = n - k - 1$; `summary(m)$coefficients` |
 | **Adjusted $R^2$** | $R_{\text{adj}}^2 = 1 - \left[(1 - R^2)\dfrac{n - 1}{n - k - 1}\right]$ | `summary(m)$adj.r.squared`; penalizes extra predictors |
 | **Variance Inflation Factor** | $VIF_j = \dfrac{1}{1 - R_j^2}$ | $VIF > 5$ or $10$ signals multicollinearity |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 9 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week9.ipynb)
+

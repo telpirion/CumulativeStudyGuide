@@ -359,3 +359,11 @@ Because $\chi^2 = 59.4046 > \chi^2_{0.05, 4} = 9.4877$ ($p = 3.87 \times 10^{-12
 | **Type II Error & Power** | $z_\beta = \frac{\bar{x}_c - \mu_a}{\sigma / \sqrt{n}}$ | — | $\text{Power} = 1 - \beta$; `pnorm()` around $\bar{x}_c$ under $\mu_a$ |
 | **$\chi^2$ Goodness-of-Fit** | $\chi^2 = \sum \frac{(f_o - f_e)^2}{f_e}$ | $k - 1 - m$ | $m = 0$ (fixed/uniform), $m = 1$ (Poisson), $m = 2$ (Normal); $f_e \ge 5$; `chisq.test(x, p = ...)` |
 | **$\chi^2$ Test of Independence** | $\chi^2 = \sum \sum \frac{(f_{o,ij} - f_{e,ij})^2}{f_{e,ij}}$ | $(r - 1)(c - 1)$ | $f_{e,ij} = \frac{R_i \cdot C_j}{N} \ge 5$; right-tailed; `chisq.test(matrix)` |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 6 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week6.ipynb)
+* **Next Lesson:** [Week 7 Study Guide — Inferences About Two Populations](Week7.html)
+

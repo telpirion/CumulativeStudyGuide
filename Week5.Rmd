@@ -520,3 +520,11 @@ kable(ci_summary, caption = "Comparison of 95% Confidence Intervals on Skewed Se
 | **Sample Size ($n$)** | $n_{\mu} = \left(\dfrac{z_{\alpha/2}\sigma}{E}\right)^2$, $\quad n_{p} = \dfrac{z_{\alpha/2}^2 p(1-p)}{E^2}$ | Always round up (`ceiling()`); use $p = 0.50$ if unknown | `qnorm()`, `ceiling()` |
 | **20% Trimmed Mean (Wilcox)** | $\bar{X}_t \pm t_{1 - \alpha/2,\, h-1} \left(\dfrac{s_w}{0.6\sqrt{n}}\right)$ | $h = n - 2\lfloor 0.2n \rfloor$, $df = h - 1$; robust to outliers | `mean(..., trim = 0.2)`, `qt()` |
 | **Bootstrap-$t$ / Percentile** | Empirical quantiles of $T_b^*$ or $\hat{\theta}_b^*$ | Nonparametric resampling with replacement ($B \ge 1,000$) | `sample(..., replace = TRUE)`, `replicate()`, `quantile()` |
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 5 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week5.ipynb)
+* **Next Lesson:** [Week 6 Study Guide — Hypothesis Testing for Single Populations & Categorical Data Analysis](Week6.html)
+

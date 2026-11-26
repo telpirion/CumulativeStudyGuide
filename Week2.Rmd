@@ -575,3 +575,11 @@ boxplot(geyser_df$WEEK1, geyser_df$WEEK2, names = c("Week 1", "Week 2"),
 * **Appropriate Distributional Assumptions:** Avoiding the improper application of the Empirical Rule (68–95–99.7%) to skewed, bimodal (e.g., Old Faithful eruption intervals), or non-normal data; applying Chebyshev's Theorem when the distribution shape is unknown or non-normal.
 * **Integrity in Outlier Management:** Transparently identifying, documenting, and investigating outliers rather than reflexively deleting extreme observations to manipulate descriptive metrics or present an artificially clean distribution.
 * **Correlation vs. Causation:** Clearly distinguishing statistical linear association from causal relationships when communicating correlation findings ($r$) to prevent erroneous managerial interventions.
+
+---
+
+## Navigation & Practice {-}
+
+* **Practice & Exercises:** [Week 2 Practice & Exercises (Jupyter Notebook)](https://colab.research.google.com/github/telpirion/CumulativeStudyGuide/blob/main/Week2.ipynb)
+* **Next Lesson:** [Week 3 Study Guide — Probability, Bayes' Theorem & Discrete Distributions](Week3.html)
+
