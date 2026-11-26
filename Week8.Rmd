@@ -1,8 +1,17 @@
 ---
 title: "Week 8 Statistics Study Guide: ANOVA & Simple Linear Regression"
 subtitle: "Ken Black, Business Statistics (Chapter 11 & Chapter 12, Sections 1–3)"
-author: "Statistics Study Guide"
+author: "Eric Schmidt"
 date: "`r Sys.Date()`"
+output-dir: guides
+knit: |
+  (function(input, ...) {
+    rmarkdown::render(
+      input,
+      output_dir = "guides",
+      ...
+    )
+  })
 output:
   html_document:
     toc: true
@@ -93,20 +102,59 @@ where $q$ is obtained from the Studentized Range Distribution table. If $|\bar{x
   * *Interaction Effect:* Occurs when the effect of one factor on the response variable depends on the level of the second factor. Always test the interaction term first before interpreting main effects.
 
 ```{r anova-example}
-# Sample business scenario: Sales ($1000s) across 3 store display designs
+k_groups <- 4
+c_pairs <- choose(k_groups, 2)
+alpha_overall <- 1 - (1 - 0.05)^c_pairs
+print(sprintf("Experiment-wise Type I Error (k = %d, c = %d comparisons, alpha = 0.05): %.4f",
+              k_groups, c_pairs, alpha_overall))
+
 display_data <- data.frame(
   design = factor(rep(c("Endcap", "Aisle", "Checkout"), each = 5)),
-  sales  = c(42, 45, 40, 46, 44,   # Endcap
-             35, 38, 34, 37, 36,   # Aisle
-             50, 54, 49, 52, 55)   # Checkout
+  sales  = c(42, 45, 40, 46, 44,
+             35, 38, 34, 37, 36,
+             50, 54, 49, 52, 55)
 )
 
-# Run One-Way ANOVA
-anova_model <- aov(sales ~ design, data = display_data)
-summary(anova_model)
+grand_mean <- mean(display_data$sales)
+grp_means <- tapply(display_data$sales, display_data$design, mean)
+grp_ns <- tapply(display_data$sales, display_data$design, length)
+ssc <- sum(grp_ns * (grp_means - grand_mean)^2)
+sse <- sum((display_data$sales - grp_means[display_data$design])^2)
+sst <- sum((display_data$sales - grand_mean)^2)
+df_between <- length(grp_means) - 1
+df_within <- nrow(display_data) - length(grp_means)
+msc <- ssc / df_between
+mse <- sse / df_within
+f_ratio <- msc / mse
+hsd_crit <- qtukey(0.95, nmeans = length(grp_means), df = df_within) * sqrt(mse / grp_ns[1])
 
-# Post-hoc Tukey HSD pairwise comparisons
-TukeyHSD(anova_model, conf.level = 0.95)
+print(sprintf("Manual ANOVA -> SSC = %.2f | SSE = %.2f | SST = %.2f | F(%d,%d) = %.4f",
+              ssc, sse, sst, df_between, df_within, f_ratio))
+print(sprintf("Manual Tukey HSD critical difference (alpha = 0.05): %.4f", hsd_crit))
+
+anova_model <- aov(sales ~ design, data = display_data)
+print(summary(anova_model))
+print(TukeyHSD(anova_model, conf.level = 0.95))
+
+rbd_data <- data.frame(
+  method = factor(rep(c("Method A", "Method B", "Method C"), times = 4)),
+  store = factor(rep(paste("Store", 1:4), each = 3)),
+  productivity = c(72, 78, 84,
+                   68, 74, 79,
+                   75, 81, 88,
+                   70, 76, 82)
+)
+rbd_model <- aov(productivity ~ method + store, data = rbd_data)
+print(summary(rbd_model))
+
+two_way_data <- data.frame(
+  promo = factor(rep(c("Coupon", "No_Coupon"), each = 6)),
+  tier = factor(rep(rep(c("Budget", "Standard", "Premium"), each = 2), times = 2)),
+  units = c(48, 52, 55, 59, 60, 64,
+            34, 38, 46, 50, 58, 62)
+)
+two_way_model <- aov(units ~ promo * tier, data = two_way_data)
+print(summary(two_way_model))
 ```
 
 ---
@@ -170,26 +218,37 @@ $$SST = SSR + SSE$$
    * Bounds: $0 \le R^2 \le 1$. In simple linear regression, $R^2 = r^2$.
 
 ```{r regression-example, fig.height=4, fig.width=6}
-# Sample business scenario: Ad Spend ($100s) vs. Weekly Revenue ($1000s)
 ad_data <- data.frame(
   ad_spend = c(2, 4, 5, 6, 8, 10, 11, 14),
   revenue  = c(15, 22, 24, 29, 34, 41, 43, 52)
 )
 
-# Fit Simple Linear Regression model
-reg_model <- lm(revenue ~ ad_spend, data = ad_data)
-summary(reg_model)
+x_bar_ad <- mean(ad_data$ad_spend)
+y_bar_rev <- mean(ad_data$revenue)
+ss_xy <- sum((ad_data$ad_spend - x_bar_ad) * (ad_data$revenue - y_bar_rev))
+ss_xx <- sum((ad_data$ad_spend - x_bar_ad)^2)
+b1_manual <- ss_xy / ss_xx
+b0_manual <- y_bar_rev - b1_manual * x_bar_ad
+y_hat <- b0_manual + b1_manual * ad_data$ad_spend
+sst_reg <- sum((ad_data$revenue - y_bar_rev)^2)
+ssr_reg <- sum((y_hat - y_bar_rev)^2)
+sse_reg <- sum((ad_data$revenue - y_hat)^2)
+se_manual <- sqrt(sse_reg / (nrow(ad_data) - 2))
+r2_manual <- ssr_reg / sst_reg
 
-# Extract key metrics
+reg_model <- lm(revenue ~ ad_spend, data = ad_data)
+print(summary(reg_model))
+
 b0 <- coef(reg_model)[1]
 b1 <- coef(reg_model)[2]
 r_sq <- summary(reg_model)$r.squared
 s_e  <- summary(reg_model)$sigma
 
-cat(sprintf("Regression Equation: Revenue_hat = %.2f + %.2f * Ad_Spend\n", b0, b1))
-cat(sprintf("R-squared: %.4f | Standard Error (s_e): %.4f\n", r_sq, s_e))
+print(sprintf("Manual OLS -> b0 = %.4f, b1 = %.4f | lm() -> b0 = %.4f, b1 = %.4f",
+              b0_manual, b1_manual, b0, b1))
+print(sprintf("SST = %.2f | SSR = %.2f | SSE = %.2f | s_e = %.4f | R^2 = %.4f (r^2 = %.4f)",
+              sst_reg, ssr_reg, sse_reg, se_manual, r_sq, cor(ad_data$ad_spend, ad_data$revenue)^2))
 
-# Visualize regression line and residuals
 ggplot(ad_data, aes(x = ad_spend, y = revenue)) +
   geom_point(color = "darkblue", size = 3) +
   geom_smooth(method = "lm", se = FALSE, color = "red") +

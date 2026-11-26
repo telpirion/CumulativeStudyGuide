@@ -11,7 +11,7 @@
 
 <meta name="author" content="Eric Schmidt" />
 
-<meta name="date" content="2026-11-21" />
+<meta name="date" content="2026-11-25" />
 
 <title>Week 7 Study Guide</title>
 
@@ -1481,7 +1481,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Week 7 Study Guide</h1>
 <h4 class="author">Eric Schmidt</h4>
-<h4 class="date">2026-11-21</h4>
+<h4 class="date">2026-11-25</h4>
 
 </div>
 
@@ -1603,8 +1603,28 @@ native two-sample <span class="math inline">\(z\)</span>-test
 command.</li>
 </ul></li>
 </ul>
+<pre class="r"><code>two_sample_z_test &lt;- function(x1_bar, x2_bar, n1, n2, sigma1, sigma2, D0 = 0, alpha = 0.05) {
+  se &lt;- sqrt((sigma1^2 / n1) + (sigma2^2 / n2))
+  z_stat &lt;- ((x1_bar - x2_bar) - D0) / se
+  p_val &lt;- 2 * (1 - pnorm(abs(z_stat)))
+  ci &lt;- c((x1_bar - x2_bar) - qnorm(1 - alpha / 2) * se,
+          (x1_bar - x2_bar) + qnorm(1 - alpha / 2) * se)
+  data.frame(
+    Difference = round(x1_bar - x2_bar, 4),
+    Std_Error = round(se, 4),
+    z_Statistic = round(z_stat, 4),
+    p_Value = round(p_val, 4),
+    CI_Lower = round(ci[1], 4),
+    CI_Upper = round(ci[2], 4)
+  )
+}
+
+wage_test &lt;- two_sample_z_test(x1_bar = 70.700, x2_bar = 62.187, n1 = 32, n2 = 34, sigma1 = 16.253, sigma2 = 12.900, alpha = 0.05)
+print(wage_test)</code></pre>
 <pre><code>##   Difference Std_Error z_Statistic p_Value CI_Lower CI_Upper
 ## 1      8.513    3.6262      2.3476  0.0189   1.4058  15.6202</code></pre>
+<pre class="r"><code>coupon_ci &lt;- two_sample_z_test(x1_bar = 5.84, x2_bar = 2.67, n1 = 60, n2 = 80, sigma1 = 1.41, sigma2 = 0.54, alpha = 0.02)
+print(coupon_ci[, c(&quot;Difference&quot;, &quot;Std_Error&quot;, &quot;CI_Lower&quot;, &quot;CI_Upper&quot;)])</code></pre>
 <pre><code>##   Difference Std_Error CI_Lower CI_Upper
 ## 1       3.17    0.1918   2.7239   3.6161</code></pre>
 <hr />
@@ -1625,7 +1645,23 @@ individual sample variances:</li>
 </ul>
 <p><span class="math display">\[s_p^2 = \frac{(n_1 - 1)s_1^2 + (n_2 -
 1)s_2^2}{n_1 + n_2 - 2}\]</span></p>
-<pre><code>## [1] 3.678413 4.921587</code></pre>
+<pre class="r"><code>n1 &lt;- 35
+x1_bar &lt;- 19.4
+s1 &lt;- 1.4
+n2 &lt;- 40
+x2_bar &lt;- 15.1
+s2 &lt;- 1.3
+df &lt;- n1 + n2 - 2
+
+sp2 &lt;- ((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / df
+se &lt;- sqrt(sp2 * (1 / n1 + 1 / n2))
+t_crit &lt;- qt(0.975, df = df)
+t_stat_pooled &lt;- ((x1_bar - x2_bar) - 0) / se
+
+ci &lt;- (x1_bar - x2_bar) + c(-1, 1) * t_crit * se
+print(sprintf(&quot;Pooled s_p^2 = %.4f | t = %.4f (df = %d) | 95%% CI: [%.4f, %.4f]&quot;,
+              sp2, t_stat_pooled, df, ci[1], ci[2]))</code></pre>
+<pre><code>## [1] &quot;Pooled s_p^2 = 1.8158 | t = 13.7871 (df = 73) | 95% CI: [3.6784, 4.9216]&quot;</code></pre>
 <ul>
 <li><strong>Test Statistic (<span class="math inline">\(t\)</span>):</strong></li>
 </ul>
@@ -1678,6 +1714,11 @@ respondents (<span class="math inline">\(n_1 = 9, \bar{x}_1 = 37.09, s_1
 4.09]\)</span>.</li>
 </ul></li>
 </ul>
+<pre class="r"><code>method_a &lt;- c(56, 50, 52, 44, 52, 47, 47, 53, 45, 48, 42, 51, 42, 43, 44)
+method_b &lt;- c(59, 54, 55, 65, 52, 57, 64, 53, 53, 56, 53, 57)
+
+pooled_t &lt;- t.test(method_a, method_b, var.equal = TRUE, alternative = &quot;two.sided&quot;)
+print(pooled_t)</code></pre>
 <pre><code>## 
 ##  Two Sample t-test
 ## 
@@ -1689,6 +1730,8 @@ respondents (<span class="math inline">\(n_1 = 9, \bar{x}_1 = 37.09, s_1
 ## sample estimates:
 ## mean of x mean of y 
 ##  47.73333  56.50000</code></pre>
+<pre class="r"><code>welch_t &lt;- t.test(method_a, method_b, var.equal = FALSE, alternative = &quot;two.sided&quot;)
+print(welch_t)</code></pre>
 <pre><code>## 
 ##  Welch Two Sample t-test
 ## 
@@ -1700,6 +1743,26 @@ respondents (<span class="math inline">\(n_1 = 9, \bar{x}_1 = 37.09, s_1
 ## sample estimates:
 ## mean of x mean of y 
 ##  47.73333  56.50000</code></pre>
+<pre class="r"><code>na &lt;- length(method_a)
+nb &lt;- length(method_b)
+va &lt;- var(method_a)
+vb &lt;- var(method_b)
+df_welch_manual &lt;- (va / na + vb / nb)^2 / (((va / na)^2 / (na - 1)) + ((vb / nb)^2 / (nb - 1)))
+t_welch_manual &lt;- (mean(method_a) - mean(method_b)) / sqrt(va / na + vb / nb)
+print(sprintf(&quot;Welch manual -&gt; t = %.4f | df = %.4f&quot;, t_welch_manual, df_welch_manual))</code></pre>
+<pre><code>## [1] &quot;Welch manual -&gt; t = -5.2182 | df = 24.0341&quot;</code></pre>
+<pre class="r"><code>n_c1 &lt;- 9
+xbar_c1 &lt;- 37.09
+s_c1 &lt;- 1.727
+n_c2 &lt;- 10
+xbar_c2 &lt;- 34.99
+s_c2 &lt;- 1.253
+df_c &lt;- n_c1 + n_c2 - 2
+sp2_c &lt;- ((n_c1 - 1) * s_c1^2 + (n_c2 - 1) * s_c2^2) / df_c
+se_c &lt;- sqrt(sp2_c * (1 / n_c1 + 1 / n_c2))
+ci_c &lt;- (xbar_c1 - xbar_c2) + c(-1, 1) * qt(0.995, df = df_c) * se_c
+print(sprintf(&quot;Conscientiousness 99%% CI (df = %d): [%.2f, %.2f]&quot;, df_c, ci_c[1], ci_c[2]))</code></pre>
+<pre><code>## [1] &quot;Conscientiousness 99% CI (df = 17): [0.11, 4.09]&quot;</code></pre>
 <hr />
 </div>
 </div>
@@ -1763,6 +1826,17 @@ consumer ratings before and after a video campaign (<span class="math inline">\(
 <code>alternative = &quot;greater&quot;</code>).</li>
 </ul></li>
 </ul>
+<pre class="r"><code>year_1 &lt;- c(8.9, 38.1, 43.0, 34.0, 34.5, 15.2, 20.3, 19.9, 61.9)
+year_2 &lt;- c(12.7, 45.4, 10.0, 27.2, 22.8, 24.1, 32.3, 40.1, 106.5)
+
+diffs &lt;- year_1 - year_2
+d_bar &lt;- mean(diffs)
+s_d &lt;- sd(diffs)
+t_pe_manual &lt;- d_bar / (s_d / sqrt(length(diffs)))
+print(sprintf(&quot;P/E Paired Manual -&gt; d_bar = %.3f | s_d = %.3f | t = %.4f&quot;, d_bar, s_d, t_pe_manual))</code></pre>
+<pre><code>## [1] &quot;P/E Paired Manual -&gt; d_bar = -5.033 | s_d = 21.599 | t = -0.6991&quot;</code></pre>
+<pre class="r"><code>pe_test &lt;- t.test(year_1, year_2, paired = TRUE, conf.level = 0.99)
+print(pe_test)</code></pre>
 <pre><code>## 
 ##  Paired t-test
 ## 
@@ -1774,6 +1848,18 @@ consumer ratings before and after a video campaign (<span class="math inline">\(
 ## sample estimates:
 ## mean difference 
 ##       -5.033333</code></pre>
+<pre class="r"><code>n_indy &lt;- 18
+dbar_indy &lt;- -3.389
+sd_indy &lt;- 3.274
+ci_indy &lt;- dbar_indy + c(-1, 1) * qt(0.995, df = n_indy - 1) * (sd_indy / sqrt(n_indy))
+print(sprintf(&quot;Indianapolis New-House Sales 99%% CI (df = %d): [%.3f, %.3f]&quot;,
+              n_indy - 1, ci_indy[1], ci_indy[2]))</code></pre>
+<pre><code>## [1] &quot;Indianapolis New-House Sales 99% CI (df = 17): [-5.626, -1.152]&quot;</code></pre>
+<pre class="r"><code>before &lt;- c(32, 11, 21, 17, 30, 38, 14)
+after &lt;- c(39, 15, 35, 13, 41, 39, 22)
+
+paired_test &lt;- t.test(x = after, y = before, paired = TRUE, alternative = &quot;greater&quot;)
+print(paired_test)</code></pre>
 <pre><code>## 
 ##  Paired t-test
 ## 
@@ -1844,6 +1930,14 @@ morning (<span class="math inline">\(n_1 = 400, x_1 = 48 \implies
 = [-0.334, -0.206]\]</span></li>
 </ul></li>
 </ul>
+<pre class="r"><code>eth_x &lt;- c(round(755 * 0.57), round(616 * 0.50))
+eth_n &lt;- c(755, 616)
+p1_eth &lt;- eth_x[1] / eth_n[1]
+p2_eth &lt;- eth_x[2] / eth_n[2]
+p_bar_eth &lt;- sum(eth_x) / sum(eth_n)
+z_eth_manual &lt;- (p1_eth - p2_eth) / sqrt(p_bar_eth * (1 - p_bar_eth) * (1 / eth_n[1] + 1 / eth_n[2]))
+prop_eth &lt;- prop.test(x = eth_x, n = eth_n, alternative = &quot;greater&quot;, correct = FALSE)
+print(prop_eth)</code></pre>
 <pre><code>## 
 ##  2-sample test for equality of proportions without continuity correction
 ## 
@@ -1855,6 +1949,16 @@ morning (<span class="math inline">\(n_1 = 400, x_1 = 48 \implies
 ## sample estimates:
 ##    prop 1    prop 2 
 ## 0.5695364 0.5000000</code></pre>
+<pre class="r"><code>print(sprintf(&quot;Pooled p_bar = %.3f | Manual z = %.4f&quot;, p_bar_eth, z_eth_manual))</code></pre>
+<pre><code>## [1] &quot;Pooled p_bar = 0.538 | Manual z = 2.5690&quot;</code></pre>
+<pre class="r"><code>shop_x &lt;- c(48, 187)
+shop_n &lt;- c(400, 480)
+p1_shop &lt;- shop_x[1] / shop_n[1]
+p2_shop &lt;- shop_x[2] / shop_n[2]
+se_shop &lt;- sqrt(p1_shop * (1 - p1_shop) / shop_n[1] + p2_shop * (1 - p2_shop) / shop_n[2])
+ci_shop_manual &lt;- (p1_shop - p2_shop) + c(-1, 1) * qnorm(0.99) * se_shop
+prop_shop &lt;- prop.test(x = shop_x, n = shop_n, conf.level = 0.98, correct = FALSE)
+print(prop_shop)</code></pre>
 <pre><code>## 
 ##  2-sample test for equality of proportions without continuity correction
 ## 
@@ -1866,6 +1970,8 @@ morning (<span class="math inline">\(n_1 = 400, x_1 = 48 \implies
 ## sample estimates:
 ##    prop 1    prop 2 
 ## 0.1200000 0.3895833</code></pre>
+<pre class="r"><code>print(sprintf(&quot;Manual unpooled 98%% CI: [%.4f, %.4f]&quot;, ci_shop_manual[1], ci_shop_manual[2]))</code></pre>
+<pre><code>## [1] &quot;Manual unpooled 98% CI: [-0.3337, -0.2055]&quot;</code></pre>
 <hr />
 </div>
 <div id="testing-hypotheses-about-two-population-variances-f-test" class="section level2">
@@ -1908,7 +2014,17 @@ vs. Manhattan (<span class="math inline">\(F = 8.087, p =
 0.0072\)</span>).</li>
 </ul></li>
 </ul>
-<pre><code>## Machine Thickness F-Ratio: 5.62 p-value: 0.0094</code></pre>
+<pre class="r"><code>s1_sq &lt;- 0.11378
+s2_sq &lt;- 0.02023
+f_stat_mach &lt;- s1_sq / s2_sq
+p_val_mach &lt;- 2 * pf(f_stat_mach, df1 = 9, df2 = 11, lower.tail = FALSE)
+print(sprintf(&quot;Machine Thickness F-Ratio: %.2f | p-value: %.4f&quot;, f_stat_mach, p_val_mach))</code></pre>
+<pre><code>## [1] &quot;Machine Thickness F-Ratio: 5.62 | p-value: 0.0094&quot;</code></pre>
+<pre class="r"><code>across_us &lt;- c(18500, 19250, 16400, 20750, 17600, 21800, 14750)
+manhattan &lt;- c(23000, 21900, 22500, 21200, 21000, 22800, 23100, 21300)
+
+var_test_result &lt;- var.test(x = across_us, y = manhattan, ratio = 1, alternative = &quot;greater&quot;, conf.level = 0.99)
+print(var_test_result)</code></pre>
 <pre><code>## 
 ##  F test to compare two variances
 ## 

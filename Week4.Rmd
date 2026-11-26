@@ -132,6 +132,13 @@ p_53_65 <- pnorm(q = 6.50, mean = mu_waste, sd = sd_waste) -
   pnorm(q = 5.30, mean = mu_waste, sd = sd_waste)
 p90_waste <- qnorm(p = 0.90, mean = mu_waste, sd = sd_waste, lower.tail = TRUE)
 
+emp_68 <- pnorm(1) - pnorm(-1)
+emp_95 <- pnorm(1.96) - pnorm(-1.96)
+emp_2sd <- pnorm(2) - pnorm(-2)
+emp_997 <- pnorm(3) - pnorm(-3)
+
+print(sprintf("Normal Benchmarks -> 1SD: %.4f | 1.96SD: %.4f | 2SD: %.4f | 3SD: %.4f",
+              emp_68, emp_95, emp_2sd, emp_997))
 print(sprintf("Demo 6.3 -> z(6.00) = %.4f | P(X > 6.00) via z: %.4f | direct: %.4f",
               z_waste, p_gt_6_z, p_gt_6_direct))
 print(sprintf("P(3.60 <= X <= 5.00): %.4f | P(5.30 <= X <= 6.50): %.4f | 90th percentile: %.4f lbs",
@@ -205,10 +212,12 @@ approx_66 <- pnorm(q = 12.5, mean = n_66 * p_66, sd = sqrt(n_66 * p_66 * (1 - p_
 n_67 <- 100
 p_67 <- 0.37
 exact_67 <- pbinom(q = 26, size = n_67, prob = p_67, lower.tail = TRUE)
-approx_67 <- pnorm(q = 26.5, mean = n_67 * p_67, sd = sqrt(n_67 * p_67 * (1 - p_67)))
+z_67 <- (26.5 - n_67 * p_67) / sqrt(n_67 * p_67 * (1 - p_67))
+approx_67 <- pnorm(q = z_67, mean = 0, sd = 1)
 
 print(sprintf("Demo 6.6 P(X = 12) -> Exact Binomial: %.6f | Normal Approx: %.6f", exact_66, approx_66))
-print(sprintf("Demo 6.7 P(X < 27) -> Exact Binomial: %.6f | Normal Approx: %.6f", exact_67, approx_67))
+print(sprintf("Demo 6.7 P(X < 27) -> z = %.4f | Exact Binomial: %.6f | Normal Approx: %.6f",
+              z_67, exact_67, approx_67))
 
 mu_66 <- n_66 * p_66
 sd_66 <- sqrt(n_66 * p_66 * (1 - p_66))
@@ -256,10 +265,11 @@ mean_minutes <- mu_intervals * 20
 rate_per_min <- 1 / mean_minutes
 
 prob_lt_15 <- pexp(q = 15, rate = rate_per_min, lower.tail = TRUE)
-prob_lt_15_comp <- 1 - pexp(q = 15, rate = rate_per_min, lower.tail = FALSE)
+prob_lt_15_formula <- 1 - exp(-rate_per_min * 15)
+prob_ge_15_formula <- exp(-rate_per_min * 15)
 
-print(sprintf("Demo 6.8 -> Mean interval: %.4f min | Rate: %.4f/min | P(X < 15): %.4f (comp: %.4f)",
-              mean_minutes, rate_per_min, prob_lt_15, prob_lt_15_comp))
+print(sprintf("Demo 6.8 -> Mean interval: %.4f min | Rate: %.4f/min | P(X < 15): %.4f (formula: %.4f) | P(X >= 15): %.4f",
+              mean_minutes, rate_per_min, prob_lt_15, prob_lt_15_formula, prob_ge_15_formula))
 
 x_exp <- seq(0, 60, length.out = 400)
 exp_df <- data.frame(x = x_exp, y = dexp(x_exp, rate = rate_per_min))
@@ -426,8 +436,11 @@ mu_pop <- 50
 sigma_pop <- 12
 n_samp <- 36
 se_xbar <- sigma_pop / sqrt(n_samp)
-prob_xbar <- pnorm(53, mean = mu_pop, sd = se_xbar, lower.tail = FALSE)
-print(sprintf("Sampling Dist P(x_bar > 53): %.4f (SE = %.2f)", prob_xbar, se_xbar))
+z_xbar <- (53 - mu_pop) / se_xbar
+prob_xbar <- pnorm(z_xbar, mean = 0, sd = 1, lower.tail = FALSE)
+se_fpc <- (12 / sqrt(50)) * sqrt((500 - 50) / (500 - 1))
+print(sprintf("Sampling Dist z = %.2f | P(x_bar > 53): %.4f (SE = %.2f) | FPC SE (N=500, n=50): %.4f",
+              z_xbar, prob_xbar, se_xbar, se_fpc))
 
 set.seed(2026)
 reps <- 2000
@@ -466,9 +479,10 @@ For a sample proportion $\hat{p} = \frac{x}{n}$, when **$n p \ge 5$ and $n q \ge
 p_pop <- 0.60
 n_prop <- 300
 se_phat <- sqrt(p_pop * (1 - p_pop) / n_prop)
-prob_phat <- pnorm(0.53, mean = p_pop, sd = se_phat, lower.tail = TRUE)
-print(sprintf("Sampling Dist of p_hat (p = 0.60, n = 300) -> SE: %.4f | P(p_hat <= 0.53): %.4f",
-              se_phat, prob_phat))
+z_phat <- (0.53 - p_pop) / se_phat
+prob_phat <- pnorm(z_phat, mean = 0, sd = 1, lower.tail = TRUE)
+print(sprintf("Sampling Dist of p_hat (p = 0.60, n = 300) -> SE: %.4f | z = %.4f | P(p_hat <= 0.53): %.4f",
+              se_phat, z_phat, prob_phat))
 ```
 
 ---

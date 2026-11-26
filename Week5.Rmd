@@ -83,6 +83,16 @@ ci_z <- c(x_bar - me_z, x_bar + me_z)
 print(sprintf("Critical z (90%% CI): %.4f | Standard Error: %.4f | Margin of Error: %.4f",
               crit_z, se_z, me_z))
 print(sprintf("90%% z-CI for mu: [%.4f, %.4f]", ci_z[1], ci_z[2]))
+
+N_fpc <- 400
+n_fpc <- 63
+xbar_fpc <- 211
+sd_fpc <- 48
+fpc_factor <- sqrt((N_fpc - n_fpc) / (N_fpc - 1))
+se_fpc <- (sd_fpc / sqrt(n_fpc)) * fpc_factor
+ci_fpc <- xbar_fpc + c(-1, 1) * qnorm(0.975) * se_fpc
+print(sprintf("FPC Example (n=%d, N=%d) -> FPC = %.4f | 95%% z-CI: [%.2f, %.2f]",
+              n_fpc, N_fpc, fpc_factor, ci_fpc[1], ci_fpc[2]))
 ```
 
 ---

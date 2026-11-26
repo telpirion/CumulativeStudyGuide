@@ -166,9 +166,11 @@ In **Demonstration Problem 9.3 (Wisconsin Milk Consumption, p. 294)**, a produce
 ```{r ch9-prop-test}
 z_test_milk <- prop.test(x = 116, n = 550, p = 0.17, alternative = "greater",
                          conf.level = 0.99, correct = FALSE)
+p_hat_milk <- 116 / 550
+z_milk_manual <- (p_hat_milk - 0.17) / sqrt(0.17 * (1 - 0.17) / 550)
 print(z_test_milk)
-print(sprintf("Recovered z-statistic = %.4f (p = %.5f)",
-              sqrt(z_test_milk$statistic), z_test_milk$p.value))
+print(sprintf("Manual z = %.4f | Recovered sqrt(X^2) = %.4f (p = %.5f)",
+              z_milk_manual, sqrt(z_test_milk$statistic), z_test_milk$p.value))
 ```
 
 Because $z = 2.5541 > z_{0.01} = 2.3263$ ($p = 0.00532 < 0.01$), we reject $H_0$ and conclude that the proportion of Wisconsin residents choosing milk as their primary breakfast beverage is significantly higher than $17\%$.
@@ -240,6 +242,13 @@ alpha <- 0.05
 se <- sigma / sqrt(n)
 x_crit <- mu0 - qnorm(1 - alpha) * se
 
+mu_target <- 29.6
+z_beta_target <- (x_crit - mu_target) / se
+beta_target <- pnorm(z_beta_target, lower.tail = FALSE)
+power_target <- 1 - beta_target
+print(sprintf("At mu_a = %.1f -> x_c = %.4f | z_beta = %.4f | beta = %.4f | Power = %.4f",
+              mu_target, x_crit, z_beta_target, beta_target, power_target))
+
 mu_alt <- seq(29.4, 30.0, by = 0.01)
 beta_vals <- pnorm(x_crit, mean = mu_alt, sd = se, lower.tail = FALSE)
 power_vals <- 1 - beta_vals
@@ -290,9 +299,12 @@ In **Demonstration Problem 16.1 (Supermarket Milk Sales)**, producers test at $\
 
 ```{r ch16-gof}
 gallons <- c(1610, 1585, 1649, 1590, 1540, 1397, 1410, 1350, 1495, 1564, 1602, 1655)
+expected_gal <- rep(sum(gallons) / length(gallons), length(gallons))
+chi2_gof_manual <- sum((gallons - expected_gal)^2 / expected_gal)
 gof_milk <- chisq.test(x = gallons, p = rep(1 / length(gallons), length(gallons)))
 print(gof_milk)
-print(sprintf("Critical chi^2 (alpha = 0.01, df = 11): %.4f", qchisq(0.99, df = 11)))
+print(sprintf("Manual chi^2 = %.4f | Critical chi^2 (alpha = 0.01, df = 11): %.4f",
+              chi2_gof_manual, qchisq(0.99, df = 11)))
 ```
 
 Because $\chi^2 = 74.3758 > \chi^2_{0.01, 11} = 24.7250$ ($p < 0.0001$), we reject $H_0$; monthly milk sales are not uniformly distributed across the year (notice the summer dip in June–August).

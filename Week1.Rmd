@@ -18,7 +18,7 @@ output:
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
 
 library(ggplot2)
 library(gridExtra)
@@ -131,7 +131,6 @@ summary(sales_volume)
 
 
 ```{r}
-
 unemp <- c(
   2.3, 7.0, 6.3, 11.3, 9.6,  2.8, 7.1, 5.6, 10.6, 9.1,
   3.6, 5.4, 5.9, 9.7, 8.3,   2.4, 5.5, 7.1, 8.8, 7.6,
@@ -141,16 +140,22 @@ unemp <- c(
   6.9, 11.0, 5.9, 10.4, 6.3, 6.0, 12.0, 6.4, 9.5, 6.0
 )
 
-bins <- seq(1, 13, by = 2)
+unemp_range <- max(unemp) - min(unemp)
+n_classes <- 6
+approx_width <- unemp_range / n_classes
+class_width <- ceiling(approx_width)
+print(sprintf("Range = %.1f | Approx Width (6 classes) = %.2f | Rounded Width = %d",
+              unemp_range, approx_width, class_width))
+
+bins <- seq(1, 13, by = class_width)
 classes <- cut(unemp, breaks = bins, right = FALSE)
 
 freq_table <- data.frame(table(Class = classes))
-freq_table$Midpoint <- seq(2, 12, by = 2)
+freq_table$Midpoint <- (bins[-length(bins)] + bins[-1]) / 2
 freq_table$Rel_Freq <- round(freq_table$Freq / sum(freq_table$Freq), 4)
 freq_table$Cum_Freq <- cumsum(freq_table$Freq)
 
 print(freq_table)
-
 ```
 
 ---
@@ -173,32 +178,24 @@ print(freq_table)
 
 
 ```{r}
-# --- Chapter 2.2 R Implementation: Quantitative Graphics ---
-
-# 1. Histogram
 hist(unemp, breaks = seq(1, 13, by = 2), right = FALSE,
      col = "steelblue", xlab = "Unemployment Rate (%)",
      main = "Histogram of Canadian Unemployment Rates")
 
-# 2. Frequency Polygon
 h <- hist(unemp, breaks = seq(1, 13, by = 2), plot = FALSE, right = FALSE)
 plot(h$mids, h$counts, type = "o", pch = 16, col = "darkblue",
      xlab = "Class Midpoints", ylab = "Frequency",
      main = "Frequency Polygon")
 
-# 3. Ogive (Cumulative Frequency Polygon)
 cum_counts <- c(0, cumsum(h$counts))
 plot(bins, cum_counts, type = "o", pch = 16, col = "darkred",
      xlab = "Class Endpoints", ylab = "Cumulative Frequency",
      main = "Ogive")
 
-# 4. Dot Plot
 stripchart(unemp, method = "stack", pch = 19, col = "forestgreen",
            xlab = "Unemployment Rate (%)", main = "Dot Plot")
 
-# 5. Stem-and-Leaf Display
 stem(unemp, scale = 1)
-
 ```
 
 ---
@@ -216,32 +213,28 @@ stem(unemp, scale = 1)
 
 
 ```{r}
-# --- Chapter 2.3 R Implementation: Qualitative Graphics & Pareto Analysis ---
-
-# Soft drink sales by location channel (from text)
 channels <- c("Supermarket", "Fountain", "Convenience/Gas", "Vending", "Mass Merch", "Drugstore")
 market_share <- c(44, 24, 16, 11, 3, 2)
+pie_degrees <- (market_share / sum(market_share)) * 360
+print(data.frame(Channel = channels, Share_Pct = market_share, Degrees = pie_degrees))
 
-# 1. Pie Chart
 pie(market_share, labels = paste(channels, market_share, "%"),
     main = "Soft Drink Sales Channels")
 
-# 2. Bar Chart
 barplot(market_share, names.arg = channels, col = "cornflowerblue",
         las = 2, ylab = "Percentage of Sales", cex.names = 0.8,
         main = "Bar Chart of Sales Locations")
 
-# 3. Pareto Chart
 defect_counts <- c(Poor_Wiring = 40, Short_Coil = 30, Defect_Plug = 25, Bearings = 5)
 sorted_counts <- sort(defect_counts, decreasing = TRUE)
-cum_pct <- cumsum(sorted_counts) / sum(sorted_counts) * 100
+cum_counts_pareto <- cumsum(sorted_counts)
+cum_pct <- cum_counts_pareto / sum(sorted_counts) * 100
+print(data.frame(Defect = names(sorted_counts), Count = as.numeric(sorted_counts), Cum_Pct = cum_pct))
 
-# Base R Pareto representation
 bp <- barplot(sorted_counts, ylim = c(0, sum(sorted_counts) * 1.15),
               col = "darkorange", ylab = "Defect Count", main = "Pareto Chart")
-lines(bp, sorted_counts / sum(sorted_counts) * sum(sorted_counts), type = "b", pch = 19, col = "red")
+lines(bp, cum_counts_pareto, type = "b", pch = 19, col = "red")
 axis(side = 4, at = seq(0, 100, by = 25) * sum(sorted_counts) / 100, labels = paste0(seq(0, 100, by = 25), "%"))
-
 ```
 
 
@@ -251,9 +244,6 @@ axis(side = 4, at = seq(0, 100, by = 25) * sum(sorted_counts) / 100, labels = pa
 * **Purpose:** Provides an exploratory visual display to detect directional patterns, linear or non-linear tendencies, dispersion, and outliers between two continuous variables.
 
 ```{r}
-# --- Chapter 2.4 R Implementation: Two-Variable Scatter Plot ---
-
-# Advertising dollars vs. Sales revenue ($ millions) from Problem 2.16
 advertising <- c(4.2, 1.6, 6.3, 2.7, 10.4, 7.1, 5.5, 8.3)
 sales_revenue <- c(155.7, 87.3, 135.6, 99.0, 168.2, 136.9, 101.4, 158.2)
 
@@ -263,9 +253,7 @@ plot(advertising, sales_revenue,
      ylab = "Sales Revenue ($ Millions)",
      main = "Scatter Plot: Advertising vs. Sales")
 
-# Fit exploratory linear trend line
 abline(lm(sales_revenue ~ advertising), col = "red", lwd = 2, lty = 2)
-
 ```
 
 

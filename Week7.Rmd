@@ -18,7 +18,7 @@ output:
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
 
 library(ggplot2)
 library(gridExtra)
@@ -80,8 +80,6 @@ $$(\bar{x}_1 - \bar{x}_2) \pm z_{\alpha/2} \sqrt{\frac{\sigma_1^2}{n_1} + \frac{
   + **Software Note:** While Excel includes this procedure in its Data Analysis Toolpak (`z-Test: Two Sample for Means`), Minitab does not have a native two-sample $z$-test command.
 
 ```{r}
-# --- Chapter 10.1 R Implementation: Two-Sample z-Test & Confidence Intervals ---
-
 two_sample_z_test <- function(x1_bar, x2_bar, n1, n2, sigma1, sigma2, D0 = 0, alpha = 0.05) {
   se <- sqrt((sigma1^2 / n1) + (sigma2^2 / n2))
   z_stat <- ((x1_bar - x2_bar) - D0) / se
@@ -98,11 +96,9 @@ two_sample_z_test <- function(x1_bar, x2_bar, n1, n2, sigma1, sigma2, D0 = 0, al
   )
 }
 
-# 1. Advertising vs. Auditing Manager Wage Test (alpha = 0.05)
 wage_test <- two_sample_z_test(x1_bar = 70.700, x2_bar = 62.187, n1 = 32, n2 = 34, sigma1 = 16.253, sigma2 = 12.900, alpha = 0.05)
 print(wage_test)
 
-# 2. Grocery Coupon Savings 98% Confidence Interval (alpha = 0.02)
 coupon_ci <- two_sample_z_test(x1_bar = 5.84, x2_bar = 2.67, n1 = 60, n2 = 80, sigma1 = 1.41, sigma2 = 0.54, alpha = 0.02)
 print(coupon_ci[, c("Difference", "Std_Error", "CI_Lower", "CI_Upper")])
 ```
@@ -119,19 +115,22 @@ When population standard deviations are unknown, sample standard deviations ($s_
 
 $$s_p^2 = \frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}$$
 ```{r}
-# Sample 1: n = 35, mean = 19.4, sd = 1.4
-# Sample 2: n = 40, mean = 15.1, sd = 1.3
-
-n1 <- 35; x1_bar <- 19.4; s1 <- 1.4
-n2 <- 40; x2_bar <- 15.1; s2 <- 1.3
+n1 <- 35
+x1_bar <- 19.4
+s1 <- 1.4
+n2 <- 40
+x2_bar <- 15.1
+s2 <- 1.3
 df <- n1 + n2 - 2
 
 sp2 <- ((n1 - 1) * s1^2 + (n2 - 1) * s2^2) / df
-se  <- sqrt(sp2 * (1/n1 + 1/n2))
+se <- sqrt(sp2 * (1 / n1 + 1 / n2))
 t_crit <- qt(0.975, df = df)
+t_stat_pooled <- ((x1_bar - x2_bar) - 0) / se
 
 ci <- (x1_bar - x2_bar) + c(-1, 1) * t_crit * se
-ci
+print(sprintf("Pooled s_p^2 = %.4f | t = %.4f (df = %d) | 95%% CI: [%.4f, %.4f]",
+              sp2, t_stat_pooled, df, ci[1], ci[2]))
 ```
 
 
@@ -162,19 +161,34 @@ $$df = \frac{\left(\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}\right)^2}{\frac{(s_1^2 
     With $df = 17$ and $t_{0.005, 17} = 2.898$, the 99% CI is $2.10 \pm 2.898(0.6868) = [0.11, 4.09]$.
 
 ```{r}
-# --- Chapter 10.2 R Implementation: Independent Samples t-Tests ---
-
-# Hernandez Manufacturing Training Data (Table 10.2)
 method_a <- c(56, 50, 52, 44, 52, 47, 47, 53, 45, 48, 42, 51, 42, 43, 44)
 method_b <- c(59, 54, 55, 65, 52, 57, 64, 53, 53, 56, 53, 57)
 
-# 1. Pooled-variance t-test (equal variances assumed, var.equal = TRUE)
 pooled_t <- t.test(method_a, method_b, var.equal = TRUE, alternative = "two.sided")
 print(pooled_t)
 
-# 2. Welch's unequal-variances t-test (var.equal = FALSE)
 welch_t <- t.test(method_a, method_b, var.equal = FALSE, alternative = "two.sided")
 print(welch_t)
+
+na <- length(method_a)
+nb <- length(method_b)
+va <- var(method_a)
+vb <- var(method_b)
+df_welch_manual <- (va / na + vb / nb)^2 / (((va / na)^2 / (na - 1)) + ((vb / nb)^2 / (nb - 1)))
+t_welch_manual <- (mean(method_a) - mean(method_b)) / sqrt(va / na + vb / nb)
+print(sprintf("Welch manual -> t = %.4f | df = %.4f", t_welch_manual, df_welch_manual))
+
+n_c1 <- 9
+xbar_c1 <- 37.09
+s_c1 <- 1.727
+n_c2 <- 10
+xbar_c2 <- 34.99
+s_c2 <- 1.253
+df_c <- n_c1 + n_c2 - 2
+sp2_c <- ((n_c1 - 1) * s_c1^2 + (n_c2 - 1) * s_c2^2) / df_c
+se_c <- sqrt(sp2_c * (1 / n_c1 + 1 / n_c2))
+ci_c <- (xbar_c1 - xbar_c2) + c(-1, 1) * qt(0.995, df = df_c) * se_c
+print(sprintf("Conscientiousness 99%% CI (df = %d): [%.2f, %.2f]", df_c, ci_c[1], ci_c[2]))
 ```
 
 ---
@@ -212,18 +226,27 @@ $$\bar{d} \pm t_{\alpha/2, n-1} \left(\frac{s_d}{\sqrt{n}}\right)$$
   + **Demonstration Problem 10.5 (p. 341):** Testing consumer ratings before and after a video campaign ($n = 7, \alpha = 0.05$, directional test `alternative = "greater"`).
 
 ```{r}
-# --- Chapter 10.3 R Implementation: Paired t-Tests (Slide Examples & Dem. Prob 10.5) ---
-
-# 1. P/E Ratios for Nine Randomly Selected Companies (Tables 10.5 & 10.6)
 year_1 <- c(8.9, 38.1, 43.0, 34.0, 34.5, 15.2, 20.3, 19.9, 61.9)
 year_2 <- c(12.7, 45.4, 10.0, 27.2, 22.8, 24.1, 32.3, 40.1, 106.5)
+
+diffs <- year_1 - year_2
+d_bar <- mean(diffs)
+s_d <- sd(diffs)
+t_pe_manual <- d_bar / (s_d / sqrt(length(diffs)))
+print(sprintf("P/E Paired Manual -> d_bar = %.3f | s_d = %.3f | t = %.4f", d_bar, s_d, t_pe_manual))
 
 pe_test <- t.test(year_1, year_2, paired = TRUE, conf.level = 0.99)
 print(pe_test)
 
-# 2. Demonstration Problem 10.5: Consumer ratings before and after video treatment
+n_indy <- 18
+dbar_indy <- -3.389
+sd_indy <- 3.274
+ci_indy <- dbar_indy + c(-1, 1) * qt(0.995, df = n_indy - 1) * (sd_indy / sqrt(n_indy))
+print(sprintf("Indianapolis New-House Sales 99%% CI (df = %d): [%.3f, %.3f]",
+              n_indy - 1, ci_indy[1], ci_indy[2]))
+
 before <- c(32, 11, 21, 17, 30, 38, 14)
-after  <- c(39, 15, 35, 13, 41, 39, 22)
+after <- c(39, 15, 35, 13, 41, 39, 22)
 
 paired_test <- t.test(x = after, y = before, paired = TRUE, alternative = "greater")
 print(paired_test)
@@ -260,19 +283,25 @@ $$(\hat{p}_1 - \hat{p}_2) \pm z_{\alpha/2} \sqrt{\frac{\hat{p}_1(1 - \hat{p}_1)}
     $$(0.12 - 0.39) \pm 2.33 \sqrt{\frac{0.12(0.88)}{400} + \frac{0.39(0.61)}{480}} = -0.27 \pm 0.064 = [-0.334, -0.206]$$
 
 ```{r}
-# --- Chapter 10.4 R Implementation: Two-Proportion Tests & CIs ---
-
-# 1. Consumer vs. CEO Ethical Perception Test (alpha = 0.10, one-tailed)
 eth_x <- c(round(755 * 0.57), round(616 * 0.50))
 eth_n <- c(755, 616)
+p1_eth <- eth_x[1] / eth_n[1]
+p2_eth <- eth_x[2] / eth_n[2]
+p_bar_eth <- sum(eth_x) / sum(eth_n)
+z_eth_manual <- (p1_eth - p2_eth) / sqrt(p_bar_eth * (1 - p_bar_eth) * (1 / eth_n[1] + 1 / eth_n[2]))
 prop_eth <- prop.test(x = eth_x, n = eth_n, alternative = "greater", correct = FALSE)
 print(prop_eth)
+print(sprintf("Pooled p_bar = %.3f | Manual z = %.4f", p_bar_eth, z_eth_manual))
 
-# 2. Supermarket Shopper Gender Proportion 98% CI
 shop_x <- c(48, 187)
 shop_n <- c(400, 480)
+p1_shop <- shop_x[1] / shop_n[1]
+p2_shop <- shop_x[2] / shop_n[2]
+se_shop <- sqrt(p1_shop * (1 - p1_shop) / shop_n[1] + p2_shop * (1 - p2_shop) / shop_n[2])
+ci_shop_manual <- (p1_shop - p2_shop) + c(-1, 1) * qnorm(0.99) * se_shop
 prop_shop <- prop.test(x = shop_x, n = shop_n, conf.level = 0.98, correct = FALSE)
 print(prop_shop)
+print(sprintf("Manual unpooled 98%% CI: [%.4f, %.4f]", ci_shop_manual[1], ci_shop_manual[2]))
 ```
 
 ---
@@ -297,16 +326,12 @@ $$F = \frac{s_1^2}{s_2^2}$$
   + **Demonstration Problem 10.7 (p. 359):** Runzheimer International study on basic goods expenditures across the US vs. Manhattan ($F = 8.087, p = 0.0072$).
 
 ```{r}
-# --- Chapter 10.5 R Implementation: Two-Variance F-Tests ---
-
-# 1. Verification of Machine Thickness Variance Ratio
 s1_sq <- 0.11378
 s2_sq <- 0.02023
 f_stat_mach <- s1_sq / s2_sq
-p_val_mach  <- 2 * pf(f_stat_mach, df1 = 9, df2 = 11, lower.tail = FALSE)
-cat("Machine Thickness F-Ratio:", round(f_stat_mach, 2), "p-value:", round(p_val_mach, 4), "\n")
+p_val_mach <- 2 * pf(f_stat_mach, df1 = 9, df2 = 11, lower.tail = FALSE)
+print(sprintf("Machine Thickness F-Ratio: %.2f | p-value: %.4f", f_stat_mach, p_val_mach))
 
-# 2. Demonstration Problem 10.7: Runzheimer International Family Spending
 across_us <- c(18500, 19250, 16400, 20750, 17600, 21800, 14750)
 manhattan <- c(23000, 21900, 22500, 21200, 21000, 22800, 23100, 21300)
 

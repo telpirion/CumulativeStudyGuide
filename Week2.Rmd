@@ -18,7 +18,7 @@ output:
 ---
 
 ```{r setup, include = FALSE, message = FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE, eval = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
 
 library(ggplot2)
 library(gridExtra)
@@ -111,6 +111,23 @@ calc_mode <- function(x) {
   modes <- names(tbl)[tbl == max(tbl)]
   as.numeric(modes)[1]
 }
+
+manual_mean <- sum(shop_sizes) / length(shop_sizes)
+skating_sorted <- sort(skating)
+g_skate <- floor(0.2 * length(skating))
+manual_trim_skate <- sum(skating_sorted[(g_skate + 1):(length(skating) - g_skate)]) / (length(skating) - 2 * g_skate)
+
+even_sample <- c(10, 14, 18, 22, 26, 30)
+n_even <- length(even_sample)
+even_sorted <- sort(even_sample)
+manual_even_median <- (even_sorted[n_even / 2] + even_sorted[n_even / 2 + 1]) / 2
+
+p25_idx <- (25 / 100) * length(shop_sizes)
+p25_manual <- sort(shop_sizes)[ceiling(p25_idx)]
+print(sprintf("Demo 3.1 sum/n = %.2f | P25 index = %.2f -> Q1 = %.2f",
+              manual_mean, p25_idx, p25_manual))
+print(sprintf("Wilcox skating g = %d | manual 20%% trimmed mean = %.2f | Even median check = %.1f",
+              g_skate, manual_trim_skate, manual_even_median))
 
 central_summary <- data.frame(
   Dataset = c("UK Shopping Centres", "Figure Skating Ratings"),
@@ -217,12 +234,19 @@ calc_winsorized_var <- function(x, tr = 0.2) {
   var(w)
 }
 
+pop_var <- function(x) {
+  sum((x - mean(x))^2) / length(x)
+}
+
 dispersion_summary <- data.frame(
   Dataset = c("Top 15 US Exports ($B)", "Accounting Firm Partners"),
   Mean = round(c(mean(top_15_exports), mean(acc_partners)), 2),
   Range = round(c(diff(range(top_15_exports)), diff(range(acc_partners))), 2),
+  IQR = round(c(quantile(top_15_exports, 0.75, type = 6) - quantile(top_15_exports, 0.25, type = 6),
+                quantile(acc_partners, 0.75, type = 6) - quantile(acc_partners, 0.25, type = 6)), 2),
   MAD = round(c(sum(abs(top_15_exports - mean(top_15_exports))) / length(top_15_exports),
                 sum(abs(acc_partners - mean(acc_partners))) / length(acc_partners)), 2),
+  Pop_Variance = round(c(pop_var(top_15_exports), pop_var(acc_partners)), 2),
   Sample_Variance = round(c(var(top_15_exports), var(acc_partners)), 2),
   Sample_StdDev = round(c(sd(top_15_exports), sd(acc_partners)), 2),
   Winsorized_Var = round(c(calc_winsorized_var(top_15_exports), calc_winsorized_var(acc_partners)), 2),
@@ -231,6 +255,19 @@ dispersion_summary <- data.frame(
 )
 
 print(dispersion_summary)
+
+chebyshev_bounds <- sapply(c(2, 3), function(k) 1 - 1 / k^2)
+empirical_bounds <- sapply(c(1, 2, 3), function(k) pnorm(k) - pnorm(-k))
+print(sprintf("Chebyshev min proportion (k=2, k=3): %.4f, %.4f", chebyshev_bounds[1], chebyshev_bounds[2]))
+print(sprintf("Empirical Rule normal proportion (k=1,2,3): %.4f, %.4f, %.4f",
+              empirical_bounds[1], empirical_bounds[2], empirical_bounds[3]))
+
+wilcox_p28 <- c(1, 2, 8, 9, 10, 16, 18, 22, 27, 29, 35, 42)
+wilcox_p28_shifted <- c(1, 2, 8, 9, 10, 16, 18, 22, 27, 29, 35, 60)
+print(sprintf("Wilcox p.28 (max=42) -> s^2 = %.2f | s_w^2 = %.2f (s_w = %.2f)",
+              var(wilcox_p28), calc_winsorized_var(wilcox_p28), sqrt(calc_winsorized_var(wilcox_p28))))
+print(sprintf("Wilcox p.28 (max=60) -> s^2 = %.2f | s_w^2 = %.2f",
+              var(wilcox_p28_shifted), calc_winsorized_var(wilcox_p28_shifted)))
 ```
 
 ---
@@ -271,24 +308,43 @@ where $L$ is the lower class boundary of the median interval, $cf_p$ is the cumu
     Class intervals from `[2, 4)` to `[12, 14)` ($n = 58$): Grouped $\bar{x} = 7.72$, $s^2 = 7.54$, $\sigma = 2.72$, $\text{Mode} = 9.00$, and Grouped $\text{Median} = 7.7143$.
 
 ```{r}
-unemp_m <- c(2, 4, 6, 8, 10, 12)
+calc_grouped_median <- function(lower, upper, freq) {
+  n_tot <- sum(freq)
+  cf <- cumsum(freq)
+  med_idx <- which(cf >= n_tot / 2)[1]
+  cf_prev <- ifelse(med_idx == 1, 0, cf[med_idx - 1])
+  w <- upper[med_idx] - lower[med_idx]
+  lower[med_idx] + (((n_tot / 2) - cf_prev) / freq[med_idx]) * w
+}
+
+unemp_low <- c(1, 3, 5, 7, 9, 11)
+unemp_upp <- c(3, 5, 7, 9, 11, 13)
+unemp_m <- (unemp_low + unemp_upp) / 2
 unemp_f <- c(4, 12, 13, 19, 7, 5)
 unemp_n <- sum(unemp_f)
 unemp_mean <- sum(unemp_f * unemp_m) / unemp_n
 unemp_var <- sum(unemp_f * (unemp_m - unemp_mean)^2) / (unemp_n - 1)
 unemp_sd <- sqrt(unemp_var)
+unemp_med <- calc_grouped_median(unemp_low, unemp_upp, unemp_f)
+unemp_mode <- unemp_m[which.max(unemp_f)]
 
-prob_m <- c(3, 5, 7, 9, 11, 13)
+prob_low <- c(2, 4, 6, 8, 10, 12)
+prob_upp <- c(4, 6, 8, 10, 12, 14)
+prob_m <- (prob_low + prob_upp) / 2
 prob_f <- c(5, 12, 14, 15, 8, 4)
 prob_n <- sum(prob_f)
 prob_mean <- sum(prob_f * prob_m) / prob_n
 prob_var <- sum(prob_f * (prob_m - prob_mean)^2) / (prob_n - 1)
 prob_sd <- sqrt(prob_var)
+prob_med <- calc_grouped_median(prob_low, prob_upp, prob_f)
+prob_mode <- prob_m[which.max(prob_f)]
 
 grouped_table <- data.frame(
   Dataset = c("Canadian Unemployment (Ch. 3 Slides)", "Practice Problem 32-35"),
   Total_n = c(unemp_n, prob_n),
   Grouped_Mean = round(c(unemp_mean, prob_mean), 4),
+  Grouped_Median = round(c(unemp_med, prob_med), 4),
+  Grouped_Mode = round(c(unemp_mode, prob_mode), 4),
   Grouped_Variance = round(c(unemp_var, prob_var), 4),
   Grouped_StdDev = round(c(unemp_sd, prob_sd), 4)
 )
@@ -345,14 +401,32 @@ iqr_m <- q3_m - q1_m
 upper_inner_fence_m <- q3_m + 1.5 * iqr_m
 
 wait_times <- c(45, 52, 55, 58, 62, 65, 67, 70, 72, 75, 78, 80, 85, 120, 160)
+sk_wait <- 3 * (mean(wait_times) - median(wait_times)) / sd(wait_times)
+q1_w <- quantile(wait_times, 0.25, type = 6)
+q3_w <- quantile(wait_times, 0.75, type = 6)
+iqr_w <- q3_w - q1_w
+fences_w <- c(
+  Lower_Outer = q1_w - 3.0 * iqr_w,
+  Lower_Inner = q1_w - 1.5 * iqr_w,
+  Upper_Inner = q3_w + 1.5 * iqr_w,
+  Upper_Outer = q3_w + 3.0 * iqr_w
+)
+print(sprintf("Wait Times Skewness S_k = %.4f", sk_wait))
+print(round(fences_w, 2))
+
 boxplot(wait_times, horizontal = TRUE, col = "lightblue",
         xlab = "Wait Time (Seconds)", main = "Box-and-Whisker Plot: Drive-Thru Wait Times")
 
 outlier_comparison <- data.frame(
-  Method = c("Classic z-Score Rule (|z| >= 2)", "Tukey Boxplot Rule (Fence = 5.5)"),
-  Test_Metric = c("Max |z| = 1.897", "Upper Fence = 5.5"),
-  Outliers_Identified = c("None (Masked)", "100000, 100000 (Detected)")
+  Method = c("Classic z-Score Rule (|z| >= 2)", "Tukey Boxplot Rule (Upper Inner Fence)"),
+  Test_Metric = c(sprintf("Max |z| = %.3f", max(z_mask)),
+                  sprintf("Upper Fence = %.1f", upper_inner_fence_m)),
+  Outliers_Identified = c(
+    paste(wilcox_masking_data[z_mask >= 2], collapse = ", "),
+    paste(wilcox_masking_data[wilcox_masking_data > upper_inner_fence_m], collapse = ", ")
+  )
 )
+outlier_comparison$Outliers_Identified[outlier_comparison$Outliers_Identified == ""] <- "None (Masked)"
 
 print(outlier_comparison)
 ```
@@ -379,6 +453,11 @@ $$r = \frac{s_{xy}}{s_x s_y} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})
 ```{r}
 ad_spend <- c(2, 4, 5, 6, 8, 11)
 foot_traffic <- c(7, 9, 10, 13, 15, 20)
+
+s_xy <- sum((ad_spend - mean(ad_spend)) * (foot_traffic - mean(foot_traffic))) / (length(ad_spend) - 1)
+r_manual <- s_xy / (sd(ad_spend) * sd(foot_traffic))
+print(sprintf("Sample Covariance s_xy = %.4f (cov = %.4f) | Manual r = %.4f",
+              s_xy, cov(ad_spend, foot_traffic), r_manual))
 
 cor_result <- cor.test(ad_spend, foot_traffic)
 
@@ -411,10 +490,10 @@ Following the curriculum specifications from the Course Solutions Guide (`Lesson
 4. **Old Faithful Geyser Eruption Intervals (`data/geyser.csv`):** Compares eruption intervals across two consecutive weeks (`WEEK1` and `WEEK2`), highlighting temporal consistency and marked **bimodality**.
 
 ```{r}
-mileage_df <- read.csv("data/mileage.csv")
-shoppers_df <- read.csv("data/shoppers.csv")
-pontus_df <- read.csv("data/pontus.csv")
-geyser_df <- read.csv("data/geyser.csv")
+mileage_df <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/mileage.csv")
+shoppers_df <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/shoppers.csv")
+pontus_df <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/pontus.csv")
+geyser_df <- read.csv("https://raw.githubusercontent.com/telpirion/CumulativeStudyGuide/refs/heads/main/data/geyser.csv")
 
 mpg_mean <- aggregate(MPG ~ CLASS, data = mileage_df, mean)
 mpg_sd <- aggregate(MPG ~ CLASS, data = mileage_df, sd)

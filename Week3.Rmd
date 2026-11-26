@@ -73,9 +73,12 @@ dice_rolls <- sample(x = 1:6, size = 10, replace = TRUE)
 print(dice_rolls)
 
 dice_grid <- expand.grid(die1 = 1:6, die2 = 1:6)
+mn_outcomes <- 6 * 6
 prob_sum_12 <- mean(rowSums(dice_grid) == 12)
+prob_sum_not_12 <- 1 - prob_sum_12
 prob_sum_lt6 <- mean(rowSums(dice_grid) < 6)
-print(sprintf("Two-dice P(sum = 12): %.4f | P(sum < 6): %.4f", prob_sum_12, prob_sum_lt6))
+print(sprintf("mn rule / N^r outcomes (6^2): %d | Two-dice P(sum = 12): %.4f | Complement P(sum != 12): %.4f | P(sum < 6): %.4f",
+              mn_outcomes, prob_sum_12, prob_sum_not_12, prob_sum_lt6))
 
 vec_a <- c(1, 3, 5, 2, 4, 6)
 vec_b <- c(2, 4, 6, 8, 10)
@@ -83,7 +86,9 @@ print(union(vec_a, vec_b))
 print(intersect(vec_a, vec_b))
 
 law_firm_combos <- choose(16, 3)
-print(sprintf("Small law firm combinations C(16, 3): %d", law_firm_combos))
+law_firm_manual <- factorial(16) / (factorial(3) * factorial(16 - 3))
+print(sprintf("Small law firm combinations C(16, 3): %d (factorial check: %d)",
+              law_firm_combos, law_firm_manual))
 ```
 
 ## Core Rules of Probability (Sections 4.3 – 4.5)
@@ -113,6 +118,30 @@ Four core types of probability appear in contingency (joint probability) tables:
   $$P(A \cap B) = P(A) \cdot P(B \mid A) = P(B) \cdot P(A \mid B)$$
 * **Special Law of Multiplication (Independent Events):**
   $$P(A \cap B) = P(A) \cdot P(B)$$
+
+```{r ch4-probability-laws}
+survey_tbl <- matrix(c(42, 18, 28, 12), nrow = 2, byrow = TRUE,
+                     dimnames = list(Status = c("Full_Time", "Part_Time"),
+                                     Remote = c("Yes", "No")))
+n_total <- sum(survey_tbl)
+p_A <- sum(survey_tbl["Full_Time", ]) / n_total
+p_B <- sum(survey_tbl[, "Yes"]) / n_total
+p_A_and_B <- survey_tbl["Full_Time", "Yes"] / n_total
+
+p_A_or_B <- p_A + p_B - p_A_and_B
+p_A_given_B <- p_A_and_B / p_B
+p_B_given_A <- p_A_and_B / p_A
+p_mult_gen <- p_A * p_B_given_A
+p_mult_indep <- p_A * p_B
+
+p_die_1_or_2 <- (1 / 6) + (1 / 6)
+
+print(sprintf("Marginal P(A)=%.2f, P(B)=%.2f | Joint P(A n B)=%.2f | General Union P(A u B)=%.2f",
+              p_A, p_B, p_A_and_B, p_A_or_B))
+print(sprintf("Conditional P(A|B)=%.2f (equals P(A)=%.2f -> Independent) | Gen Mult=%.2f | Spec Mult=%.2f",
+              p_A_given_B, p_A, p_mult_gen, p_mult_indep))
+print(sprintf("Mutually Exclusive Special Addition P(Die=1 or Die=2): %.4f", p_die_1_or_2))
+```
 
 ## Bayes' Theorem & The Diachronic Interpretation (Section 4.6 & *Think Bayes* Ch. 1–2)
 
@@ -212,9 +241,11 @@ For a discrete random variable $X$ with probability mass function $P(X = x)$ (wh
 discrete_summary <- function(outcomes, probs) {
   expect_val <- sum(outcomes * probs)
   var_val <- sum((outcomes - expect_val)^2 * probs)
+  var_shortcut <- sum(outcomes^2 * probs) - expect_val^2
   data.frame(
     Expected_Value = expect_val,
     Variance = var_val,
+    Variance_Shortcut = var_shortcut,
     Standard_Deviation = sqrt(var_val)
   )
 }
@@ -254,7 +285,18 @@ Models the number of successes $x$ in $n$ independent trials under four conditio
 
 ```{r binomial-demos, fig.height=3.8, fig.width=6.5}
 p_cnn <- pbinom(q = 9, size = 20, prob = 0.60, lower.tail = TRUE)
-print(sprintf("Demo 5.4 P(X < 10) for n=20, p=0.60: %.4f", p_cnn))
+p_pmf_manual <- choose(20, 10) * (0.60^10) * (0.40^10)
+p_pmf_r <- dbinom(x = 10, size = 20, prob = 0.60)
+print(sprintf("Demo 5.4 P(X < 10) for n=20, p=0.60: %.4f | PMF P(X=10) manual: %.6f vs dbinom: %.6f",
+              p_cnn, p_pmf_manual, p_pmf_r))
+
+n_t58 <- 20
+p_t58 <- 0.14
+mu_t58 <- n_t58 * p_t58
+var_t58 <- n_t58 * p_t58 * (1 - p_t58)
+sd_t58 <- sqrt(var_t58)
+print(sprintf("Table 5.8 (n=20, p=0.14) -> mu = %.2f | sigma^2 = %.4f | sigma = %.4f",
+              mu_t58, var_t58, sd_t58))
 
 mug_probs <- c(0.10, 0.20, 0.30, 0.40)
 lot_acceptance <- data.frame(
@@ -292,7 +334,20 @@ Named after French mathematician Siméon Denis Poisson, this distribution models
 
 ```{r poisson-demos, fig.height=3.8, fig.width=6.5}
 p_ups <- ppois(q = 4, lambda = 2.3, lower.tail = FALSE)
-print(sprintf("Demo 5.6 UPS P(X > 4) for lambda = 2.3: %.4f", p_ups))
+p_ups_x2_manual <- (2.3^2 * exp(-2.3)) / factorial(2)
+p_ups_x2_r <- dpois(x = 2, lambda = 2.3)
+lambda_5min <- 2.3 * (5 / 1)
+print(sprintf("Demo 5.6 UPS P(X > 4): %.4f | P(X=2) manual: %.6f vs dpois: %.6f | 5-min lambda = %.1f",
+              p_ups, p_ups_x2_manual, p_ups_x2_r, lambda_5min))
+
+lambda_t10 <- 1.6
+print(sprintf("Table 5.10 (lambda = 1.6) -> mu = %.2f | var = %.2f | sd = %.4f",
+              lambda_t10, lambda_t10, sqrt(lambda_t10)))
+
+exact_binom_rare <- dbinom(x = 3, size = 100, prob = 0.02)
+approx_pois_rare <- dpois(x = 3, lambda = 100 * 0.02)
+print(sprintf("Poisson Approx to Binomial (n=100, p=0.02, x=3) -> Exact: %.5f | Poisson: %.5f",
+              exact_binom_rare, approx_pois_rare))
 
 ggplot(data = data.frame(x = 0:9, prob = dpois(0:9, lambda = 1.6)),
        aes(x = x, y = prob)) +
@@ -322,10 +377,17 @@ Models the number of successes ($x$) in a sample of size $n$ drawn **without rep
 ```{r hypergeometric-demos}
 p_sv <- phyper(q = 0, m = 12, n = 18 - 12, k = 3, lower.tail = FALSE)
 p_sv_comp <- 1 - (choose(12, 0) * choose(6, 3) / choose(18, 3))
-p_women <- dhyper(x = 3, m = 8, n = 24 - 8, k = 5)
+mu_sv <- 3 * (12 / 18)
+sd_sv <- sqrt(3 * (12 / 18) * (1 - 12 / 18) * ((18 - 3) / (18 - 1)))
 
-print(sprintf("Demo 5.8 Silicon Valley P(X >= 1): %.4f (via combinations: %.4f)", p_sv, p_sv_comp))
-print(sprintf("Table 5.13/5.14 P(X = 3 women): %.4f", p_women))
+p_women <- dhyper(x = 3, m = 8, n = 24 - 8, k = 5)
+mu_women <- 5 * (8 / 24)
+sd_women <- sqrt(5 * (8 / 24) * (1 - 8 / 24) * ((24 - 5) / (24 - 1)))
+
+print(sprintf("Demo 5.8 Silicon Valley P(X >= 1): %.4f (comb: %.4f) | mu = %.2f, sigma = %.4f",
+              p_sv, p_sv_comp, mu_sv, sd_sv))
+print(sprintf("Table 5.13/5.14 P(X = 3 women): %.4f | mu = %.4f, sigma = %.4f",
+              p_women, mu_women, sd_women))
 ```
 
 ---
